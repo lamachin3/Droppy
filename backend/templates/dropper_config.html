@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-half">
+        <div class="box">
+            <h1 class="title has-text-centered">Configure Your Dropper</h1>
+
+            <form action="{{ url_for('build_dropper') }}" method="POST">
+                <!-- Module Selection -->
+                <div class="field">
+                    <label class="label">Select Modules to Enable:</label>
+                    <div class="control">
+                        {% for module in modules %}
+                            <label class="checkbox">
+                                <input type="checkbox" name="modules" value="{{ module }}"> {{ module.replace('_', ' ').title() }}
+                            </label>
+                            <br>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Output Filename -->
+                <div class="field">
+                    <label class="label">Output Filename:</label>
+                    <div class="control columns">
+                        <div class="column is-8">
+                        <input class="input" type="text" name="output_filename" placeholder="dropper" required>
+                        </div>
+                        <div class="column is-4">
+                            <div class="select">
+                                <select>
+                                <option>.exe</option>
+                                <option>.dll</option>
+                                <option>.msi</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="has-text-centered">
+                    <button class="button is-primary is-medium">Generate Dropper</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

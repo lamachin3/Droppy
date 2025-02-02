@@ -1,0 +1,27 @@
+/* Dark theme */
+body {
+    background-color: #2b2b2b;  /* Dark Grey */
+    color: #e0e0e0;  /* Light Grey Text */
+}
+
+/* Navbar Customization */
+.navbar {
+    background-color: #1f1f1f;  /* Even Darker Navbar */
+}
+
+.navbar-item {
+    color: #ffffff !important;
+}
+
+/* Card Styling */
+.card {
+    background-color: #3b3b3b;
+    color: #ffffff;
+    border-radius: 8px;
+}
+
+/* Button Customization */
+.button.is-primary {
+    background-color: #ff4757; /* Soft Red */
+    border-radius: 8px;
+}

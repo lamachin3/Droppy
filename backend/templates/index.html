@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered is-vcentered" style="height: 80vh;">
+    <div class="column is-8">
+        <h1 class="title primary has-text-centered has-text-white">Welcome to Droppy</h1>
+
+        <span clas="space"></span>
+
+        <div class="columns is-centered is-variable is-4">
+            <!-- Configure Dropper -->
+            <div class="column is-6">
+                <div class="card equal-height">
+                    <div class="card-content has-text-centered">
+                        <p class="title has-text-white">🛠️ Configure Dropper</p>
+                        <p class="subtitle has-text-grey-light">Customize and generate your dropper</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('config') }}" class="card-footer-item is-primary is-fullwidth">Go to Config</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Results -->
+            <div class="column is-6">
+                <div class="card equal-height">
+                    <div class="card-content has-text-centered">
+                        <p class="title has-text-white">📜 View Results</p>
+                        <p class="subtitle has-text-grey-light">Download your generated droppers</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('result') }}" class="card-footer-item is-primary is-fullwidth">Go to Results</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .title.primary {
+        margin-bottom: 5rem !important;
+    }
+
+    .columns.is-centered {
+        display: flex;
+        justify-content: center;  /* Horizontally center items in the container */
+        align-items: center;      /* Vertically align if there’s extra space */
+    }
+
+    .columns.is-variable.is-4 {
+        gap: 2rem;                /* Adds spacing between cards */
+    }
+
+    .card {
+        width: 100%;              /* Ensures cards take up full width of their container */
+        max-width: 100%;          /* Prevents cards from being too wide */
+    }
+
+    .equal-height {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .card-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;  /* Centers content vertically */
+        align-items: center;      /* Centers content horizontally */
+        flex-grow: 1;
+        padding: 1.5rem;          /* Adds padding inside the card */
+    }
+
+    .card-footer {
+        margin-top: auto;
+        border-top: 0px;
+    }
+
+    .card-footer-item {
+        color: #0db8a0;
+    }
+
+    .card-footer-item:hover {
+        color: #b5b5b5;
+    }
+</style>
+{% endblock %}
