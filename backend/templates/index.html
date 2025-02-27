@@ -1,88 +1,57 @@
 {% extends "base.html" %}
 
+{% block title %}Droppy - Home{% endblock %}
+
 {% block content %}
-<div class="columns is-centered is-vcentered" style="height: 80vh;">
-    <div class="column is-8">
-        <h1 class="title primary has-text-centered has-text-white">Welcome to Droppy</h1>
+<script type="text/javascript" src="{{ url_for('static', filename='js/delete-file.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/event-handlers.js') }}"></script>
 
-        <span clas="space"></span>
 
-        <div class="columns is-centered is-variable is-4">
-            <!-- Configure Dropper -->
-            <div class="column is-6">
-                <div class="card equal-height">
-                    <div class="card-content has-text-centered">
-                        <p class="title has-text-white">🛠️ Configure Dropper</p>
-                        <p class="subtitle has-text-grey-light">Customize and generate your dropper</p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="{{ url_for('config') }}" class="card-footer-item is-primary is-fullwidth">Go to Config</a>
-                    </div>
-                </div>
-            </div>
+<div class="container">
+    <h1 class="text-white mb-5">
+        Welcome to Droppy
+    </h1>
 
-            <!-- View Results -->
-            <div class="column is-6">
-                <div class="card equal-height">
-                    <div class="card-content has-text-centered">
-                        <p class="title has-text-white">📜 View Results</p>
-                        <p class="subtitle has-text-grey-light">Download your generated droppers</p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="{{ url_for('result') }}" class="card-footer-item is-primary is-fullwidth">Go to Results</a>
-                    </div>
-                </div>
-            </div>
+    <div class="card bg-dark text-white mb-4">
+        <div class="card-body">
+            <h2 class="h5">
+                <i class="fa-solid fa-wrench me-2"></i> Dropper Configuration
+            </h2>
+            <p class="text-secondary">Configure and customize your dropper modules and settings</p>
+            <a href="/config" class="btn btn-primary btn-block mt-3 fw-bold">
+                <i class="fa-solid fa-arrow-right me-2 text-white"></i> Configure Dropper
+            </a>
         </div>
     </div>
+    {% if files %}
+    <h2 class="h5 text-white mt-5">Recent Activity</h2>
+    <div class="card bg-dark text-white mb-4">
+        <div class="card-body">
+            {% for file in files %}
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong class="text-white">{{ file.name }}</strong>
+                    <br>
+                    <small class="text-secondary">Modified on {{ file.modified_time }}</small>
+                </div>
+                <div>
+                    <!-- Delete button -->
+                    <button class="btn btn-outline-danger me-2" onclick="deleteFile('{{ file.name }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <!-- Download button -->
+                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-primary">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            </div>
+            {% if not loop.last %}
+                <hr class="bg-secondary">
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
-
-<style>
-    .title.primary {
-        margin-bottom: 5rem !important;
-    }
-
-    .columns.is-centered {
-        display: flex;
-        justify-content: center;  /* Horizontally center items in the container */
-        align-items: center;      /* Vertically align if there’s extra space */
-    }
-
-    .columns.is-variable.is-4 {
-        gap: 2rem;                /* Adds spacing between cards */
-    }
-
-    .card {
-        width: 100%;              /* Ensures cards take up full width of their container */
-        max-width: 100%;          /* Prevents cards from being too wide */
-    }
-
-    .equal-height {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .card-content {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;  /* Centers content vertically */
-        align-items: center;      /* Centers content horizontally */
-        flex-grow: 1;
-        padding: 1.5rem;          /* Adds padding inside the card */
-    }
-
-    .card-footer {
-        margin-top: auto;
-        border-top: 0px;
-    }
-
-    .card-footer-item {
-        color: #0db8a0;
-    }
-
-    .card-footer-item:hover {
-        color: #b5b5b5;
-    }
-</style>
+    
 {% endblock %}

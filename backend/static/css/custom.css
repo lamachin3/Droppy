@@ -1,27 +1,182 @@
 /* Dark theme */
+
+/* Full-page layout */
+html, body {
+    height: 100%;
+    background-color: #111827 !important; /* Dark grey background */
+    color: #f5f5f5; /* Light grey text for readability */
+}
+
 body {
-    background-color: #2b2b2b;  /* Dark Grey */
+    background-color: #111827 !important;  /* Dark Grey */
     color: #e0e0e0;  /* Light Grey Text */
 }
 
-/* Navbar Customization */
-.navbar {
-    background-color: #1f1f1f;  /* Even Darker Navbar */
+/* Make the content take full height */
+
+.main-container {
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
 }
 
-.navbar-item {
-    color: #ffffff !important;
+.constainer-75 {
+    width: 75%;
+    margin: 0 auto;
 }
+
+/* Navbar Styling */
+.navbar {
+    background-color: #111827 !important;
+}
+
+.navbar-item, .navbar-brand {
+    color: white !important;
+}
+
+.navbar-item.primary {
+    font-weight: bold;
+}
+
+.navbar-item:hover {
+    background-color: #111827;
+}
+
+/* Box Styling */
+.box {
+    background-color: #1f2937;
+    color: #ffffff;
+}
+
 
 /* Card Styling */
 .card {
-    background-color: #3b3b3b;
-    color: #ffffff;
-    border-radius: 8px;
+    background-color: #1f2937 !important;
+    border-color: rgba(100,100,100,0.8) !important;
+    border-radius: 8px !important;
 }
 
+.card-content {
+    color: #ffffff;
+}
+
+
 /* Button Customization */
-.button.is-primary {
-    background-color: #ff4757; /* Soft Red */
-    border-radius: 8px;
+
+.button.is-transparent {
+    background-color: rgba(13, 184, 160, 0.2);
+    color: #0db8a0;
+    transition: background-color 0.3s ease, border 0.3s ease;
+}
+.button.is-transparent:hover {
+    background-color: rgba(13, 184, 160, 0.4);
+}
+
+/* Hidden Styling */
+.hidden {
+    display: none;
+}
+
+/* Icons Styling */
+
+.fa-solid {
+    color: #0db8a0;
+}
+
+/* Media Styling */
+
+.media {
+    align-items: center;
+}
+
+.media-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Inputs Styling */
+
+.input[type=text] {
+    background-color: rgba(17,24,39,0.8);
+}
+
+.textarea {
+    background-color: rgba(17,24,39,0.8);
+}
+
+select {
+    background-color: rgba(17,24,39,0.8) !important;
+}
+
+/* Nav Tabs Styling */
+
+.nav {
+    background-attachment: fixed;
+    background-color: #1f2937 !important;
+}
+
+.nav-item, nav-link {
+    color: #0db8a0 !important;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: transparent !important; /* Remove white background */
+    border: 2px solid var(--primary) !important; /* Primary color border */
+    color: var(--primary) !important; /* Primary text color */
+}
+
+/* Style for inactive tabs */
+.nav-tabs .nav-link {
+    color: var(--secondary) !important; /* Secondary text color */
+}
+
+/* Hover effect for inactive tabs */
+.nav-tabs .nav-link:hover {
+    color: var(--primary) !important; /* Primary text color on hover */
+}
+
+/* Modal Styling */
+
+.modal-content {
+    color: white; /* White text */
+    border: none; /* Remove default borders */
+}
+
+.modal-header, .modal-footer {
+    border-bottom: 1px solid #374151 !important; /* Darker border to blend with background */
+    border-top: 1px solid #374151 !important; /* Keep a consistent color */
+}
+
+.modal-body {
+    color: white; /* Ensure text inside the body is white */
+}
+
+/* Close button styling */
+.btn-close {
+    filter: invert(1); /* Inverts the default black color to white */
+    opacity: 1; /* Ensure visibility */
+}
+
+.btn-close:hover {
+    filter: invert(1) brightness(80%);
+}
+
+.title.primary {
+    margin-bottom: 5rem !important;
+}
+
+.columns.is-centered {
+    display: flex;
+    justify-content: center;  /* Horizontally center items in the container */
+    align-items: center;      /* Vertically align if there’s extra space */
+}
+
+.columns.is-variable.is-4 {
+    gap: 2rem;                /* Adds spacing between cards */
+}
+
+.equal-height {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }

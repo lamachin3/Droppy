@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "anti_analysis.h": "c",
+        "common.h": "c",
+        "stdio.h": "c",
+        "bcrypt.h": "c",
+        "encryption.h": "c",
+        "obfuscation.h": "c",
+        "syscalls.h": "c"
+    }
+}

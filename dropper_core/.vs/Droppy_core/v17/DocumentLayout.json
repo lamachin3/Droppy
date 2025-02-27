@@ -1,0 +1,70 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{CBC296CD-A736-4111-9E26-59F17D373D85}|Droppy_core.vcxproj|C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\dropper.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{CBC296CD-A736-4111-9E26-59F17D373D85}|Droppy_core.vcxproj|solutionrelative:dropper.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CBC296CD-A736-4111-9E26-59F17D373D85}|Droppy_core.vcxproj|C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\modules\\injection\\injection.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{CBC296CD-A736-4111-9E26-59F17D373D85}|Droppy_core.vcxproj|solutionrelative:modules\\injection\\injection.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CBC296CD-A736-4111-9E26-59F17D373D85}|Droppy_core.vcxproj|C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\modules\\injection\\apc_injection.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{CBC296CD-A736-4111-9E26-59F17D373D85}|Droppy_core.vcxproj|solutionrelative:modules\\injection\\apc_injection.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "dropper.c",
+              "DocumentMoniker": "C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\dropper.c",
+              "RelativeDocumentMoniker": "dropper.c",
+              "ToolTip": "C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\dropper.c",
+              "RelativeToolTip": "dropper.c",
+              "ViewState": "AQIAABUAAAAAAAAAAAAAAC8AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-02-19T21:47:26.72Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "injection.c",
+              "DocumentMoniker": "C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\modules\\injection\\injection.c",
+              "RelativeDocumentMoniker": "modules\\injection\\injection.c",
+              "ToolTip": "C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\modules\\injection\\injection.c",
+              "RelativeToolTip": "modules\\injection\\injection.c",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA4AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-02-26T20:29:30.965Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "apc_injection.c",
+              "DocumentMoniker": "C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\modules\\injection\\apc_injection.c",
+              "RelativeDocumentMoniker": "modules\\injection\\apc_injection.c",
+              "ToolTip": "C:\\Users\\lamachin3\\Projets\\Droppy\\dropper_core\\modules\\injection\\apc_injection.c",
+              "RelativeToolTip": "modules\\injection\\apc_injection.c",
+              "ViewState": "AQIAADAAAAAAAAAAAADwv0YAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-02-26T19:01:35.532Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,50 +1,103 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="columns is-centered">
-    <div class="column is-half">
-        <div class="box">
-            <h1 class="title has-text-centered">Configure Your Dropper</h1>
+<script type="text/javascript" src="{{ url_for('static', filename='js/file-upload.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/event-handlers.js') }}"></script>
 
-            <form action="{{ url_for('build_dropper') }}" method="POST">
-                <!-- Module Selection -->
-                <div class="field">
-                    <label class="label">Select Modules to Enable:</label>
-                    <div class="control">
+
+<form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-6">
+            <h4 class="text-white fw-bold">Module Selection</h4>
+            {% for section, modules in modules.items() %}
+                <div class="card text-white mb-4">
+                    <div class="card-body">
+                        <p class="text-primary h5 fw-semibold">{{ section.replace('_', ' ').title() }}</p>
                         {% for module in modules %}
-                            <label class="checkbox">
-                                <input type="checkbox" name="modules" value="{{ module }}"> {{ module.replace('_', ' ').title() }}
-                            </label>
-                            <br>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="{{ section }}" id="{{ module.name.replace(' ', '_') }}" value="{{ module.name }}">
+                                <label class="form-check-label" for="{{ module.name.replace(' ', '_') }}">
+                                    {{ module.name }}
+                                    <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ module.brief }}"></i>
+                                </label>
+                            </div>
                         {% endfor %}
                     </div>
                 </div>
-
-                <!-- Output Filename -->
-                <div class="field">
-                    <label class="label">Output Filename:</label>
-                    <div class="control columns">
-                        <div class="column is-8">
-                        <input class="input" type="text" name="output_filename" placeholder="dropper" required>
-                        </div>
-                        <div class="column is-4">
-                            <div class="select">
-                                <select>
-                                <option>.exe</option>
-                                <option>.dll</option>
-                                <option>.msi</option>
-                                </select>
+            {% endfor %}
+        </div>
+        <div class="col-md-6">
+            <h4 class="text-white fw-bold">Shellcode Configuration</h4>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="file-tab" data-bs-toggle="tab" href="#file-shellcode">
+                                <i class="fas fa-upload me-2"></i> File Upload
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="text-tab" data-bs-toggle="tab" href="#text-shellcode">
+                                <i class="fas fa-code me-2"></i> Manual Input
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="file-shellcode">
+                            <div class="input-group mt-3 mb-3">
+                                <input type="file" class="form-control" accept=".bin,.exe,.raw" name="shellcode">
+                                <label class="input-group-text">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    Choose a file...
+                                </label>
                             </div>
+                        </div>
+                        <div class="tab-pane fade" id="text-shellcode">
+                            <textarea class="form-control" name="shellcode_text" placeholder="Enter shellcode..." rows="10"></textarea>
                         </div>
                     </div>
                 </div>
-
-                <!-- Submit Button -->
-                <div class="has-text-centered">
-                    <button class="button is-primary is-medium">Generate Dropper</button>
+            </div>
+            <div class="card text-white mb-4">
+                <div class="card-body">
+                    <p class="text-primary h5 fw-semibold">Options</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="debug" id="debug" value="debug">
+                        <label class="form-check-label" for="debug">
+                            Enable Debug mode
+                            <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Enable debug mode to see more information about the dropper execution."></i>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="hide_console" id="hide_console" value="hide_console">
+                        <label class="form-check-label" for="hide_console">
+                            Hide Console
+                            <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Hide the console window when the dropper is executed."></i>
+                        </label>
+                    </div>
                 </div>
-            </form>
+            </div>
+            <div class="card text-white mb-4">
+                <div class="card-body">
+                    <p class="text-primary h5 fw-semibold mb-4">Output Settings</p>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="filename" placeholder="Filename...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select text-primary" name="file_extension">
+                                <option>.exe</option>
+                                <option disabled>.dll</option>
+                                <option disabled>.msi</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block mt-3">
+                        <i class="fas fa-cogs me-2"></i> Build Dropper
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</form>
 {% endblock %}
