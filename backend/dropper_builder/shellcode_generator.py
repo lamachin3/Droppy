@@ -39,6 +39,8 @@ def generate_shellcode(shellcode, algorithm='xor'):
             enc_key = None
     
     # Convert key to hex string for C code
-    key_hex_string = ', '.join(f'0x{byte:02X}' for byte in enc_key)
+    key_hex_string = "0x00"
+    if enc_key:
+        key_hex_string = ', '.join(f'0x{byte:02X}' for byte in enc_key)
        
     return shellcode_string, key_hex_string

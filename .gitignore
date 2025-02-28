@@ -1,0 +1,31 @@
+# PyCharm IDE
+.idea/
+*.iml
+
+# Visual Studio Code IDE
+.vscode/
+
+# Visual Studio IDE
+.vs/
+.vs2019/
+.vs2017/
+
+# Python project files
+*.pyc
+*.pyo
+__pycache__/
+*.pyd
+env/
+venv/
+*.env
+*.virtualenv
+*.ipynb_checkpoints
+
+# C compilation files
+*.o
+*.out
+*.exe
+*.a
+*.so
+*.dll
+*.dSYM/

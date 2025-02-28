@@ -16,5 +16,5 @@ BOOL decrypt(IN PBYTE pShellcode, IN SIZE_T sShellcodeSize, IN PBYTE bKey, IN SI
     return XorDecrypt(pShellcode, sShellcodeSize, bKey, sKeySize);
 #endif
 
-    return FALSE;
+    return TRUE;
 }

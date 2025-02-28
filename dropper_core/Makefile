@@ -17,6 +17,7 @@ OUT_FILENAME ?= dropper.exe
 DEBUG_ENABLED ?= NULL
 ENCRYPTION_OR_OBFUSCATION ?= ""
 INJECTION_METHOD ?= ""
+PROCESS_NAME ?= ""
 ANTI_ANALYSIS ?= ""
 HIDE_CONSOLE ?= ""
 
@@ -49,6 +50,10 @@ endif
 
 ifneq ($(INJECTION_METHOD), "")
     CFLAGS += /D $(INJECTION_METHOD)
+endif
+
+ifneq ($(PROCESS_NAME), "")
+    CFLAGS += /D PROCESS_NAME_ENABLED
 endif
 
 ifneq ($(ANTI_ANALYSIS), "")

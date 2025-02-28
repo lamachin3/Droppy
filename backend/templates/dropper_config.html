@@ -3,6 +3,7 @@
 {% block content %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/file-upload.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/event-handlers.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/form-utils.js') }}"></script>
 
 
 <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
@@ -15,12 +16,21 @@
                         <p class="text-primary h5 fw-semibold">{{ section.replace('_', ' ').title() }}</p>
                         {% for module in modules %}
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="{{ section }}" id="{{ module.name.replace(' ', '_') }}" value="{{ module.name }}">
+                                <input 
+                                    class="form-check-input" type="checkbox" name="{{ section }}" id="{{ module.name.replace(' ', '_') }}" 
+                                    value="{{ module.name }}" onchange="toggleTextBox('{{ module.name.replace(' ', '_') }}')"
+                                >
                                 <label class="form-check-label" for="{{ module.name.replace(' ', '_') }}">
                                     {{ module.name }}
-                                    <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ module.brief }}"></i>
+                                    <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ module.brief }}"></i>
                                 </label>
                             </div>
+                            {% if "remote process" in module.name.lower() %}
+                                <div id="textbox_{{ module.name.replace(' ', '_') }}" class="input-group mb-3" style="display: none;">
+                                    <input type="text" class="form-control" name="process_name" placeholder="Process Name" aria-label="Process Name" aria-describedby="basic-addon2">
+                                    <span class="input-group-text" id="basic-addon2">.exe</span>
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>

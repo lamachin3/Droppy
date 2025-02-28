@@ -22,8 +22,3 @@ function confirmDelete() {
         })
         .catch(error => showToast('Error deleting file'));
 }
-
-// Attach event listener to confirm button
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("deleteModal").addEventListener("click", confirmDelete);
-});
