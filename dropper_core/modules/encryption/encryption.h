@@ -12,6 +12,7 @@
  * @param pIv Pointer to the initialization vector.
  * @param pPlainTextData Pointer to the decrypted plaintext data.
  * @param sPlainTextSize Pointer to the size of the decrypted plaintext data.
+ * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name AES Encryption
@@ -27,6 +28,7 @@ BOOL SimpleAesDecryption(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN 
  * @param pNonce Pointer to the nonce.
  * @param pPlainTextData Pointer to the decrypted plaintext data.
  * @param sPlainTextSize Pointer to the size of the decrypted plaintext data.
+ * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name ChaCha20 Encryption
@@ -42,6 +44,7 @@ BOOL ChaCha20Decrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYT
  * @param pIv Pointer to the initialization vector.
  * @param pPlainTextData Pointer to the decrypted plaintext data.
  * @param sPlainTextSize Pointer to the size of the decrypted plaintext data.
+ * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name DES Encryption
@@ -51,15 +54,16 @@ BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKe
 /**
  * @brief Decrypts the given payload using RC4 decryption.
  *
- * @param pRc4Key Pointer to the RC4 decryption key.
  * @param pPayloadData Pointer to the payload data.
- * @param dwRc4KeySize Size of the RC4 decryption key.
  * @param sPayloadSize Size of the payload data.
+ * @param pRc4Key Pointer to the RC4 decryption key.
+ * @param dwRc4KeySize Size of the RC4 decryption key.
+ * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name RC4 Encryption
  */
-BOOL Rc4Decrypt(IN PBYTE pRc4Key, IN PBYTE pPayloadData, IN DWORD dwRc4KeySize, IN DWORD sPayloadSize);
+BOOL Rc4Decrypt(IN PBYTE pPayloadData, IN SIZE_T sPayloadSize, IN PBYTE pRc4Key, IN SIZE_T dwRc4KeySize);
 
 /**
  * @brief Decrypts the given ciphertext using RSA decryption.
@@ -70,6 +74,7 @@ BOOL Rc4Decrypt(IN PBYTE pRc4Key, IN PBYTE pPayloadData, IN DWORD dwRc4KeySize, 
  * @param sPrivateKeySize Size of the RSA private key.
  * @param pPlainTextData Pointer to the decrypted plaintext data.
  * @param sPlainTextSize Pointer to the size of the decrypted plaintext data.
+ * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name RSA Encryption
@@ -83,6 +88,7 @@ BOOL RsaDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pPr
  * @param sShellcodeSize Size of the shellcode.
  * @param bKey Pointer to the XOR decryption key.
  * @param sKeySize Size of the XOR decryption key.
+ * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name XOR Encryption

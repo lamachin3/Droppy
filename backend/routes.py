@@ -59,6 +59,7 @@ def init_routes(app):
         form_data['anti_analysis'] = form_data.get('anti_analysis') is not None
         form_data['debug_enabled'] = form_data.get('debug') is not None
         form_data['hide_console'] = form_data.get('hide_console') is not None
+        form_data['process_name'] = [f"{p_name}.exe" for p_name in request.form.getlist('process_name') if p_name.strip()][0]
 
         # Handle file upload
         if 'shellcode' in request.files:
@@ -79,7 +80,7 @@ def init_routes(app):
         print(f"Encryption/Obfuscation: {form_data['encryption_or_obfuscation']}")
         print(f"Anti Analysis: {form_data['anti_analysis']}")
         print(f"Injection Method: {form_data.get('injection')}")
-        print(f"Target Remote Process: {form_data.get('process_name', "None")}.exe")
+        print(f"Target Remote Process: {form_data.get('process_name', "None")}")
         if form_data.get('shellcode_path'):
             print(f"Shellcode Path: {form_data['shellcode_path']}")
         else:
@@ -96,7 +97,7 @@ def init_routes(app):
             encryption_or_obfuscation=form_data['encryption_or_obfuscation'],
             anti_analysis=form_data['anti_analysis'],
             injection_method=form_data.get('injection'),
-            process_name=f"{form_data.get("process_name", "")}.exe" if form_data.get("process_name") else None,
+            process_name=form_data.get('process_name'),
             hide_console=form_data['hide_console'],
         )
 

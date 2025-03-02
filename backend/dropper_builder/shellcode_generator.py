@@ -32,12 +32,25 @@ def aes_encrypt(data):
     # Return the encrypted data, the key and the initialization vector used
     return ciphertext, key, iv
 
-def rc4_encrypt(data):
-    """Encrypt data using RC4 with a randomly generated key."""
-    key = os.urandom(16)  # Generate a random 16-byte key for RC4
-    cipher = ARC4.new(key)
-    encrypted = cipher.encrypt(data)
-    return encrypted, key  # Return encrypted data and key
+def rc4_encrypt(payload_data: bytes) -> tuple[bytes, bytes]:
+    """
+    Encrypts data using RC4 (equivalent to SystemFunction032 in Windows).
+    
+    :param payload_data: The payload to be encrypted
+    :param key_size: The size of the RC4 key in bytes (default: 16)
+    :return: Tuple containing (encrypted_data, rc4_key)
+    """
+    # Generate a random RC4 key
+    rc4_key = os.urandom(16)
+    
+    # Create an RC4 cipher object with the generated key
+    cipher = ARC4.new(rc4_key)
+    
+    # Encrypt the payload
+    encrypted_data = cipher.encrypt(payload_data)
+    
+    return encrypted_data, rc4_key
+
 
 def generate_shellcode(shellcode, algorithm='xor'):
     shellcode_string = shellcode
