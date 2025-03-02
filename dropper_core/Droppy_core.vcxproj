@@ -134,6 +134,7 @@
     <ClCompile Include="modules\entropy\custom_win_api.c" />
     <ClCompile Include="modules\entropy\entropy.c" />
     <ClCompile Include="modules\injection\apc_injection.c" />
+    <ClCompile Include="modules\injection\early_bird_apc_injection.c" />
     <ClCompile Include="modules\injection\function_stomping_injection.c" />
     <ClCompile Include="modules\injection\injection.c" />
     <ClCompile Include="modules\injection\remote_process_injection.c" />

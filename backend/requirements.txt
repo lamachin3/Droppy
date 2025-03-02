@@ -2,4 +2,5 @@ flask
 flask-cors
 flask-restful
 requests
+pycryptodome
 gunicorn  # For production deployment

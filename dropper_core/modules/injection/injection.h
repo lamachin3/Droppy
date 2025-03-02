@@ -43,4 +43,26 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
  */
 BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPayloadSize);
 
+
+/**
+ * @brief Injects a payload into a specified process using the Early Bird technique.
+ * 
+ * This function injects a specified payload into a target process using the Early Bird technique.
+ * The Early Bird technique involves injecting the payload into a suspended process before it starts executing.
+ * This ensures that the payload is executed as soon as the process starts.
+ * 
+ * @param hProcess Handle to the target process.
+ * @param hThread Handle to the target thread.
+ * @param szProcessName Name of the target process.
+ * @param pPayload Pointer to the payload to be injected.
+ * @param sPayloadSize Size of the payload in bytes.
+ * 
+ * @return TRUE if the payload was successfully injected, FALSE otherwise.
+ * 
+ * @name Early Bird Injection (Remote Process)
+ * @section injection_technique
+*/
+BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName, PBYTE pPayload, SIZE_T sPayloadSize);
+
+
 #endif

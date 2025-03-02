@@ -76,3 +76,5 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
 
     return TRUE;
 }
+
+//TODO: early bird injection

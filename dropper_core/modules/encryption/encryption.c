@@ -1,19 +1,19 @@
 #include "encryption.h"
 
 
-BOOL decrypt(IN PBYTE pShellcode, IN SIZE_T sShellcodeSize, IN PBYTE bKey, IN SIZE_T sKeySize) {
+BOOL decrypt(IN PBYTE pShellcode, IN SIZE_T sShellcodeSize, IN PBYTE pKey, IN SIZE_T sKeySize, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize) {
 #if defined(AES_ENCRYPTION)
-    return SimpleAesDecryption(pCipherTextData, sCipherTextSize, pKey, pIv, &pPlainTextData, &sPlainTextSize);
+    return SimpleAesDecryption(pShellcode, sShellcodeSize, pKey, pIv, pPlainTextData, sPlainTextSize);
 #elif defined(CHACHA20_ENCRYPTION)
-    return ChaCha20Decrypt(pCipherTextData, sCipherTextSize, pKey, pNonce, &pPlainTextData, &sPlainTextSize);
+    return ChaCha20Decrypt(pShellcode, sShellcodeSize, pKey, pNonce, pPlainTextData, sPlainTextSize);
 #elif defined(DES_ENCRYPTION)
-    return DesDecrypt(pCipherTextData, sCipherTextSize, pKey, pIv, &pPlainTextData, &sPlainTextSize);
+    return DesDecrypt(pShellcode, sShellcodeSize, pKey, pIv, pPlainTextData, sPlainTextSize);
 #elif defined(RC4_ENCRYPTION)
     return Rc4Decrypt(pRc4Key, pPayloadData, dwRc4KeySize, sPayloadSize);
 #elif defined(RSA_ENCRYPTION)
-    return RsaDecrypt(pCipherTextData, sCipherTextSize, pPrivateKey, sPrivateKeySize, &pPlainTextData, &sPlainTextSize);
+    return RsaDecrypt(pShellcode, sShellcodeSize, pPrivateKey, sPrivateKeySize, pPlainTextData, sPlainTextSize);
 #elif defined(XOR_ENCRYPTION)
-    return XorDecrypt(pShellcode, sShellcodeSize, bKey, sKeySize);
+    return XorDecrypt(pShellcode, sShellcodeSize, pKey, sKeySize);
 #endif
 
     return TRUE;
