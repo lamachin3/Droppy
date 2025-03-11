@@ -9,6 +9,7 @@
 .vs/
 .vs2019/
 .vs2017/
+dropper_core/.vs/
 
 # Python project files
 *.pyc
@@ -29,3 +30,4 @@ venv/
 *.so
 *.dll
 *.dSYM/
+*.obj

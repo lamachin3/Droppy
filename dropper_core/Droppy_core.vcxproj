@@ -86,7 +86,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG;APC_INJECTION;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG;APC_INJECTION;REMOTE_FUNCTION_STOMPING;</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
@@ -135,7 +135,6 @@
     <ClCompile Include="modules\entropy\entropy.c" />
     <ClCompile Include="modules\injection\apc_injection.c" />
     <ClCompile Include="modules\injection\early_bird_apc_injection.c" />
-    <ClCompile Include="modules\injection\function_stomping_injection.c" />
     <ClCompile Include="modules\injection\injection.c" />
     <ClCompile Include="modules\injection\remote_process_injection.c" />
     <ClCompile Include="modules\injection\thread_hijacking.c" />
@@ -145,15 +144,17 @@
     <ClCompile Include="modules\obfuscation\mac_obfuscation.c" />
     <ClCompile Include="modules\obfuscation\obfuscation.c" />
     <ClCompile Include="modules\obfuscation\uuid_obfuscation.c" />
-    <ClCompile Include="modules\shellcode_loading\file_mapping.c" />
-    <ClCompile Include="modules\shellcode_loading\in_memory.c" />
-    <ClCompile Include="modules\shellcode_loading\shellcode_loading.c" />
+    <ClCompile Include="modules\payload_loading\file_mapping.c" />
+    <ClCompile Include="modules\payload_loading\function_stomping.c" />
+    <ClCompile Include="modules\payload_loading\in_memory.c" />
+    <ClCompile Include="modules\payload_loading\payload_loading.c" />
     <ClCompile Include="modules\stealth_techniques\direct_syscalls.c" />
     <ClCompile Include="modules\stealth_techniques\iat_obfuscation.c" />
     <ClCompile Include="modules\stealth_techniques\process_argument_spoofing.c" />
     <ClCompile Include="syscalls\api_hashing.c" />
     <ClCompile Include="syscalls\syscalls.c" />
     <ClCompile Include="utils\debug.c" />
+    <ClCompile Include="utils\utils.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
@@ -163,11 +164,12 @@
     <ClInclude Include="modules\entropy\entropy.h" />
     <ClInclude Include="modules\injection\injection.h" />
     <ClInclude Include="modules\obfuscation\obfuscation.h" />
-    <ClInclude Include="modules\shellcode_loading\shellcode_loading.h" />
+    <ClInclude Include="modules\payload_loading\payload_loading.h" />
     <ClInclude Include="structs.h" />
     <ClInclude Include="syscalls\syscalls.h" />
     <ClInclude Include="typedef.h" />
     <ClInclude Include="utils\debug.h" />
+    <ClInclude Include="utils\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
