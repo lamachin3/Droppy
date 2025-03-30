@@ -1,17 +1,17 @@
 import os
-import tempfile
+import re
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
-
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, flash
+from urllib.parse import urlencode
+from utils import *
 from dropper_builder import fetch_available_modules, build_dropper
 
 
 def init_routes(app):
     @app.route("/")
-    def index():
-        # Get the list of files in the upload folder
+    def index(messages={}):
         files = os.listdir(app.config['OUTPUT_FOLDER'])
-        # Get file details
+
         file_details = []
         for file in files:
             file_path = os.path.join(app.config['OUTPUT_FOLDER'], file)
@@ -21,12 +21,27 @@ def init_routes(app):
             file_details.append({
                 'name': file,
                 'size': file_size,
-                'modified_time': file_modified_time_str
+                'modified_time': file_modified_time_str,
+                'modified_timestamp': file_modified_time,
+                'entropy': compute_pe_file_entropy(os.path.join(app.config['OUTPUT_FOLDER'], file))
             })
-        return render_template('index.html', files=file_details)
+        
+        file_details.sort(key=lambda x: x['modified_timestamp'], reverse=True)
+        return render_template('index.html', files=file_details, messages=messages)
 
     @app.route("/config", methods=["GET"])
-    def config():
+    def config(messages={}):
+        messages_param = request.args.get("messages")
+    
+        if messages_param:
+            try:
+                # Convert string back to a dictionary
+                messages_dict = eval(messages_param)
+                for category, msg in messages_dict.items():
+                    flash(msg, category)
+            except Exception as e:
+                flash("Invalid message format", "error")
+        
         modules = fetch_available_modules()
         return render_template("dropper_config.html", modules=modules)
 
@@ -48,57 +63,69 @@ def init_routes(app):
     @app.route('/upload', methods=['POST'])
     def upload_file():
         # Initialize a dictionary to store form data
+        encryption_method = ""
         form_data = {}
+        placeholder_options = {}
+        preprocessing_macros = []
 
         # Add all form inputs to form_data
         for key, value in request.form.items():
             form_data[key] = value
-
-        # Handle checkbox inputs
-        form_data['encryption_or_obfuscation'] = (form_data.get('encryption') or form_data.get('obfuscation') or "").lower()
-        form_data['anti_analysis'] = form_data.get('anti_analysis') is not None
-        form_data['debug_enabled'] = form_data.get('debug') is not None
-        form_data['hide_console'] = form_data.get('hide_console') is not None
-        form_data['process_name'] = [f"{p_name}.exe" for p_name in request.form.getlist('process_name') if p_name.strip()][0]
+        
+        # Handle preprocessing inputs
+        if form_data.get('encryption & obfuscation', None):
+            encryption_method = (form_data.get('encryption & obfuscation') or "").replace(' ', '_').upper()
+            preprocessing_macros.append(encryption_method)
+            preprocessing_macros.append("ENCRYPTED_PAYLOAD")
+        if form_data.get('injection', None):
+            preprocessing_macros.append(form_data.get('injection', '').replace(' ', '_').upper())
+        if 'anti_analysis' in form_data:
+            preprocessing_macros.append("ANTI_ANALYSIS_ENABLED")
+        if form_data.get('debug', None):
+            preprocessing_macros.append("DEBUG")
+        if len(request.form.getlist('process_name')) > 0:
+            preprocessing_macros.append("PROCESS_NAME_ENABLED")
+        if form_data.get('syscalls', None):
+            preprocessing_macros.append(form_data.get('syscalls', '').replace(' ', '_').upper())
+            preprocessing_macros.append("SYSCALL_ENABLED")
+        print(f">>> preprocessing_macros:\n{preprocessing_macros}\n>>>\n")
+        
+        # Handle placeholder inputs
+        placeholder_options['hide_console'] = form_data.get('hide_console')
+                
+        process_names =  [f"{p_name}" for p_name in request.form.getlist('process_name') if p_name.strip()]
+        if process_names:
+            placeholder_options['process_name'] = process_names[0]
+        if placeholder_options.get('process_name', None) and not placeholder_options.get('process_name').endswith(".exe"):
+            placeholder_options['process_name'] = f"{placeholder_options['process_name']}.exe"
 
         # Handle file upload
         if 'shellcode' in request.files:
             file = request.files['shellcode']
             if file.filename != '':
-                with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                    temp_file.write(file.read())  # Write file content to temp file
-                    form_data['shellcode_path'] = temp_file.name
+                placeholder_options['shellcode'] = extract_shellcode(file.read(), file.filename.split(".")[-1])
             else:
-                form_data['shellcode_path'] = None
-        else:
-            form_data['shellcode_text'] = form_data.get('shellcode_text')
+                placeholder_options['shellcode'] = None
+
+        if not placeholder_options['shellcode'] and form_data.get('shellcode_text'):
+            cleaned = re.findall(r'0x[0-9A-Fa-f]{2}', form_data.get('shellcode_text'))
+            placeholder_options['shellcode'] = ', '.join(cleaned)
 
         # Handle filename and file extension
-        form_data['out_filename'] = f"{form_data.get('filename')}{form_data.get('file_extension')}"
+        placeholder_options['out_filename'] = f"{form_data.get('filename')}{form_data.get('file_extension')}"
+        print(f">>> placeholder_options:\n{placeholder_options}\n>>>\n")        
 
-        # Process the inputs as needed
-        print(f"Encryption/Obfuscation: {form_data['encryption_or_obfuscation']}")
-        print(f"Anti Analysis: {form_data['anti_analysis']}")
-        print(f"Injection Method: {form_data.get('injection')}")
-        print(f"Target Remote Process: {form_data.get('process_name', "None")}")
-        if form_data.get('shellcode_path'):
-            print(f"Shellcode Path: {form_data['shellcode_path']}")
-        else:
-            print(f"Shellcode Text: {form_data.get('shellcode_text')}")
-        print(f"Output Filename: {form_data['out_filename']}")
-        print(f"Debug Enabled: {form_data['debug_enabled']}")
-
+        if not placeholder_options.get("shellcode"):
+            messages = {"error": "Empty shellcode"}
+            query_string = urlencode({"messages": str(messages)})
+            redirect_url = f"/config?{query_string}"
+            return redirect(redirect_url)
+        
         # Call build_dropper with the form data
         build_dropper(
-            debug_enabled=form_data['debug_enabled'],
-            out_filename=form_data['out_filename'],
-            shellcode_path=form_data.get('shellcode_path'),
-            out_file_extension=form_data['file_extension'],
-            encryption_or_obfuscation=form_data['encryption_or_obfuscation'],
-            anti_analysis=form_data['anti_analysis'],
-            injection_method=form_data.get('injection'),
-            process_name=form_data.get('process_name'),
-            hide_console=form_data['hide_console'],
+            encryption_method=encryption_method,
+            preprocessing_macros=preprocessing_macros,
+            placeholder_options=placeholder_options,
         )
 
         return redirect(url_for('index'))

@@ -44,6 +44,19 @@ def extract_doxygen_info(file_path):
         results.append({'brief': brief, 'name': name, 'section': section})
     return results
 
+def organize_dictionnary(modules_dict):   
+    keys_to_remove = [module for module in modules_dict if len(modules_dict[module]) == 0]
+    
+    for module in keys_to_remove:
+        modules_dict.pop(module, None)
+    
+    if "encryption" in modules_dict or "obfuscation" in modules_dict:
+        modules_dict["encryption & obfuscation"] = modules_dict.get("encryption", []) + modules_dict.get("obfuscation", [])
+        modules_dict.pop("encryption", None)
+        modules_dict.pop("obfuscation", None)
+    
+    return dict(sorted(modules_dict.items()))
+
 def build_module_dictionary(modules_path):
     """
     Builds a dictionary with module names and their corresponding Doxygen information.
@@ -67,11 +80,22 @@ def build_module_dictionary(modules_path):
                 else:
                     module_dict[module_name] = doxygen_info
 
-    return module_dict
+    return organize_dictionnary(module_dict)
 
 def fetch_available_modules():
     # Path to the modules folder
     modules_path = os.path.join('..\\dropper_core', 'modules')
+    modules_dict = build_module_dictionary(modules_path)
+    print("### MODULES_DICT ###")
+    print(modules_dict)
+    
+    syscalls_paths = os.path.join('..\\dropper_core', 'syscalls')
+    syscalls_dict = build_module_dictionary(syscalls_paths)
+    print("### SYSCALLS_DICT ###")
+    print(syscalls_dict)
+    
+    print("### MODULES_DICT + SYSCALLS_DICT ###")
+    print({**modules_dict, **syscalls_dict})
 
     # Build the module dictionary
-    return build_module_dictionary(modules_path)
+    return {**modules_dict, **syscalls_dict}

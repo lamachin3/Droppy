@@ -80,6 +80,9 @@ BOOL Rc4Decrypt(IN PBYTE pPayloadData, IN SIZE_T sPayloadSize, IN PBYTE pRc4Key,
  * @name RSA Encryption
  */
 BOOL RsaDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pPrivateKey, IN DWORD sPrivateKeySize, OUT PVOID *pPlainTextData, OUT DWORD *sPlainTextSize);
+void MultiplyMod(BYTE* result, BYTE* a, BYTE* b, BYTE* mod, size_t modSize);
+void AddMod(BYTE* result, BYTE* a, BYTE* b, BYTE* mod, size_t modSize);
+void ModExp(BYTE* result, BYTE* base, BYTE* exp, BYTE* mod, size_t modSize);
 
 /**
  * @brief Decrypts the given shellcode using XOR decryption.

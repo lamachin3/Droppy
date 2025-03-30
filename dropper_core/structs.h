@@ -12,6 +12,9 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#define ProcessBasicInformation 0
+#define RTL_USER_PROC_PARAMS_NORMALIZED   0x00000001
 
 // this is what SystemFunction032 function take as a parameter
 typedef struct
@@ -266,13 +269,127 @@ typedef struct _PEB
     ULONGLONG ExtendedFeatureDisableMask; // since WIN11
 } PEB, * PPEB;
 
+typedef enum _PS_CREATE_STATE
+{
+    PsCreateInitialState,
+    PsCreateFailOnFileOpen,
+    PsCreateFailOnSectionCreate,
+    PsCreateFailExeFormat,
+    PsCreateFailMachineMismatch,
+    PsCreateFailExeName, // Debugger specified
+    PsCreateSuccess,
+    PsCreateMaximumStates
+} PS_CREATE_STATE;
+
+typedef struct _PS_CREATE_INFO
+{
+    SIZE_T Size;
+    PS_CREATE_STATE State;
+    union
+    {
+        // PsCreateInitialState
+        struct
+        {
+            union
+            {
+                ULONG InitFlags;
+                struct
+                {
+                    UCHAR WriteOutputOnExit : 1;
+                    UCHAR DetectManifest : 1;
+                    UCHAR IFEOSkipDebugger : 1;
+                    UCHAR IFEODoNotPropagateKeyState : 1;
+                    UCHAR SpareBits1 : 4;
+                    UCHAR SpareBits2 : 8;
+                    USHORT ProhibitedImageCharacteristics : 16;
+                } s1;
+            } u1;
+            ACCESS_MASK AdditionalFileAccess;
+        } InitState;
+
+        // PsCreateFailOnSectionCreate
+        struct
+        {
+            HANDLE FileHandle;
+        } FailSection;
+
+        // PsCreateFailExeFormat
+        struct
+        {
+            USHORT DllCharacteristics;
+        } ExeFormat;
+
+        // PsCreateFailExeName
+        struct
+        {
+            HANDLE IFEOKey;
+        } ExeName;
+
+        // PsCreateSuccess
+        struct
+        {
+            union
+            {
+                ULONG OutputFlags;
+                struct
+                {
+                    UCHAR ProtectedProcess : 1;
+                    UCHAR AddressSpaceOverride : 1;
+                    UCHAR DevOverrideEnabled : 1; // From Image File Execution Options
+                    UCHAR ManifestDetected : 1;
+                    UCHAR ProtectedProcessLight : 1;
+                    UCHAR SpareBits1 : 3;
+                    UCHAR SpareBits2 : 8;
+                    USHORT SpareBits3 : 16;
+                } s2;
+            } u2;
+            HANDLE FileHandle;
+            HANDLE SectionHandle;
+            ULONGLONG UserProcessParametersNative;
+            ULONG UserProcessParametersWow64;
+            ULONG CurrentParameterFlags;
+            ULONGLONG PebAddressNative;
+            ULONG PebAddressWow64;
+            ULONGLONG ManifestAddress;
+            ULONG ManifestSize;
+        } SuccessState;
+    };
+} PS_CREATE_INFO, * PPS_CREATE_INFO;
+
+typedef struct _PS_ATTRIBUTE
+{
+    ULONG_PTR Attribute;                // PROC_THREAD_ATTRIBUTE_XXX | PROC_THREAD_ATTRIBUTE_XXX modifiers, see ProcThreadAttributeValue macro and Windows Internals 6 (372)
+    SIZE_T Size;                        // Size of Value or *ValuePtr
+    union
+    {
+        ULONG_PTR Value;                // Reserve 8 bytes for data (such as a Handle or a data pointer)
+        PVOID ValuePtr;                 // data pointer
+    };
+    PSIZE_T ReturnLength;               // Either 0 or specifies size of data returned to caller via "ValuePtr"
+} PS_ATTRIBUTE, * PPS_ATTRIBUTE;
+
+typedef struct _PS_ATTRIBUTE_LIST
+{
+    SIZE_T TotalLength;                 // sizeof(PS_ATTRIBUTE_LIST)
+    PS_ATTRIBUTE Attributes[2];         // Depends on how many attribute entries should be supplied to NtCreateUserProcess
+} PS_ATTRIBUTE_LIST, * PPS_ATTRIBUTE_LIST;
 
 // the following is from structs.h in the hellsgate repo
 // https://github.com/am0nsec/HellsGate/blob/master/HellsGate/structs.h#L95
 
+typedef struct _OBJECT_ATTRIBUTES
+{
+	ULONG           Length;
+	HANDLE          RootDirectory;
+	PUNICODE_STRING ObjectName;
+	ULONG           Attributes;
+	PVOID           SecurityDescriptor;
+	PVOID           SecurityQualityOfService;
+} OBJECT_ATTRIBUTES, * POBJECT_ATTRIBUTES;
+
 typedef struct __CLIENT_ID {
-    HANDLE UniqueProcess;
-    HANDLE UniqueThread;
+    HANDLE UniqueProcessId;
+    HANDLE UniqueThreadId;
 } CLIENT_ID, * PCLIENT_ID;
 
 typedef struct _TEB_ACTIVE_FRAME_CONTEXT {
@@ -786,5 +903,181 @@ typedef struct _API_HASHING {
 
 }API_HASHING, * PAPI_HASHING;
 
+
+// Syscall structures
+
+typedef NTSTATUS(WINAPI* NtOpenProcess_t)(
+	OUT          PHANDLE            ProcessHandle,
+	IN           ACCESS_MASK        DesiredAccess,
+	IN           POBJECT_ATTRIBUTES ObjectAttributes,
+	IN OPTIONAL  PCLIENT_ID         ClientId);
+
+typedef NTSTATUS(NTAPI* NtCreateSection_t)(
+	OUT PHANDLE SectionHandle,
+	IN ACCESS_MASK DesiredAccess,
+	IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,
+	IN PLARGE_INTEGER MaximumSize OPTIONAL,
+	IN ULONG SectionPageProtection,
+	IN ULONG AllocationAttributes,
+	IN HANDLE FileHandle OPTIONAL);
+
+typedef NTSTATUS(NTAPI* NtProtectVirtualMemory_t)(
+	IN HANDLE               ProcessHandle,
+	IN OUT PVOID            *BaseAddress,
+	IN OUT PULONG           NumberOfBytesToProtect,
+	IN ULONG                NewAccessProtection,
+	OUT PULONG              OldAccessProtection );
+
+typedef NTSTATUS(NTAPI* NtAllocateVirtualMemory_t)(
+	IN HANDLE               ProcessHandle,
+	IN OUT PVOID            *BaseAddress,
+	IN ULONG                ZeroBits,
+	IN OUT PULONG           RegionSize,
+	IN ULONG                AllocationType,
+	IN ULONG                Protect );
+
+typedef NTSTATUS(NTAPI* NtWriteVirtualMemory_t)(
+    IN HANDLE               ProcessHandle,
+    IN PVOID                BaseAddress,
+    IN PVOID                Buffer,
+    IN ULONG                NumberOfBytesToWrite,
+    OUT PULONG              NumberOfBytesWritten OPTIONAL);
+
+typedef	NTSTATUS(NTAPI* NtCreateThreadEx_t)(
+		OUT PHANDLE hThread,
+		IN ACCESS_MASK DesiredAccess,
+		IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,
+		IN HANDLE ProcessHandle,
+		IN PVOID lpStartAddress,
+		IN PVOID lpParameter OPTIONAL,
+		IN ULONG Flags,
+		IN SIZE_T StackZeroBits,
+		IN SIZE_T SizeOfStackCommit,
+		IN SIZE_T SizeOfStackReserve,
+		OUT PVOID lpBytesBuffer OPTIONAL);
+	
+typedef NTSTATUS(NTAPI* NtWaitForSingleObject_t)(
+	IN HANDLE               ObjectHandle,
+	IN BOOLEAN              Alertable,
+	IN PLARGE_INTEGER       TimeOut OPTIONAL );  
+
+typedef NTSTATUS(NTAPI* NtQuerySystemInformation_t)(
+    IN SYSTEM_INFORMATION_CLASS SystemInformationClass,
+    OUT PVOID               SystemInformation,
+    IN ULONG                SystemInformationLength,
+    OUT PULONG              ReturnLength OPTIONAL );
+
+typedef NTSTATUS(NTAPI* NtFreeVirtualMemory_t)(
+    IN HANDLE               ProcessHandle,
+    IN PVOID                *BaseAddress,
+    IN OUT PULONG           RegionSize,
+    IN ULONG                FreeType );
+
+typedef enum _EVENT_TYPE {
+    NotificationEvent = 0,
+    SynchronizationEvent = 1
+} EVENT_TYPE;    
+
+typedef NTSTATUS(NTAPI* NtCreateEvent_t)(
+    OUT PHANDLE             EventHandle,
+    IN ACCESS_MASK          DesiredAccess,
+    IN POBJECT_ATTRIBUTES   ObjectAttributes OPTIONAL,
+    IN EVENT_TYPE           EventType,
+    IN BOOLEAN              InitialState );
+
+typedef NTSTATUS(NTAPI* NtDelayExecution_t)(
+    IN BOOLEAN              Alertable,
+    IN PLARGE_INTEGER       DelayInterval );
+
+typedef NTSTATUS(NTAPI* NtClose_t)(
+    IN HANDLE               ObjectHandle );
+
+typedef struct _IO_STATUS_BLOCK
+{
+    union
+    {
+        NTSTATUS Status;
+        PVOID Pointer;
+    };
+    ULONG_PTR Information;
+} IO_STATUS_BLOCK, * PIO_STATUS_BLOCK;
+
+typedef VOID(NTAPI* PIO_APC_ROUTINE)(
+    IN PVOID ApcContext,
+    IN PIO_STATUS_BLOCK IoStatusBlock,
+    IN ULONG Reserved);
+
+typedef NTSTATUS(NTAPI* NtQueueApcThread_t)(
+    IN HANDLE               ThreadHandle,
+    IN PIO_APC_ROUTINE      ApcRoutine,
+    IN PVOID                ApcRoutineContext OPTIONAL,
+    IN PIO_STATUS_BLOCK     ApcStatusBlock OPTIONAL,
+    IN ULONG                ApcReserved OPTIONAL );
+
+typedef HANDLE(NTAPI* NtCurrentProcess_t)(void);
+#define NtCurrentProcess() ( (HANDLE)(LONG_PTR) -1 )
+
+typedef NTSTATUS(NTAPI* NtQuerySystemEnvironmentValue_t)(
+    IN PUNICODE_STRING      VariableName,
+    OUT PWCHAR              Value,
+    IN ULONG                ValueBufferLength,
+    OUT PULONG              RequiredLength OPTIONAL );
+
+typedef NTSTATUS(WINAPI* NtQueryEnvironmentVariable_t)(
+    PUNICODE_STRING VariableName,
+    PVOID VariableValue,
+    ULONG ValueLength,
+    PULONG ReturnLength
+);
+
+typedef NTSTATUS(NTAPI* NtReadVirtualMemory_t)(
+    IN HANDLE               ProcessHandle,
+    IN PVOID                BaseAddress,
+    OUT PVOID               Buffer,
+    IN ULONG                NumberOfBytesToRead,
+    OUT PULONG              NumberOfBytesReaded OPTIONAL );
+
+typedef NTSTATUS(NTAPI* NtQueryInformationProcess_t)(
+    IN HANDLE               ProcessHandle,
+    IN PROCESS_INFORMATION_CLASS ProcessInformationClass,
+    OUT PVOID               ProcessInformation,
+    IN ULONG                ProcessInformationLength,
+    OUT PULONG              ReturnLength );
+
+typedef struct _PROCESS_BASIC_INFORMATION {
+    ULONG Reserved;
+    ULONG PebBaseAddress;
+    ULONG AffinityMask;
+    ULONG BasePriority;
+    ULONG UniqueProcessId;
+    ULONG InheritedFromUniqueProcessId;
+} PROCESS_BASIC_INFORMATION;
+
+typedef NTSTATUS(NTAPI* NtCreateUserProcess_t)(
+    OUT PHANDLE ProcessHandle,
+    OUT PHANDLE ThreadHandle,
+    IN ACCESS_MASK DesiredAccess,
+    IN POBJECT_ATTRIBUTES ObjectAttributes,
+    IN POBJECT_ATTRIBUTES ThreadObjectAttributes,
+    IN ULONG CreateFlags,
+    IN ULONG InitialThreadPriority,
+    IN ULONG InitialThreadStackSize,
+    IN PVOID StartAddress,
+    IN PVOID Parameter
+);
+
+typedef NTSTATUS(NTAPI* NtCreateUserProcess_t)(
+    PHANDLE ProcessHandle,
+    PHANDLE ThreadHandle,
+    ACCESS_MASK ProcessDesiredAccess,
+    ACCESS_MASK ThreadDesiredAccess,
+    POBJECT_ATTRIBUTES ProcessObjectAttributes,
+    POBJECT_ATTRIBUTES ThreadObjectAttributes,
+    ULONG ProcessFlags,
+    ULONG ThreadFlags,
+    PVOID ProcessParameters,
+    PVOID CreateInfo,
+    PVOID AttributeList
+);
 
 #endif // !STRUCTS_H

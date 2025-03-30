@@ -53,18 +53,20 @@ def rc4_encrypt(payload_data: bytes) -> tuple[bytes, bytes]:
 
 
 def generate_shellcode(shellcode, algorithm='xor'):
-    shellcode_string = shellcode
+    shellcode_bytes = bytes(int(x, 16) for x in shellcode.split(', '))
+    shellcode_string = ""
     enc_key = None
     iv = None
-            
+    print(f"Encryption Alg >> {algorithm}")
     match algorithm:
         case 'xor':
-            shellcode_string, enc_key = xor_encrypt(shellcode)
+            shellcode_bytes, enc_key = xor_encrypt(shellcode_bytes)
         case 'aes':
-            shellcode_string, enc_key, iv = aes_encrypt(shellcode)
+            shellcode_bytes, enc_key, iv = aes_encrypt(shellcode_bytes)
         case 'rc4':
-            shellcode_string, enc_key = rc4_encrypt(shellcode)
-            
+            shellcode_bytes, enc_key = rc4_encrypt(shellcode_bytes)
+    shellcode_string = ', '.join(f'0x{byte:02X}' for byte in shellcode_bytes)
+    
     # Convert key to hex string for C code
     key_hex_string = "0x00"
     if enc_key:

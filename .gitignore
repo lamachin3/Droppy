@@ -31,3 +31,5 @@ venv/
 *.dll
 *.dSYM/
 *.obj
+
+*.DS_Store

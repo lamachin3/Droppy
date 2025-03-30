@@ -3,7 +3,7 @@
 
 #include "../../common.h";
 
-BOOL payload_loading(PVOID* pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize);
+BOOL payload_loading(PVOID* pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize, ...);
 
 /**
  * @brief Writes a payload into a dynamically allocated executable memory region.
@@ -17,6 +17,8 @@ BOOL payload_loading(PVOID* pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize)
  * @name In Memory
  */
 BOOL WritePayloadInMemory(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
+
+BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, IN SIZE_T sSizeOfShellcode, OUT PVOID* pAddress);
 
 /**
  * @brief Overwrites a function's memory section with a payload.

@@ -24,7 +24,7 @@ BOOL AntiAnalysis(DWORD dwMilliSeconds) {
     while (i <= 10) {
         DebugPrint("[#] Monitoring Mouse-Clicks For %d Seconds - Need 6 Clicks To Pass\n", (dwMilliSeconds / 1000));
 
-#ifndef SYSCALL_ENABLED
+#ifndef SW3_SYSCALL_ENABLED
         // Using Windows API
         hThread = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)MouseClicksLogger, NULL, NULL, &dwThreadId);
         if (hThread) {

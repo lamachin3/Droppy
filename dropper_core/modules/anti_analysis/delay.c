@@ -21,7 +21,7 @@ BOOL DelayExecutionVia_NtDE(FLOAT ftMinutes) {
 
     _T0 = g_Api.pGetTickCount64();
 
-#ifndef SYSCALL_ENABLED
+#ifndef SW3_SYSCALL_ENABLED
     // Using Windows API
     Sleep(dwMilliSeconds);
 #else

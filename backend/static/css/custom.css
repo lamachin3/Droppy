@@ -3,12 +3,12 @@
 /* Full-page layout */
 html, body {
     height: 100%;
-    background-color: #111827 !important; /* Dark grey background */
     color: #f5f5f5; /* Light grey text for readability */
+    font-family: 'JetBrains Mono', monospace !important;
 }
 
 body {
-    background-color: #111827 !important;  /* Dark Grey */
+    background-color: #0a0c1b !important;  /* Dark Grey */
     color: #e0e0e0;  /* Light Grey Text */
 }
 
@@ -27,7 +27,7 @@ body {
 
 /* Navbar Styling */
 .navbar {
-    background-color: #111827 !important;
+    background-color: #0a0c1b !important;
 }
 
 .navbar-item, .navbar-brand {
@@ -48,16 +48,23 @@ body {
     color: #ffffff;
 }
 
-
 /* Card Styling */
 .card {
-    background-color: #1f2937 !important;
-    border-color: rgba(100,100,100,0.8) !important;
+    background-color: rgba(10, 22, 36, 0.7) !important;
+    border-color: #26303f !important;
     border-radius: 8px !important;
+    box-shadow: 0px 1px 5px rgba(var(--bs-primary-rgb),0.1);
 }
 
 .card-content {
     color: #ffffff;
+}
+
+.card-box {
+    background-color: rgba(38, 48, 63, 0.4);
+    padding: 1em;
+    border-top: 1px solid rgba(55, 65, 81, 0.5) !important;
+    border-radius: 0.75em;
 }
 
 
@@ -100,13 +107,31 @@ body {
     background-color: rgba(17,24,39,0.8);
 }
 
-.textarea {
-    background-color: rgba(17,24,39,0.8);
+textarea.form-control, textarea.form-control:focus, input.form-control, input.form-control:focus {
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+    border: 1px solid var(--primary) !important;
+    border-radius: 0.5em;
+    color: var(--light);
+}
+
+.input-group-text {
+    background-color: rgba(var(--bs-primary-rgb), 0.05) !important;
+    border: 1px solid var(--primary) !important;
+    border-radius: 0 0.5em 0.5em 0 !important;
+    color: var(--primary) !important;
 }
 
 select {
-    background-color: rgba(17,24,39,0.8) !important;
+    background-color: #091c27 !important;
+    color: var(--light);
 }
+
+.form-select {
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 512 512\'%3E%3Cpath fill=\'%23f8f9fa\' d=\'M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z\'/%3E%3C/svg%3E');
+    color: var(--light);
+    border-color: rgba(var(--bs-primary-rgb), 0.6) !important;
+}
+
 
 /* Nav Tabs Styling */
 
@@ -179,4 +204,123 @@ select {
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1em;
+    width: 50px;
+    height: 50px;
+    margin-right: 1em;
+    background-color: rgba(var(--bs-primary-rgb), 0.2); /* 20% opacity */
+    border: 0px solid var(--primary);
+    border-radius: 0.75em; /* Rounded corners */
+}
+
+/* Upload section */
+
+.upload-area {
+    border: 2px dashed rgba(var(--bs-primary-rgb), 0.6);
+    background-color: rgba(var(--bs-primary-rgb), 0.05); /* Lighter - Upload Box */
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    transition: background 0.3s ease-in-out, border-color 0.3s;
+}
+
+.upload-area:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.15);
+    border-color: rgba(var(--bs-primary-rgb), 0.8);
+}
+
+.upload-icon {
+    font-size: 40px;
+    color: var(--primary);
+}
+
+.hidden-input {
+    display: none;
+}
+
+/* Tabs */
+/* Tab Slider Container */
+.tab-slider {
+    display: flex;
+    position: relative;
+    width: 100%;
+    max-width: none; /* Removes any previous max-width restriction */
+    flex-grow: 1; /* If it's inside a flex container, ensures it expands */
+    background: rgba(var(--bs-primary-rgb), 0.05);
+    border-radius: 0.5em;
+    cursor: pointer;
+    align-items: center; /* Ensures everything is aligned */
+}
+
+/* Individual Tab Option */
+.tab-option {
+    flex: 1;
+    text-align: center;
+    padding: 8px 20px;  /* Adjusted padding for better centering */
+    font-size: 16px;
+    font-weight: 600;
+    color: #aaa;
+    position: relative;
+    z-index: 2;
+    transition: color 0.3s ease-in-out;
+}
+
+/* Background Slider Effect */
+.tab-slider-bg {
+    position: absolute;
+    width: 50%;
+    height: 100%; /* Ensures it aligns perfectly inside */
+    background: var(--primary); /* Uses Bootstrap's primary color */
+    border-radius: 0.5em;
+    transition: transform 0.3s ease-in-out;
+    z-index: 1;
+}
+
+/* Active Tab Styling */
+.tab-option.active {
+    color: #fff;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 0.5em !important;
+}
+
+.form-check {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.6) !important;
+    border-radius: 0.5em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 2.2em !important;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.form-check-input {
+    background-color: rgba(var(--bs-primary-rgb), 0.15);
+    border: 1px solid var(--primary);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 5px 3px rgba(var(--bs-primary-rgb), 0.5);
+    border-color: var(--primary);
+}
+
+.data-detail {
+    border: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+    border-radius: 0.75em;
+    padding: 0.6em;
 }

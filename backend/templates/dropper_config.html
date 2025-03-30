@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<script type="text/javascript" src="{{ url_for('static', filename='js/file-upload.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/event-handlers.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/form-utils.js') }}"></script>
 
@@ -9,68 +8,102 @@
 <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
     <div class="row">
         <div class="col-md-6">
-            <h4 class="text-white fw-bold">Module Selection</h4>
-            {% for section, modules in modules.items() %}
-                <div class="card text-white mb-4">
-                    <div class="card-body">
-                        <p class="text-primary h5 fw-semibold">{{ section.replace('_', ' ').title() }}</p>
-                        {% for module in modules %}
-                            <div class="form-check">
-                                <input 
-                                    class="form-check-input" type="checkbox" name="{{ section }}" id="{{ module.name.replace(' ', '_') }}" 
-                                    value="{{ module.name }}" onchange="toggleTextBox('{{ module.name.replace(' ', '_') }}')"
-                                >
-                                <label class="form-check-label" for="{{ module.name.replace(' ', '_') }}">
-                                    {{ module.name }}
-                                    <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ module.brief }}"></i>
-                                </label>
-                            </div>
-                            {% if "remote process" in module.name.lower() %}
-                                <div id="textbox_{{ module.name.replace(' ', '_') }}" class="input-group mb-3" style="display: none;">
-                                    <input type="text" class="form-control" name="process_name" placeholder="Process Name" aria-label="Process Name" aria-describedby="basic-addon2">
-                                    <span class="input-group-text" id="basic-addon2">.exe</span>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        <div class="col-md-6">
-            <h4 class="text-white fw-bold">Shellcode Configuration</h4>
-            <div class="card mb-4">
-                <div class="card-body">
-                    <ul class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="file-tab" data-bs-toggle="tab" href="#file-shellcode">
-                                <i class="fas fa-upload me-2"></i> File Upload
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="text-tab" data-bs-toggle="tab" href="#text-shellcode">
-                                <i class="fas fa-code me-2"></i> Manual Input
-                            </a>
-                        </li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="file-shellcode">
-                            <div class="input-group mt-3 mb-3">
-                                <input type="file" class="form-control" accept=".bin,.exe,.raw" name="shellcode">
-                                <label class="input-group-text">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    Choose a file...
-                                </label>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="text-shellcode">
-                            <textarea class="form-control" name="shellcode_text" placeholder="Enter shellcode..." rows="10"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="card text-white mb-4">
                 <div class="card-body">
-                    <p class="text-primary h5 fw-semibold">Options</p>
+                    <h5 class="card-title text-primary fw-bold">Modules Selection</h5>
+                    {% for section, modules in modules.items() %}
+                        <p class="text-primary h5 fw-semibold  mt-4 mb-3">{{ section.replace('_', ' ').title() }}</p>
+                        {% if 'encryption' in section or 'obfuscation' in section %}
+                            <select class="form-select fw-medium" name="{{ section }}" aria-label="Choose an algorithm">
+                                <option selected disabled>Choose an option...</option>
+                                <option id="no_alg" value="">Cleartext</option>
+                                {% for module in modules %}
+                                    <option
+                                        class="select-item"
+                                        id="{{ module.name.replace(' ', '_') }}"
+                                        value="{{ module.name }}"
+                                    >
+                                        {{ module.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            {% for module in modules %}
+                                <div class="form-check">
+                                    <input
+                                        class="form-check-input" type="checkbox" name="{{ section }}" id="{{ module.name.replace(' ', '_') }}" 
+                                        value="{{ module.name }}" onchange="toggleTextBox('{{ module.name.replace(' ', '_') }}')"
+                                    >
+                                    <label class="form-check-label fw-medium" for="{{ module.name.replace(' ', '_') }}">
+                                        {{ module.name }}
+                                        <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ module.brief }}"></i>
+                                    </label>
+                                </div>
+                                {% if "remote process" in module.name.lower() %}
+                                    <div id="textbox_{{ module.name.replace(' ', '_') }}" class="input-group mb-3" style="display: none;">
+                                        <input type="text" class="form-control" name="process_name" placeholder="Process Name" aria-label="Process Name" aria-describedby="basic-addon2">
+                                        <span class="input-group-text" id="basic-addon2">.exe</span>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-white">
+                    <h5 class="text-primary fw-bold">Shellcode Input</h5>
+                    <div class="tab-slider">
+                        <div class="tab-option active" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-shellcode">
+                            <i class="fas fa-upload me-2"></i> File Upload
+                        </div>
+                        <div class="tab-option" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-shellcode">
+                            <i class="fas fa-code me-2"></i> Manual Input
+                        </div>
+                        <div class="tab-slider-bg"></div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="file-shellcode">
+                            <div class="upload-area mt-3" id="drop-zone">
+                                <i class="fa-solid fa-upload upload-icon text-secondary"></i>
+                                <p class="mt-2">Drag and drop your file here</p>
+                                <p class="small">or</p>
+                                <button type="button" class="btn btn-primary btn-upload" onclick="document.getElementById('file-input').click()">
+                                    <i class="fas fa-folder-open"></i>
+                                    Browse Files
+                                </button>
+                                <input type="file" id="file-input" class="hidden-input d-none" accept=".bin,.exe,.raw" name="shellcode">
+                            </div>
+                            
+                            <!-- File Preview Section -->
+                            <div id="file-preview" class="mt-3 card-box text-white d-none">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <!-- File Icon & Details -->
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-wrapper">
+                                            <i class="fa-solid fa-file-code fa-xl text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <p class="mb-0 fw-semibold" id="file-name"></p>
+                                            <p class="mb-0 small text-muted" id="file-size"></p>
+                                        </div>
+                                    </div>
+                            
+                                    <!-- Close Button -->
+                                    <button type="button" id="remove-file-btn" class="btn btn-sm btn-link text-danger p-0 ms-3" aria-label="Remove file">
+                                        <i class="fa-solid fa-xmark fa-2xl text-danger"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade mt-3" id="text-shellcode">
+                            <textarea class="form-control" name="shellcode_text" placeholder="Enter hexadecimal shellcode..." rows="10"></textarea>
+                        </div>
+                    </div>
+
+                    <h5 class="text-primary fw-bold mt-4 mb-3">Options</h5>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="debug" id="debug" value="debug">
                         <label class="form-check-label" for="debug">
@@ -85,11 +118,8 @@
                             <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Hide the console window when the dropper is executed."></i>
                         </label>
                     </div>
-                </div>
-            </div>
-            <div class="card text-white mb-4">
-                <div class="card-body">
-                    <p class="text-primary h5 fw-semibold mb-4">Output Settings</p>
+
+                    <h5 class="text-primary fw-bold mt-4 mb-3">Output Settings</h5>
                     <div class="row">
                         <div class="col-md-9">
                             <input type="text" class="form-control" name="filename" placeholder="Filename...">
@@ -102,11 +132,11 @@
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block mt-3">
-                        <i class="fas fa-cogs me-2"></i> Build Dropper
-                    </button>
                 </div>
             </div>
+            <button type="submit" class="w-50 mx-auto btn btn-primary btn-block mt-5">
+                <i class="fa-regular fa-rocket"></i> Build Dropper
+            </button>
         </div>
     </div>
 </form>

