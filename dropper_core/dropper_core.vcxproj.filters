@@ -51,9 +51,6 @@
     <ClInclude Include="utils\utils.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="dropper.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="structs.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
