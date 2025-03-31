@@ -138,7 +138,7 @@ BOOL RsaDecryptStandAlone(
     PBYTE decrypted = NULL;
 
     // Allocate memory for the decrypted data using syscalls
-    NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscall((char[]){'N','t','A','l','l','o','c','a','t','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});
+    NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
 
     status = pNtAllocateVirtualMemory(GetCurrentProcess(), (PVOID*)&decrypted, 0, &regionSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (status != 0) {

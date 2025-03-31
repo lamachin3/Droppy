@@ -1,8 +1,5 @@
 #pragma once
-#include <windows.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include "../structs.h"
+#include "../common.h"
 
 #pragma region Defines
 
@@ -25,7 +22,7 @@ typedef BOOL(WINAPI* GetThreadContext_t)(
 typedef BOOL(WINAPI* SetThreadContext_t)(
     _In_ HANDLE hThread,
     _In_ CONST CONTEXT* lpContext
-    );
+    );  
 
 #pragma endregion
 
@@ -37,6 +34,7 @@ DWORD_PTR FindInModule(LPCSTR moduleName, PBYTE bMask, PCHAR szMask);
 UINT64 GetModuleAddress(LPWSTR sModuleName);
 UINT64 GetSymbolAddress(UINT64 moduleBase, const char* functionName);
 UINT64 PrepareSyscall(char* functionName);
+UINT64 PrepareSyscallHash(UINT32 functionHash);
 BOOL SetMainBreakpoint();
 DWORD64 FindSyscallNumber(DWORD64 functionAddress);
 DWORD64 FindSyscallReturnAddress(DWORD64 functionAddress, WORD syscallNumber);

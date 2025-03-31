@@ -124,6 +124,51 @@ UINT64 GetSymbolAddress(UINT64 moduleBase, const char* functionName) {
     return functionAddress;
 }
 
+UINT64 GetSymbolAddressByHash(UINT64 moduleBase, UINT32 functionHash) {
+    UINT64 functionAddress = 0;
+
+    if (!moduleBase) {  // Ensure moduleBase is valid
+        DebugPrint("[-] Invalid module base for function %llu\n", functionHash);
+        return 0;
+    }
+
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)moduleBase;
+
+    // Checking that the image is valid PE file.
+    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+        return 0;
+    }
+
+    PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)(moduleBase + dosHeader->e_lfanew);
+
+    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
+        return functionAddress;
+    }
+
+    IMAGE_OPTIONAL_HEADER optionalHeader = ntHeaders->OptionalHeader;
+
+    if (optionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress == 0) {
+        return functionAddress;
+    }
+
+    // Iterating the export directory.
+    PIMAGE_EXPORT_DIRECTORY exportDirectory = (PIMAGE_EXPORT_DIRECTORY)(moduleBase + optionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+
+    DWORD* addresses = (DWORD*)(moduleBase + exportDirectory->AddressOfFunctions);
+    WORD* ordinals = (WORD*)(moduleBase + exportDirectory->AddressOfNameOrdinals);
+    DWORD* names = (DWORD*)(moduleBase + exportDirectory->AddressOfNames);
+
+    for (DWORD j = 0; j < exportDirectory->NumberOfNames; j++) {
+        //printf("%s => %d\n", (char*)(moduleBase + names[j]), HASHA((char*)(moduleBase + names[j])));
+        if (HASHA((char*)(moduleBase + names[j])) == functionHash) {
+            functionAddress = moduleBase + addresses[ordinals[j]];
+            break;
+        }
+    }
+
+    return functionAddress;
+}
+
 #pragma endregion
 
 #pragma region HalosGate
@@ -195,35 +240,87 @@ DWORD64 FindSyscallReturnAddress(DWORD64 functionAddress, WORD syscallNumber) {
 UINT64 PrepareSyscall(char* functionName) {
     return ntFunctionAddress;
 }
+UINT64 PrepareSyscallHash(UINT32 functionHash) {
+    return ntFunctionAddress;
+}
 #pragma optimize("", on)
 
-BOOL SetMainBreakpoint() {
-    // Dynamically find the GetThreadContext and SetThreadContext functions
+PVOID		g_DetourFuncs[4]	= { 0 }; // Maximum 4 hardware breakpoints 
+typedef enum _DRX{
+    Dr0,
+    Dr1,
+    Dr2,
+    Dr3
+} DRX, * PDRX;  
+
+unsigned long long SetDr7Bits(unsigned long long CurrentDr7Register, int StartingBitPosition, int NmbrOfBitsToModify, unsigned long long NewBitValue) {
+	unsigned long long mask           = (1UL << NmbrOfBitsToModify) - 1UL;
+	unsigned long long NewDr7Register = (CurrentDr7Register & ~(mask << StartingBitPosition)) | (NewBitValue << StartingBitPosition);
+
+	return NewDr7Register;
+}
+
+
+BOOL SetHardwareBreakingPnt(IN PVOID pAddress, IN PVOID fnHookFunc, IN enum DRX Drx) {
+
+	if (!pAddress || !fnHookFunc)
+		return FALSE;
+
     GetThreadContext_t pGetThreadContext = (GetThreadContext_t)GetSymbolAddress(GetModuleAddress((LPWSTR)L"KERNEL32.DLL"), "GetThreadContext");
     SetThreadContext_t pSetThreadContext = (SetThreadContext_t)GetSymbolAddress(GetModuleAddress((LPWSTR)L"KERNEL32.DLL"), "SetThreadContext");
 
-    DWORD old = 0;
+	CONTEXT ThreadCtx = { .ContextFlags = CONTEXT_DEBUG_REGISTERS };
 
-    CONTEXT ctx = { 0 };
-    ctx.ContextFlags = CONTEXT_DEBUG_REGISTERS;
+	// Get local thread context
+	if (!pGetThreadContext((HANDLE)-2, &ThreadCtx))
+		return FALSE;
+        //return ReportError(TEXT("GetThreadContext"), NULL);
 
-    // Get current thread context
-    pGetThreadContext(myThread, &ctx);
-    
-    // Set hardware breakpoint on PrepareSyscall function
-    ctx.Dr0 = (UINT64)&PrepareSyscall;
-    ctx.Dr7 |= (1 << 0);
-    ctx.Dr7 &= ~(1 << 16);
-    ctx.Dr7 &= ~(1 << 17);
-    ctx.ContextFlags = CONTEXT_DEBUG_REGISTERS;
+	// Sets the value of the Dr0-3 registers 
+	switch (Drx) {
+		case Dr0: {
+			if (!ThreadCtx.Dr0)
+				ThreadCtx.Dr0 = pAddress;
+			break;
+		}
+		case Dr1: {
+			if (!ThreadCtx.Dr1)
+				ThreadCtx.Dr1 = pAddress;
+			break;
+		}
+		case Dr2: {
+			if (!ThreadCtx.Dr2)
+				ThreadCtx.Dr2 = pAddress;
+			break;
+		}
+		case Dr3: {
+			if (!ThreadCtx.Dr3)
+				ThreadCtx.Dr3 = pAddress;
+			break;
+		}
+		default:
+			return FALSE;
+	}
 
-    // Apply the modified context to the current thread
-    if (!pSetThreadContext(myThread, &ctx)) {
-        DebugPrint("[-] Could not set new thread context: 0x%X", GetLastError());
+	// Saves the address of the detour function at index 'Drx' in 'g_DetourFuncs'
+	g_DetourFuncs[Drx] = fnHookFunc;
+
+	// Enable the breakpoint: Populate the G0-3 flags depending on the saved breakpoint position in the Dr0-3 registers
+	ThreadCtx.Dr7 = SetDr7Bits(ThreadCtx.Dr7, (Drx * 2), 1, 1);
+
+	// Set the thread context after editing it
+	if (!pSetThreadContext((HANDLE)-2, &ThreadCtx))
         return FALSE;
-    }
+		//return ReportError(TEXT("SetThreadContext"), NULL);
 
-        ("[+] Main HWBP set successfully\n");
+	return TRUE;
+}
+
+BOOL SetMainBreakpoint() {
+    SetHardwareBreakingPnt((UINT64)&PrepareSyscall, (PVOID)&HWSyscallExceptionHandler, Dr0);
+    SetHardwareBreakingPnt((UINT64)&PrepareSyscallHash, (PVOID)&HWSyscallExceptionHandler, Dr1);
+
+    DebugPrint("[+] Main HWBPs set successfully\n");
     return TRUE;
 }
 
@@ -240,6 +337,19 @@ LONG HWSyscallExceptionHandler(EXCEPTION_POINTERS* ExceptionInfo) {
             // Move breakpoint to the NTAPI function;
             DebugPrint("[+] Moving breakpoint to %#llx\n", ntFunctionAddress);
             ExceptionInfo->ContextRecord->Dr0 = ntFunctionAddress;
+        }
+        else if (ExceptionInfo->ContextRecord->Rip == (DWORD64)&PrepareSyscallHash) {
+            DebugPrint("\n===============HWSYSCALLS DEBUG (HASH MODE)===============");
+            DebugPrint("\n[+] PrepareSyscall Breakpoint Hit (%#llx)!\n", ExceptionInfo->ExceptionRecord->ExceptionAddress);
+            
+            // Find the address of the syscall function in ntdll we got as the first argument of the PrepareSyscall function
+            ntFunctionAddress = GetSymbolAddressByHash((UINT64)hNtdll, (UINT32)(ExceptionInfo->ContextRecord->Rcx));
+            DebugPrint("[+] Found %d address: 0x%I64X\n", (const char*)(ExceptionInfo->ContextRecord->Rcx), ntFunctionAddress);
+            
+            // Move breakpoint to the NTAPI function;
+            DebugPrint("[+] Moving breakpoint to %#llx\n", ntFunctionAddress);
+            //ExceptionInfo->ContextRecord->Dr0 = ntFunctionAddress;
+            ExceptionInfo->ContextRecord->Dr1 = ntFunctionAddress;
         }
         else if (ExceptionInfo->ContextRecord->Rip == (DWORD64)ntFunctionAddress) {
             DebugPrint("[+] NTAPI Function Breakpoint Hit (%#llx)!\n", (DWORD64)ExceptionInfo->ExceptionRecord->ExceptionAddress);
@@ -300,6 +410,7 @@ LONG HWSyscallExceptionHandler(EXCEPTION_POINTERS* ExceptionInfo) {
             // Move breakpoint back to PrepareSyscall to catch the next invoke
             DebugPrint("[+] Moving breakpoint back to PrepareSyscall to catch the next invoke\n");
             ExceptionInfo->ContextRecord->Dr0 = (UINT64)&PrepareSyscall;
+            ExceptionInfo->ContextRecord->Dr1 = (UINT64)&PrepareSyscallHash;
 
             DebugPrint("==============================================\n\n");
 
