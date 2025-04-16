@@ -17,7 +17,7 @@
  * 
  * @name AES Encryption
  */
-BOOL SimpleAesDecryption(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PVOID *pPlainTextData, OUT DWORD *sPlainTextSize);
+BOOL SimpleAesDecryption(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
 
 /**
  * @brief Decrypts the given ciphertext using ChaCha20 decryption.
@@ -31,9 +31,9 @@ BOOL SimpleAesDecryption(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN 
  * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
- * @name ChaCha20 Encryption
+ * @_name ChaCha20 Encryption
  */
-BOOL ChaCha20Decrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pNonce, OUT PVOID *pPlainTextData, OUT DWORD *sPlainTextSize);
+BOOL ChaCha20Decrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pNonce, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
 
 /**
  * @brief Decrypts the given ciphertext using DES decryption.
@@ -47,9 +47,9 @@ BOOL ChaCha20Decrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYT
  * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
- * @name DES Encryption
+ * @_name DES Encryption
  */
-BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PVOID *pPlainTextData, OUT DWORD *sPlainTextSize);
+BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
 
 /**
  * @brief Decrypts the given payload using RC4 decryption.
@@ -62,8 +62,7 @@ BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKe
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name RC4 Encryption
- */
-BOOL Rc4Decrypt(IN PBYTE pPayloadData, IN SIZE_T sPayloadSize, IN PBYTE pRc4Key, IN SIZE_T dwRc4KeySize);
+BOOL Rc4Decrypt(IN PBYTE pPayloadData, IN SIZE_T sPayloadSize, IN PBYTE pRc4Key, IN SIZE_T dwRc4KeySize, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
 
 /**
  * @brief Decrypts the given ciphertext using RSA decryption.
@@ -77,9 +76,9 @@ BOOL Rc4Decrypt(IN PBYTE pPayloadData, IN SIZE_T sPayloadSize, IN PBYTE pRc4Key,
  * 
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
- * @name RSA Encryption
+ * @_name RSA Encryption
  */
-BOOL RsaDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pPrivateKey, IN DWORD sPrivateKeySize, OUT PVOID *pPlainTextData, OUT DWORD *sPlainTextSize);
+BOOL RsaDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pPrivateKey, IN DWORD sPrivateKeySize, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
 void MultiplyMod(BYTE* result, BYTE* a, BYTE* b, BYTE* mod, size_t modSize);
 void AddMod(BYTE* result, BYTE* a, BYTE* b, BYTE* mod, size_t modSize);
 void ModExp(BYTE* result, BYTE* base, BYTE* exp, BYTE* mod, size_t modSize);

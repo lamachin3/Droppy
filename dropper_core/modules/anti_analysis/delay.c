@@ -9,9 +9,9 @@ BOOL DelayExecutionVia_NtDE(FLOAT ftMinutes) {
     // converting minutes to milliseconds
     DWORD dwMilliSeconds = ftMinutes * 60000;
     LARGE_INTEGER DelayInterval = { 0 };
-    LONGLONG Delay = NULL;
-    NTSTATUS STATUS = NULL;
-    DWORD _T0 = NULL, _T1 = NULL;
+    LONGLONG Delay = 0;
+    NTSTATUS STATUS = STATUS_SUCCESS;
+    DWORD _T0 = 0, _T1 = 0;
 
     DebugPrint("[i] Delaying Execution Using \"NtDelayExecution\" For %0.3d Seconds\n", (dwMilliSeconds / 1000));
 
@@ -48,7 +48,8 @@ void DelayExecutionVia_WaitOnAddress(volatile LONG* address, LONG initialValue, 
     *address = initialValue;
 
     // Wait for the value at the address to change or timeout
-    if (WaitOnAddress(address, address, sizeof(LONG), timeoutMillis) == FALSE) {
+    WaitOnAddress_t pWaitOnAddress = (WaitOnAddress_t)GetProcAddress(GetModuleHandleA("kernel32.dll"), "WaitOnAddress");
+    if (pWaitOnAddress(address, address, sizeof(LONG), timeoutMillis) == FALSE) {
         DWORD error = GetLastError();
 
         if (error == ERROR_TIMEOUT) {

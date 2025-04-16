@@ -159,7 +159,6 @@ UINT64 GetSymbolAddressByHash(UINT64 moduleBase, UINT32 functionHash) {
     DWORD* names = (DWORD*)(moduleBase + exportDirectory->AddressOfNames);
 
     for (DWORD j = 0; j < exportDirectory->NumberOfNames; j++) {
-        //printf("%s => %d\n", (char*)(moduleBase + names[j]), HASHA((char*)(moduleBase + names[j])));
         if (HASHA((char*)(moduleBase + names[j])) == functionHash) {
             functionAddress = moduleBase + addresses[ordinals[j]];
             break;
@@ -261,7 +260,7 @@ unsigned long long SetDr7Bits(unsigned long long CurrentDr7Register, int Startin
 }
 
 
-BOOL SetHardwareBreakingPnt(IN PVOID pAddress, IN PVOID fnHookFunc, IN enum DRX Drx) {
+BOOL SetHardwareBreakingPnt(IN PVOID pAddress, IN PVOID fnHookFunc, IN DRX Drx) {
 
 	if (!pAddress || !fnHookFunc)
 		return FALSE;
@@ -280,22 +279,22 @@ BOOL SetHardwareBreakingPnt(IN PVOID pAddress, IN PVOID fnHookFunc, IN enum DRX 
 	switch (Drx) {
 		case Dr0: {
 			if (!ThreadCtx.Dr0)
-				ThreadCtx.Dr0 = pAddress;
+				ThreadCtx.Dr0 = (DWORD64)pAddress;
 			break;
 		}
 		case Dr1: {
 			if (!ThreadCtx.Dr1)
-				ThreadCtx.Dr1 = pAddress;
+				ThreadCtx.Dr1 = (DWORD64)pAddress;
 			break;
 		}
 		case Dr2: {
 			if (!ThreadCtx.Dr2)
-				ThreadCtx.Dr2 = pAddress;
+				ThreadCtx.Dr2 = (DWORD64)pAddress;
 			break;
 		}
 		case Dr3: {
 			if (!ThreadCtx.Dr3)
-				ThreadCtx.Dr3 = pAddress;
+				ThreadCtx.Dr3 = (DWORD64)pAddress;
 			break;
 		}
 		default:
@@ -317,8 +316,8 @@ BOOL SetHardwareBreakingPnt(IN PVOID pAddress, IN PVOID fnHookFunc, IN enum DRX 
 }
 
 BOOL SetMainBreakpoint() {
-    SetHardwareBreakingPnt((UINT64)&PrepareSyscall, (PVOID)&HWSyscallExceptionHandler, Dr0);
-    SetHardwareBreakingPnt((UINT64)&PrepareSyscallHash, (PVOID)&HWSyscallExceptionHandler, Dr1);
+    SetHardwareBreakingPnt((PVOID)&PrepareSyscall, (PVOID)&HWSyscallExceptionHandler, Dr0);
+    SetHardwareBreakingPnt((PVOID)&PrepareSyscallHash, (PVOID)&HWSyscallExceptionHandler, Dr1);
 
     DebugPrint("[+] Main HWBPs set successfully\n");
     return TRUE;

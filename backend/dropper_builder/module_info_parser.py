@@ -83,19 +83,10 @@ def build_module_dictionary(modules_path):
     return organize_dictionnary(module_dict)
 
 def fetch_available_modules():
-    # Path to the modules folder
-    modules_path = os.path.join('..\\dropper_core', 'modules')
-    modules_dict = build_module_dictionary(modules_path)
-    print("### MODULES_DICT ###")
-    print(modules_dict)
-    
-    syscalls_paths = os.path.join('..\\dropper_core', 'syscalls')
-    syscalls_dict = build_module_dictionary(syscalls_paths)
-    print("### SYSCALLS_DICT ###")
-    print(syscalls_dict)
-    
-    print("### MODULES_DICT + SYSCALLS_DICT ###")
-    print({**modules_dict, **syscalls_dict})
+    modules_path = os.path.join('..', 'dropper_core', 'modules')
+    syscalls_paths = os.path.join('..', 'dropper_core', 'syscalls')
 
-    # Build the module dictionary
+    modules_dict = build_module_dictionary(modules_path)
+    syscalls_dict = build_module_dictionary(syscalls_paths)
+
     return {**modules_dict, **syscalls_dict}

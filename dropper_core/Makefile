@@ -1,80 +1,81 @@
-# Compiler
-CC = cl.exe
+# Detect OS
+UNAME_S := $(shell uname 2>/dev/null)
+ifeq ($(UNAME_S),Linux)
+	IS_LINUX := 1
+else
+	IS_WINDOWS := 1
+endif
 
-# Linker
-LINKER = link.exe
+# Compiler setup
+ifeq ($(IS_LINUX),1)
+	CROSS_PREFIX ?= x86_64-w64-mingw32-
+	EXT := .exe
+	MKDIR = mkdir -p
+	RM = rm -rf
+else
+	CROSS_PREFIX :=
+	EXT :=
+	MKDIR = if not exist "$(1)" mkdir "$(1)"
+	RM = if exist "$(1)" rmdir /s /q "$(1)"
+endif
+
+CC = $(CROSS_PREFIX)gcc
 
 # Directories
-SRC_DIR = .
 OBJ_DIR = build
 BIN_DIR = bin
 
-# OS
-OS := $(shell uname 2>/dev/null || echo Windows)
-
-# User-defined macros (passed as arguments)
-OUT_FILENAME ?= dropper.exe
-
-# Add binaries to PATH
-RC_PATH = C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64
-export PATH := $(RC_PATH);$(PATH)
-
-# Include directories (ensure these paths are quoted)
-INCLUDE_DIRS = /I"C:/Users/lamachin3/Downloads/vcpkg-master/vcpkg-master/installed/x64-windows/include" \
-               /I"C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/um" \
-               /I"C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/shared" \
-               /I"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.40.33807/include" \
-               /I"C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt" \
-               /I"C:/Users/lamachin3/Projets/Droppy/dropper_core"
-
-# Compiler flags
-CFLAGS = /c /Zi /JMC /nologo /W3 /WX- /diagnostics:column /Od /D _CONSOLE /Gm- /EHsc /RTC1 /MT /GS \
-         /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /TC /FC /errorReport:queue
-
-# Define the directories for the libraries (using the paths from the working Visual Studio command)
-LIBPATH += /LIBPATH:"C:/Users/lamachin3/Downloads/vcpkg-master/vcpkg-master/installed/x64-windows/debug/lib"
-LIBPATH += /LIBPATH:"C:/Users/lamachin3/Downloads/vcpkg-master/vcpkg-master/installed/x64-windows/debug/lib/manual-link"
-LIBPATH += /LIBPATH:"C:/Program Files (x86)/Windows Kits/10/Lib/10.0.22621.0/um/x64"
-LIBPATH += /LIBPATH:"C:/Program Files (x86)/Windows Kits/10/Lib/10.0.22621.0/ucrt/x64"
-LIBPATH += /LIBPATH:"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.40.33807\lib\x64"
-
-# Define libraries to link against
-LIBS = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib
-
-# Linker flags
-LFLAGS = /ERRORREPORT:QUEUE /OUT:"$(BIN_DIR)/$(OUT_FILENAME)" /INCREMENTAL /NOLOGO \
-         $(LIBPATH) $(LIBS) /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed \
-         /DEBUG /PDB:"$(BIN_DIR)/Droppy_core.pdb" /ENTRY:"main" /TLBID:1 /DYNAMICBASE /NXCOMPAT /MACHINE:X64 \
-         /DEFAULTLIB:libcmt.lib /DEFAULTLIB:libucrt.lib /DEFAULTLIB:libvcruntime.lib
-
-ifneq ($(HIDE_CONSOLE), "")
-    LFLAGS += /SUBSYSTEM:WINDOWS
-else
-    LFLAGS += /SUBSYSTEM:CONSOLE
-endif
-
-# Source files
+# Source files (fill these in, or use wildcard to include all .c files)
 SRCS = /* SOURCE_FILES */
 
+# Output binary
+OUT_FILENAME ?= dropper
+OUT_EXE = $(BIN_DIR)/$(OUT_FILENAME)$(EXT)
+
 # Object files
-OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.obj)
+OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
 
-# Build rules
-all: setup compile link
+# Compiler and linker flags
+CFLAGS = -Wall -Wextra -O2 -g -Wno-implicit-function-declaration
+LIBS = -lkernel32 -luser32 -lgdi32 -lwinspool -lcomdlg32 -ladvapi32 \
+	   -lshell32 -lole32 -loleaut32 -luuid -lodbc32 -lodbccp32 -lbcrypt -lsetupapi
+LDFLAGS = -lmingw32 -lmsvcrt
 
+# Optional: GUI/console toggle
+HIDE_CONSOLE ?= false
+ifeq ($(HIDE_CONSOLE),true)
+	LDFLAGS += -Wl,--subsystem,windows
+else
+	LDFLAGS += -Wl,--subsystem,console
+endif
+
+# Default rule
+.PHONY: all
+all: setup $(OUT_EXE)
+
+# Create required directories
+.PHONY: setup
 setup:
-	@if not exist "$(OBJ_DIR)" mkdir "$(OBJ_DIR)" & if not exist "$(BIN_DIR)" mkdir "$(BIN_DIR)"
+	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(BIN_DIR)
+	@$(foreach dir, $(sort $(dir $(SRCS))), mkdir -p $(OBJ_DIR)/$(dir);)
 
-compile: $(OBJS)
+# Build rule for executable
+$(OUT_EXE): $(OBJS)
+	@echo "Linking into $@"
+	$(CC) $(OBJS) $(LDFLAGS) $(LIBS) -o $@
 
-# Object file compilation rule
-$(OBJ_DIR)/%.obj: $(SRC_DIR)/%.c
-	@if not exist "$(dir $@)" mkdir "$(dir $@)"
-	$(CC) $(CFLAGS) $(INCLUDE_DIRS) /Fo$@ $<
+# Compile source files
+$(OBJ_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	echo "Compiling $< -> $@"
+	$(CC) $(CFLAGS) -c $< -o $@
 
-link:
-	$(LINKER) $(LFLAGS) $(OBJS)
-
+# Clean rule
+.PHONY: clean
 clean:
-	@if exist "$(OBJ_DIR)" rmdir /S /Q "$(OBJ_DIR)"
-	@if exist "$(BIN_DIR)" rmdir /S /Q "$(BIN_DIR)"
+	@echo "Cleaning up..."
+	@$(RM) $(OBJ_DIR)/*.o  # Clean object files
+	@$(RM) $(BIN_DIR)/*.exe  # Clean executable
+	@$(RM) $(OBJ_DIR)
+	@$(RM) $(BIN_DIR)

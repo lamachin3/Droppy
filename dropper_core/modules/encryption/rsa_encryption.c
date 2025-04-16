@@ -6,8 +6,8 @@ BOOL RsaDecrypt(
     IN DWORD sCipherTextSize,
     IN PBYTE pPrivateKey,
     IN DWORD sPrivateKeySize,
-    OUT PVOID *pPlainTextData,
-    OUT DWORD *sPlainTextSize
+    OUT PBYTE *pPlainTextData,
+    OUT SIZE_T *sPlainTextSize
 ) {
     BCRYPT_KEY_HANDLE hKey = NULL;
     BCRYPT_ALG_HANDLE hAlg = NULL;
@@ -130,8 +130,8 @@ BOOL RsaDecryptStandAlone(
     IN DWORD sCipherTextSize,
     IN PBYTE pPrivateKey,
     IN DWORD sPrivateKeySize,
-    OUT PVOID* pPlainTextData,
-    OUT DWORD* sPlainTextSize
+    OUT PBYTE *pPlainTextData,
+    OUT SIZE_T *sPlainTextSize
 ) {
     NTSTATUS status;
     SIZE_T regionSize = sCipherTextSize;

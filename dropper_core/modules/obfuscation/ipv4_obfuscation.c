@@ -10,15 +10,10 @@ typedef NTSTATUS (NTAPI* fnRtlIpv4StringToAddressA)(
 
 
 BOOL Ipv4Deobfuscation(IN CHAR * Ipv4Array[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize) {
-        
-        PBYTE           pBuffer         = NULL,
-        TmpBuffer       = NULL;
-        
-        SIZE_T          sBuffSize       = NULL;
-        
+        PBYTE           pBuffer         = NULL, TmpBuffer = NULL;
+        SIZE_T          sBuffSize       = 0;
         PCSTR           Terminator      = NULL;
-        
-        NTSTATUS        STATUS          = NULL;
+        NTSTATUS        STATUS          = STATUS_SUCCESS;
         
         // getting RtlIpv4StringToAddressA address from ntdll.dll
         fnRtlIpv4StringToAddressA pRtlIpv4StringToAddressA = (fnRtlIpv4StringToAddressA)GetProcAddress(GetModuleHandle(TEXT("NTDLL")), "RtlIpv4StringToAddressA");

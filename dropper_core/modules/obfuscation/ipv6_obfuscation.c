@@ -9,14 +9,10 @@ typedef NTSTATUS (NTAPI* fnRtlIpv6StringToAddressA)(
 
 
 BOOL Ipv6Deobfuscation(IN CHAR* Ipv6Array[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize) {
-        PBYTE           pBuffer         = NULL,
-        TmpBuffer       = NULL;
-        
-        SIZE_T          sBuffSize       = NULL;
-        
+        PBYTE           pBuffer         = NULL, TmpBuffer       = NULL;
+        SIZE_T          sBuffSize       = 0;
         PCSTR           Terminator      = NULL;
-        
-        NTSTATUS        STATUS          = NULL;
+        NTSTATUS        STATUS          = STATUS_SUCCESS;
         
         // getting RtlIpv6StringToAddressA  address from ntdll.dll
         fnRtlIpv6StringToAddressA  pRtlIpv6StringToAddressA = (fnRtlIpv6StringToAddressA)GetProcAddress(GetModuleHandle(TEXT("NTDLL")), "RtlIpv6StringToAddressA");

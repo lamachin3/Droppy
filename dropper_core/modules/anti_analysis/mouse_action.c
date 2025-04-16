@@ -6,7 +6,7 @@ extern API_HASHING g_Api;
 // global hook handle variable
 HHOOK g_hMouseHook = NULL;
 // global mouse clicks counter
-DWORD g_dwMouseClicks = NULL;
+DWORD g_dwMouseClicks = 0;
 
 LRESULT CALLBACK HookEvent(int nCode, WPARAM wParam, LPARAM lParam) {
 
@@ -31,14 +31,14 @@ BOOL MouseClicksLogger() {
         WH_MOUSE_LL,
         (HOOKPROC)HookEvent,
         NULL,
-        NULL
+        0
     );
     if (!g_hMouseHook) {
         DebugPrint("[!] SetWindowsHookExW Failed With Error : %d \n", GetLastError());
     }
 
     // process unhandled events
-    while (g_Api.pGetMessageW(&Msg, NULL, NULL, NULL)) {
+    while (g_Api.pGetMessageW(&Msg, NULL, 0, 0)) {
 		g_Api.pDefWindowProcW(Msg.hwnd, Msg.message, Msg.wParam, Msg.lParam);
     }
 

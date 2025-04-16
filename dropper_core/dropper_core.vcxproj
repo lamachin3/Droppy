@@ -102,7 +102,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG;REMOTE_PROCESS_INJECTION;SYSCALL_ENABLED;HW_INDIRECT_SYSCALL;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -116,7 +116,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);REMOTE_PROCESS_INJECTION;SYSCALL_ENABLED;HW_INDIRECT_SYSCALL;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -139,6 +139,7 @@
     <ClInclude Include="modules\payload_loading\payload_loading.h" />
     <ClInclude Include="modules\stealth_techniques\api_hashing.h" />
     <ClInclude Include="structs.h" />
+    <ClInclude Include="syscalls\api_calls\api_calls.h" />
     <ClInclude Include="syscalls\hw_indirect_syscalls.h" />
     <ClInclude Include="syscalls\syscalls.h" />
     <ClInclude Include="typedef.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="utils\utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="config.c" />
     <ClCompile Include="dropper.c" />
     <ClCompile Include="modules\anti_analysis\anti_analysis.c" />
     <ClCompile Include="modules\anti_analysis\delay.c" />

@@ -1,5 +1,5 @@
 #include "utils.h"
-#include <Tlhelp32.h>
+#include <tlhelp32.h>
 
 #ifndef STATUS_INFO_LENGTH_MISMATCH
 #define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
@@ -11,13 +11,11 @@
 BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
 
 	HANDLE			hSnapShot		= NULL;
-	PROCESSENTRY32	Proc			= {
-					.dwSize = sizeof(PROCESSENTRY32) 
-	};
+	PROCESSENTRY32W	Proc			= { .dwSize = sizeof(PROCESSENTRY32W) };
 
 	// Takes a snapshot of the currently running processes
 
-	hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+	hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
 	if (hSnapShot == INVALID_HANDLE_VALUE){
 		DebugPrint("[!] CreateToolhelp32Snapshot Failed With Error : %d \n", GetLastError());
@@ -25,8 +23,8 @@ BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hP
 	}
 
 	// Retrieves information about the first process encountered in the snapshot.
-	if (!Process32First(hSnapShot, &Proc)) {
-		DebugPrint("[!] Process32First Failed With Error : %d \n", GetLastError());
+	if (!Process32FirstW(hSnapShot, &Proc)) {
+		DebugPrint("[!] Process32FirstW Failed With Error : %d \n", GetLastError());
 		goto _EndOfFunction;
 	}
 
@@ -68,15 +66,15 @@ BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hP
 		}
 
 	// Retrieves information about the next process recorded the snapshot.
-	// while there is still a valid output ftom Process32Next, continue looping
-	} while (Process32Next(hSnapShot, &Proc));
+	// while there is still a valid output ftom Process32NextW, continue looping
+	} while (Process32NextW(hSnapShot, &Proc));
 	
 
 
 _EndOfFunction:
 	if (hSnapShot != NULL)
 		CloseHandle(hSnapShot);
-	if (*dwProcessId == NULL || *hProcess == NULL)
+	if (dwProcessId == NULL || *dwProcessId == 0 || hProcess == NULL || *hProcess == NULL)
 		return FALSE;
 	return TRUE;
 }
@@ -89,13 +87,13 @@ _EndOfFunction:
     (p)->ObjectName = n; \
     (p)->SecurityDescriptor = s; \
     (p)->SecurityQualityOfService = NULL; \
-    }
+}
 
 
-BOOL indirectGetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
+BOOL syscall_GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
 	DebugPrint("[i] Using indirect syscall version of GetRemoteProcessHandle.\n");
     HANDLE hSnapShot = NULL;
-    PROCESSENTRY32 Proc = { .dwSize = sizeof(PROCESSENTRY32) };
+    PROCESSENTRY32W	Proc = { .dwSize = sizeof(PROCESSENTRY32W) };
 
     NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)PrepareSyscallHash(NtQuerySystemInformation_JOAA);
 
@@ -150,7 +148,7 @@ BOOL indirectGetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HA
         pCurrent = (pCurrent->NextEntryOffset) ? (PSYSTEM_PROCESS_INFORMATION)((LPBYTE)pCurrent + pCurrent->NextEntryOffset) : NULL;
     }
 
-    if (*dwProcessId == NULL) {
+    if (dwProcessId == NULL || *dwProcessId == 0) {
         DebugPrint("[-] Process not found.\n");
         goto _EndOfFunction;
     }
@@ -197,4 +195,51 @@ _EndOfFunction:
 	}
     
     return (*dwProcessId != NULL && *hProcess != NULL);
+}
+
+VOID _RtlInitUnicodeString(OUT PUNICODE_STRING UsStruct, IN OPTIONAL PCWSTR Buffer) {
+
+	if ((UsStruct->Buffer = (PWSTR)Buffer)) {
+
+		unsigned int Length = wcslen(Buffer) * sizeof(WCHAR);
+		if (Length > 0xfffc)
+			Length = 0xfffc;
+
+		UsStruct->Length = Length;
+		UsStruct->MaximumLength = UsStruct->Length + sizeof(WCHAR);
+	}
+
+	else UsStruct->Length = UsStruct->MaximumLength = 0;
+}
+
+#ifdef _WIN64
+PPEB GetPEBStealthy() {
+    void* pTeb = (void*)__readgsqword(0x30); // TEB base for x64
+    return *(PPEB*)((unsigned char*)pTeb + 0x60); // Offset to PEB
+}
+#elif _WIN32
+PPEB GetPEBStealthy() {
+    void* pTeb;
+    __asm {
+        mov eax, fs:[0x18]  // TEB base for x86
+        mov pTeb, eax
+    }
+    return *(PPEB*)((unsigned char*)pTeb + 0x30); // Offset to PEB
+}
+#endif
+
+BOOL IsHandleValid(HANDLE h) {
+    DWORD flags = 0;
+
+    // Check if handle is NULL or INVALID_HANDLE_VALUE first
+    if (h == NULL || h == INVALID_HANDLE_VALUE) {
+        return FALSE;
+    }
+
+    // Try to get handle information
+    if (GetHandleInformation(h, &flags)) {
+        return TRUE;
+    }
+
+    return FALSE;
 }

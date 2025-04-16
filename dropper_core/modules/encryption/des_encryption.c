@@ -1,7 +1,7 @@
 #include "encryption.h"
 
 
-BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PVOID *pPlainTextData, OUT DWORD *sPlainTextSize) {
+BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize) {
     BCRYPT_KEY_HANDLE hKey = NULL;
     BCRYPT_ALG_HANDLE hAlg = NULL;
     NTSTATUS status;

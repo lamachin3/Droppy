@@ -31,7 +31,7 @@ BOOL DeleteSelf() {
 
 	// setting the new data stream name buffer and size in the 'FILE_RENAME_INFO' structure
 	pRename->FileNameLength = sizeof(NewStream);
-	RtlCopyMemory(pRename->FileName, NewStream, sizeof(NewStream));
+	RtlCopyMemory(pRename->FileName, NewStream, wcslen(NewStream) * sizeof(WCHAR));
 
 	//--------------------------------------------------------------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ BOOL DeleteSelf() {
 	// RENAMING
 
 	// openning a handle to the current file
-	hFile = g_Api.pCreateFileW(szPath, DELETE | SYNCHRONIZE, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+	hFile = g_Api.pCreateFileW(szPath, DELETE | SYNCHRONIZE, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile == INVALID_HANDLE_VALUE) {
 		DebugPrint("[!] CreateFileW [R] Failed With Error : %d \n", GetLastError());
 		return FALSE;
@@ -68,7 +68,7 @@ BOOL DeleteSelf() {
 	// DELEING
 
 	// openning a new handle to the current file
-	hFile = g_Api.pCreateFileW(szPath, DELETE | SYNCHRONIZE, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+	hFile = g_Api.pCreateFileW(szPath, DELETE | SYNCHRONIZE, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile == INVALID_HANDLE_VALUE && GetLastError() == ERROR_FILE_NOT_FOUND) {
 		// in case the file is already deleted
 		return TRUE;

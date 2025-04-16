@@ -60,6 +60,9 @@
     <ClInclude Include="config.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="syscalls\api_calls\api_calls.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="modules\anti_analysis\anti_analysis.c">
@@ -165,6 +168,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="dropper.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="config.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

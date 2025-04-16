@@ -1,7 +1,9 @@
 #include "encryption.h"
 
+#define BCRYPT_CHACHA20_POLY1305_ALGORITHM L"CHACHA20_POLY1305"
 
-BOOL ChaCha20Decrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pNonce, OUT PVOID *pPlainTextData, OUT DWORD *sPlainTextSize) {
+
+BOOL ChaCha20Decrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pNonce, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize) {
     BCRYPT_KEY_HANDLE hKey = NULL;
     BCRYPT_ALG_HANDLE hAlg = NULL;
     NTSTATUS status;

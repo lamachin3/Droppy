@@ -9,14 +9,10 @@ typedef NTSTATUS (NTAPI* fnRtlEthernetStringToAddressA)(
 
 
 BOOL MacDeobfuscation(IN CHAR* MacArray[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize) {
-        PBYTE           pBuffer         = NULL,
-        TmpBuffer       = NULL;
-        
-        SIZE_T          sBuffSize       = NULL;
-        
+        PBYTE           pBuffer         = NULL, TmpBuffer       = NULL;
+        SIZE_T          sBuffSize       = 0;
         PCSTR           Terminator      = NULL;
-        
-        NTSTATUS        STATUS          = NULL;
+        NTSTATUS        STATUS          = STATUS_SUCCESS;
         
         // getting fnRtlEthernetStringToAddressA  address from ntdll.dll
         fnRtlEthernetStringToAddressA  pRtlEthernetStringToAddressA  = (fnRtlEthernetStringToAddressA)GetProcAddress(GetModuleHandle(TEXT("NTDLL")), "RtlEthernetStringToAddressA");

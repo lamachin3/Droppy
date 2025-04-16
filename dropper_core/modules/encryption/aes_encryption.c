@@ -3,7 +3,6 @@
 #pragma comment(lib, "Bcrypt.lib")
 
 
-#define NT_SUCCESS(status)              (((NTSTATUS)(status)) >= 0)
 #define KEYSIZE         32
 #define IVSIZE          16
 
@@ -26,16 +25,16 @@ BOOL InstallAesDecryption(PAES pAes) {
         BCRYPT_ALG_HANDLE               hAlgorithm = NULL;
         BCRYPT_KEY_HANDLE               hKeyHandle = NULL;
 
-        ULONG                           cbResult = NULL;
-        DWORD                           dwBlockSize = NULL;
+        ULONG                           cbResult = 0;
+        DWORD                           dwBlockSize = 0;
 
-        DWORD                           cbKeyObject = NULL;
-        PBYTE                           pbKeyObject = NULL;
+        DWORD                           cbKeyObject = 0;
+        PBYTE                           pbKeyObject = 0;
 
         PBYTE                           pbPlainText = NULL;
-        DWORD                           cbPlainText = NULL;
+        DWORD                           cbPlainText = 0;
 
-        NTSTATUS                        STATUS          = NULL;
+        NTSTATUS                        STATUS          = STATUS_SUCCESS;
 
         // intializing "hAlgorithm" as AES algorithm Handle
         STATUS = BCryptOpenAlgorithmProvider(&hAlgorithm, BCRYPT_AES_ALGORITHM, NULL, 0);
@@ -114,7 +113,7 @@ _EndOfFunc:
 
 
 // wrapper function for InstallAesDecryption that make things easier
-BOOL SimpleAesDecryption(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PVOID *pPlainTextData, OUT DWORD *sPlainTextSize) {
+BOOL SimpleAesDecryption(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize) {
         if (pCipherTextData == NULL || sCipherTextSize == NULL || pKey == NULL || pIv == NULL)
                 return FALSE;
 

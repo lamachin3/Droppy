@@ -3,13 +3,13 @@
 
 // defining how does the function look - more on this structure in the api hashing part
 typedef NTSTATUS(NTAPI* fnSystemFunction032)(
-        struct USTRING* Img,
-        struct USTRING* Key
+        USTRING* Img,
+        USTRING* Key
 );
 
 BOOL Rc4Decrypt(IN PBYTE pPayloadData, IN SIZE_T sPayloadSize, IN PBYTE pRc4Key, IN SIZE_T dwRc4KeySize, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize) {
         // The return of SystemFunction032
-        NTSTATUS STATUS = NULL;
+        NTSTATUS STATUS = STATUS_SUCCESS;
     
         // Making 2 USTRING variables, 1 passed as key and one passed as the block of data to encrypt/decrypt
         USTRING Key = { .Buffer = pRc4Key, .Length = (USHORT)dwRc4KeySize, .MaximumLength = (USHORT)dwRc4KeySize };
