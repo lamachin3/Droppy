@@ -34,14 +34,18 @@ def extract_doxygen_info(file_path):
     # Extract @name and @brief sections
     names = extract_doxygen_elements(file_content, 'name')
     briefs = extract_doxygen_elements(file_content, 'brief')
+    tags = extract_doxygen_elements(file_content, 'tags')
+    while len(tags) < len(names):
+        tags.append("")
 
     # Extract the section name from the file path
     section = os.path.basename(os.path.dirname(file_path))
 
     # Combine the results into a list of dictionaries
     results = []
-    for name, brief in zip(names, briefs):
-        results.append({'brief': brief, 'name': name, 'section': section})
+    for name, brief, tag in zip(names, briefs, tags):
+        results.append({'brief': brief, 'name': name, 'section': section, 'tags': tag.split(",")})
+    print(results)
     return results
 
 def organize_dictionnary(modules_dict):   

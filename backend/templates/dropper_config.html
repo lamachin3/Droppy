@@ -39,7 +39,7 @@
                                         <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ module.brief }}"></i>
                                     </label>
                                 </div>
-                                {% if "remote process" in module.name.lower() %}
+                                {% if 'tags' in module and "remote_process" in module.tags %}
                                     <div id="textbox_{{ module.name.replace(' ', '_') }}" class="input-group mb-3" style="display: none;">
                                         <input type="text" class="form-control" name="process_name" placeholder="Process Name" aria-label="Process Name" aria-describedby="basic-addon2">
                                         <span class="input-group-text" id="basic-addon2">.exe</span>

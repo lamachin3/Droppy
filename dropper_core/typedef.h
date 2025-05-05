@@ -3,6 +3,11 @@
 
 #include <windows.h>
 
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#define ProcessBasicInformation 0
+#define RTL_USER_PROC_PARAMS_NORMALIZED   0x00000001
+#define OBJ_CASE_INSENSITIVE 0x00000040L
+#define THREAD_CREATE_FLAGS_CREATE_SUSPENDED 0x00000001
 
 // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-gettickcount64
 typedef ULONGLONG(WINAPI* fnGetTickCount64)();

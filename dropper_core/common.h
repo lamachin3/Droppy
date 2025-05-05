@@ -46,6 +46,7 @@ UINT32 HashStringJenkinsOneAtATime32BitA(_In_ PCHAR String);
 #define NtFreeVirtualMemory_JOAA                0x95687873
 #define NtQueueApcThread_JOAA                   0xEB15EA8A
 #define NtOpenProcess_JOAA                      0x837FAFFE
+#define NtOpenSection_JOAA                      0x0C31B099
 #define GetTickCount64_JOAA                     0x00BB616E
 #define OpenProcess_JOAA                        0xAF03507E
 #define CallNextHookEx_JOAA                     0xB8B1ADC1
@@ -67,9 +68,6 @@ BOOL InitializeApiFunctions();
 
 /* Syscalls */
 #include "syscalls/syscalls.h"
-//InitializeSyscalls();
-
-/* Anti Analysis */
 
 // the new data stream name to self delete
 #define NEW_STREAM L":Delete"

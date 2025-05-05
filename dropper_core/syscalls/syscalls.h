@@ -3,7 +3,6 @@
 
 #include "../common.h"
 #include "hw_indirect_syscalls.h"
-#include "api_calls/api_calls.h"
 
 BOOL InitializeSyscalls();
 

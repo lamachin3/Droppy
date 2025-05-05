@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, flash
+from flask import render_template, request, redirect, url_for, send_from_directory, jsonify, flash
 from urllib.parse import urlencode
 
 from utils import *

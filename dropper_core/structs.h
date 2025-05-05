@@ -1,9 +1,3 @@
-/*
-    contains windows structures and enumerations needed.
-    e.g.: PEB + TEB structures
-    e.g.: SYSTEM_INFORMATION_CLASS enum
-*/
-
 #pragma once
 
 #include <windows.h>
@@ -12,10 +6,6 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
-//#define INVALID_HANDLE_VALUE ((HANDLE)(LONG_PTR)-1)
-#define ProcessBasicInformation 0
-#define RTL_USER_PROC_PARAMS_NORMALIZED   0x00000001
 
 // this is what SystemFunction032 function take as a parameter
 typedef struct _USTRING {
@@ -1015,7 +1005,7 @@ typedef NTSTATUS(NTAPI* NtCreateSection_t)(
 typedef NTSTATUS(NTAPI* NtProtectVirtualMemory_t)(
 	IN HANDLE               ProcessHandle,
 	IN OUT PVOID            *BaseAddress,
-	IN OUT PULONG           NumberOfBytesToProtect,
+	IN OUT PSIZE_T          NumberOfBytesToProtect,
 	IN ULONG                NewAccessProtection,
 	OUT PULONG              OldAccessProtection );
 
@@ -1031,8 +1021,8 @@ typedef NTSTATUS(NTAPI* NtWriteVirtualMemory_t)(
     IN HANDLE               ProcessHandle,
     IN PVOID                BaseAddress,
     IN PVOID                Buffer,
-    IN ULONG                NumberOfBytesToWrite,
-    OUT PULONG              NumberOfBytesWritten OPTIONAL);
+    IN SIZE_T                NumberOfBytesToWrite,
+    OUT PSIZE_T              NumberOfBytesWritten OPTIONAL);
 
 typedef	NTSTATUS(NTAPI* NtCreateThreadEx_t)(
     OUT PHANDLE             hThread,
@@ -1126,7 +1116,37 @@ typedef NTSTATUS(NTAPI* NtReadVirtualMemory_t)(
     IN PVOID                BaseAddress,
     OUT PVOID               Buffer,
     IN ULONG                NumberOfBytesToRead,
-    OUT PULONG              NumberOfBytesReaded OPTIONAL );
+    OUT PSIZE_T              NumberOfBytesReaded OPTIONAL );
+
+typedef NTSTATUS(NTAPI* NtOpenSection_t)(
+    OUT PHANDLE             SectionHandle,
+    IN ACCESS_MASK          DesiredAccess,
+    IN POBJECT_ATTRIBUTES   ObjectAttributes );
+
+typedef NTSTATUS(NTAPI* NtMapViewOfSection_t)(
+    IN HANDLE SectionHandle,
+    IN HANDLE ProcessHandle,
+    IN OUT PVOID* BaseAddress,
+    IN ULONG ZeroBits,
+    IN SIZE_T CommitSize,
+    IN OUT PLARGE_INTEGER SectionOffset,
+    IN PSIZE_T ViewSize,
+    IN DWORD InheritDisposition,
+    IN ULONG AllocationType,
+    IN ULONG Protect
+    );
+
+typedef NTSTATUS(NTAPI* NtUnmapViewOfSection_t)(
+    IN HANDLE               ProcessHandle,
+    IN PVOID                BaseAddress );
+
+typedef NTSTATUS(NTAPI* NtTerminateProcess_t)(
+    IN HANDLE               ProcessHandle OPTIONAL,
+    IN NTSTATUS             ExitStatus);
+
+typedef NTSTATUS(NTAPI* NtResumeThread_t)(
+    IN HANDLE               ThreadHandle,
+    OUT PULONG              SuspendCount OPTIONAL);
 
 
 // https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntrtl.h#L2722
@@ -1148,17 +1168,17 @@ typedef NTSTATUS(NTAPI* RtlCreateProcessParametersEx_t)(
 // https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntpsapi.h#L2288
 
 typedef NTSTATUS(NTAPI* NtCreateUserProcess_t)(
-	PHANDLE							ProcessHandle,
-	PHANDLE							ThreadHandle,
-	ACCESS_MASK						ProcessDesiredAccess,
-	ACCESS_MASK						ThreadDesiredAccess,
-	POBJECT_ATTRIBUTES				ProcessObjectAttributes,
-	POBJECT_ATTRIBUTES				ThreadObjectAttributes,
-	ULONG							ProcessFlags,
-	ULONG							ThreadFlags,
-	PRTL_USER_PROCESS_PARAMETERS	ProcessParameters,
-	PPS_CREATE_INFO					CreateInfo,
-	PPS_ATTRIBUTE_LIST				pAttributeList);
+    PHANDLE							ProcessHandle,
+    PHANDLE							ThreadHandle,
+    ACCESS_MASK						ProcessDesiredAccess,
+    ACCESS_MASK						ThreadDesiredAccess,
+    POBJECT_ATTRIBUTES				ProcessObjectAttributes,
+    POBJECT_ATTRIBUTES				ThreadObjectAttributes,
+    ULONG							ProcessFlags,
+    ULONG							ThreadFlags,
+    PRTL_USER_PROCESS_PARAMETERS	ProcessParameters,
+    PPS_CREATE_INFO					CreateInfo,
+    PPS_ATTRIBUTE_LIST				pAttributeList);
 
 
 #define PS_ATTRIBUTE_NUMBER_MASK    0x0000ffff

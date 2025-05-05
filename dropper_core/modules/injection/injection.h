@@ -21,6 +21,7 @@ BOOL inject_payload(LPVOID Payload, SIZE_T PayloadSize, ...);
  * 
  * @name Remote Process Injection
  * @section injection_technique
+ * @tags remote_process
 */
 BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellcode, SIZE_T sPayloadSize);
 
@@ -40,6 +41,7 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
  * 
  * @name APC Injection
  * @section injection_technique
+ * @tags
  */
 BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPayloadSize);
 
@@ -59,8 +61,9 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
  * 
  * @return TRUE if the payload was successfully injected, FALSE otherwise.
  * 
- * @name Early Bird Injection (Remote Process)
+ * @name Early Bird Injection
  * @section injection_technique
+ * @tags remote_process
 */
 BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName, PBYTE pPayload, SIZE_T sPayloadSize);
 

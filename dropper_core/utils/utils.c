@@ -197,21 +197,6 @@ _EndOfFunction:
     return (*dwProcessId != NULL && *hProcess != NULL);
 }
 
-VOID _RtlInitUnicodeString(OUT PUNICODE_STRING UsStruct, IN OPTIONAL PCWSTR Buffer) {
-
-	if ((UsStruct->Buffer = (PWSTR)Buffer)) {
-
-		unsigned int Length = wcslen(Buffer) * sizeof(WCHAR);
-		if (Length > 0xfffc)
-			Length = 0xfffc;
-
-		UsStruct->Length = Length;
-		UsStruct->MaximumLength = UsStruct->Length + sizeof(WCHAR);
-	}
-
-	else UsStruct->Length = UsStruct->MaximumLength = 0;
-}
-
 #ifdef _WIN64
 PPEB GetPEBStealthy() {
     void* pTeb = (void*)__readgsqword(0x30); // TEB base for x64
@@ -242,4 +227,24 @@ BOOL IsHandleValid(HANDLE h) {
     }
 
     return FALSE;
+}
+
+wchar_t* _wcscpy(wchar_t* d, const wchar_t* s)
+{
+    wchar_t* a = d;
+    while ((*d++ = *s++));
+    return a;
+}
+
+wchar_t* _wcscat(wchar_t* dest, const wchar_t* src)
+{
+    _wcscpy(dest + _wcslen(dest), src);
+    return dest;
+}
+
+size_t _wcslen(const wchar_t* s)
+{
+    const wchar_t* a;
+    for (a = s; *s; s++);
+    return s - a;
 }

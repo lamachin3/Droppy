@@ -99,6 +99,8 @@ def build_dropper(dropper_config: dict):
     temp_dir = copy_project_to_temp()
 
     # Step 2: Fill config headers with preprocessing macros and constants
+    print("🔹 Filling config headers...")
+    print(f"🔹 Shellcode config: {dropper_config}")
     fill_config_header(dropper_config, temp_dir)
 
     # Step 3: Construct the Make command

