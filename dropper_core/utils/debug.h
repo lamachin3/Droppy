@@ -27,5 +27,6 @@
 
 VOID DebugPrint(PCSTR format, ...);
 VOID WDebugPrint(PCWSTR format, ...);
+void PrintMemoryBytes(HANDLE hProcess, PVOID pAddress, SIZE_T byteCount);
 
 #endif

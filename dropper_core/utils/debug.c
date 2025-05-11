@@ -30,3 +30,25 @@ VOID WDebugPrint(PCWSTR format, ...) {
     va_end(args);
 #endif
 }
+
+void PrintMemoryBytes(HANDLE hProcess, PVOID pAddress, SIZE_T byteCount) {
+    BYTE buffer[20]; // Buffer to hold the first 20 bytes
+    SIZE_T bytesRead = 0;
+
+    if (byteCount > sizeof(buffer)) {
+        printf("[!] Requested byte count exceeds buffer size.\n");
+        return;
+    }
+
+    if (ReadProcessMemory(hProcess, pAddress, buffer, byteCount, &bytesRead)) {
+        printf("\n\n<===    MEMORY OUTPUT    ===>\n\n");
+        printf("[i] Memory at 0x%p (First %llu bytes):\n", pAddress, byteCount);
+        for (SIZE_T i = 0; i < bytesRead; i++) {
+            printf("%02X ", buffer[i]);
+        }
+        printf("\n\n<===========================>\n\n");
+    }
+    else {
+        printf("[!] Failed to read process memory at 0x%p. Error: %lu\n", pAddress, GetLastError());
+    }
+}
