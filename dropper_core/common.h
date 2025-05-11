@@ -71,9 +71,3 @@ BOOL InitializeApiFunctions();
 
 // the new data stream name to self delete
 #define NEW_STREAM L":Delete"
-
-/* Obfuscation */
-BOOL deobfuscate(IN CHAR * ShellcodeArray[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize);
-
-/* Encryption */
-BOOL decrypt(IN PBYTE pShellcode, IN SIZE_T sShellcodeSize, IN PBYTE pKey, IN SIZE_T sKeySize, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);

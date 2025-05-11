@@ -14,6 +14,7 @@ BOOL InitializeSyscalls();
  * @return TRUE if the syscall has been found, FALSE otherwise.
  * 
  * @name HW Indirect Syscall
+ * @flags HW_INDIRECT_SYSCALL
  */
 UINT64 PrepareSyscall(char* functionName);
 

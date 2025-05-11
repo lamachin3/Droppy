@@ -13,7 +13,11 @@ BOOL decrypt(IN PBYTE pShellcode, IN SIZE_T sShellcodeSize, IN PBYTE pKey, IN SI
 #elif defined(RSA_ENCRYPTION)
     return RsaDecrypt(pShellcode, sShellcodeSize, pPrivateKey, sPrivateKeySize, pPlainTextData, sPlainTextSize);
 #elif defined(XOR_ENCRYPTION)
-    return XorDecrypt(pShellcode, sShellcodeSize, pKey, sKeySize);
+    NTSTATUS status = 0;
+    status = XorDecrypt(pShellcode, sShellcodeSize, pKey, sKeySize);
+    *pPlainTextData = pShellcode;
+    *sPlainTextSize = sShellcodeSize;
+    return status;
 #endif
 
     return TRUE;

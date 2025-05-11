@@ -15,6 +15,7 @@
  * @return TRUE if the anti-analysis measures were successfully and the program can continue, FALSE otherwise.
  * 
  * @name Anti Analysis
+ * @flags ANTI_ANALYSIS_ENABLED
  */
 BOOL AntiAnalysis(DWORD dwMilliSeconds);
 

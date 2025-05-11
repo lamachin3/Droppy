@@ -92,7 +92,7 @@ BOOL ReadNtdllFromASuspendedProcess(IN PWSTR pwProcessName, OUT PVOID* ppNtdllBu
 #else
 	if (!CreateProcessA(
 		NULL,
-		wcProcessPath,
+		(LPSTR)wcProcessPath,
 		NULL,
 		NULL,
 		FALSE,
@@ -125,9 +125,6 @@ BOOL ReadNtdllFromASuspendedProcess(IN PWSTR pwProcessName, OUT PVOID* ppNtdllBu
 #endif
 
 	*ppNtdllBuf = pNtdllBuffer;
-
-	DebugPrint("[#] Press <Enter> To Terminate The Child Process ... ");
-	getchar();
 
 	// terminating the process
 	if (DebugActiveProcessStop(Pi.dwProcessId) && TerminateProcess(Pi.hProcess, 0)) {

@@ -63,6 +63,12 @@
     <ClInclude Include="syscalls\api_calls\api_calls.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="utils\syscall_functions.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\unhooking\unhooking.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="modules\anti_analysis\anti_analysis.c">
@@ -171,6 +177,18 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="config.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\syscall_functions.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\unhooking\known_dlls_unhooking.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\unhooking\suspended_unhooking.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\unhooking\unhooking.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

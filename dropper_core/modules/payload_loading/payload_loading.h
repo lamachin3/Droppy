@@ -15,6 +15,7 @@ BOOL payload_loading(PVOID* pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
  * @return TRUE if the payload is successfully written, FALSE otherwise.
  * 
  * @name In Memory
+ * @flags
  */
 BOOL WritePayloadInMemory(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
 
@@ -32,6 +33,7 @@ BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, 
  * @return TRUE if successful, FALSE if memory protection changes fail.
  * 
  * @name Function Stomping
+ * @flags FUNCTION_STOMPING
  */
 BOOL WritePayloadViaFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
 
@@ -47,8 +49,40 @@ BOOL WritePayloadViaFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPa
  * @return TRUE if successful, FALSE otherwise.
  * 
  * @name Remote Function Stomping
+ * @flags FUNCTION_STOMPING
  */
-BOOL WritePayloadViaRemoteFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
+BOOL WritePayloadViaRemoteFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize, HANDLE hProcess);
 
+/**
+ * @brief Writes a payload to a memory location via a local file mapping.
+ * 
+ * This function creates a file mapping in the local process and writes a given payload to it. 
+ * 
+ * @param[in] pPayload Pointer to the payload to be written.
+ * @param[in] sPayloadSize Size of the payload in bytes.
+ * @param[out] pAddress Pointer to the memory address where the payload is written.
+ * 
+ * @return TRUE if successful, FALSE otherwise.
+ * 
+ * @name Local File Mapping
+ * @flags FILE_MAPPING
+ */
+BOOL  WritePayloadViaLocalFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize, OUT PVOID* pAddress);
+
+/**
+ * @brief Writes a payload to a memory location via a remote file mapping.
+ * 
+ * This function creates a file mapping in a remote process and writes a given payload to it. 
+ * 
+ * @param[in] pPayload Pointer to the payload to be written.
+ * @param[in] sPayloadSize Size of the payload in bytes.
+ * @param[out] pAddress Pointer to the memory address where the payload is written.
+ * 
+ * @return TRUE if successful, FALSE otherwise.
+ * 
+ * @name Remote File Mapping
+ * @flags FILE_MAPPING
+ */
+BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize, OUT PVOID* pAddress, IN HANDLE hProcess);
 
 #endif

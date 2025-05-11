@@ -21,7 +21,7 @@
                                     <option
                                         class="select-item"
                                         id="{{ module.name.replace(' ', '_') }}"
-                                        value="{{ module.name }}"
+                                        value="{{ module.flags }}"
                                     >
                                         {{ module.name }}
                                     </option>
@@ -32,7 +32,7 @@
                                 <div class="form-check">
                                     <input
                                         class="form-check-input" type="checkbox" name="{{ section }}" id="{{ module.name.replace(' ', '_') }}" 
-                                        value="{{ module.name }}" onchange="toggleTextBox('{{ module.name.replace(' ', '_') }}')"
+                                        value="{{ module.flags }}" onchange="toggleTextBox('{{ module.name.replace(' ', '_') }}')"
                                     >
                                     <label class="form-check-label fw-medium" for="{{ module.name.replace(' ', '_') }}">
                                         {{ module.name }}

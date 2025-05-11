@@ -99,14 +99,13 @@ def build_dropper(dropper_config: dict):
     temp_dir = copy_project_to_temp()
 
     # Step 2: Fill config headers with preprocessing macros and constants
-    print("🔹 Filling config headers...")
-    print(f"🔹 Shellcode config: {dropper_config}")
+    print(f"🔹 Shellcode pre-processing flags: {", ".join(dropper_config.get("preprocessing_macros"))}")
     fill_config_header(dropper_config, temp_dir)
 
     # Step 3: Construct the Make command
     set_makefile_source_files(temp_dir)
     hide_console = dropper_config.get('hide_console', None)
-    command = ["make", "-f", "./Makefile"] + [
+    command = ["make", "-f", "./Makefile", "-j10"] + [
         f"OUTPUT_FILE={out_filename}",
         f"HIDE_CONSOLE={"true" if hide_console else "false"}",
     ]

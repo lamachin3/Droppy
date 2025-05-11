@@ -3,6 +3,9 @@
 
 #include "../../common.h"
 
+
+BOOL decrypt(IN PBYTE pShellcode, IN SIZE_T sShellcodeSize, IN PBYTE pKey, IN SIZE_T sKeySize, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
+
 /**
  * @brief Decrypts the given ciphertext using AES decryption.
  *
@@ -16,11 +19,12 @@
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name AES Encryption
+ * @flags ENCRYPTED_PAYLOAD,AES_ENCRYPTION
  */
 BOOL SimpleAesDecryption(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
 
 /**
- * @brief Decrypts the given ciphertext using ChaCha20 decryption.
+ * @_brief Decrypts the given ciphertext using ChaCha20 decryption.
  *
  * @param pCipherTextData Pointer to the ciphertext data.
  * @param sCipherTextSize Size of the ciphertext data.
@@ -36,7 +40,7 @@ BOOL SimpleAesDecryption(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN 
 BOOL ChaCha20Decrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pNonce, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
 
 /**
- * @brief Decrypts the given ciphertext using DES decryption.
+ * @_brief Decrypts the given ciphertext using DES decryption.
  *
  * @param pCipherTextData Pointer to the ciphertext data.
  * @param sCipherTextSize Size of the ciphertext data.
@@ -62,10 +66,12 @@ BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKe
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name RC4 Encryption
+ * @flags ENCRYPTED_PAYLOAD,RC4_ENCRYPTION
+ */
 BOOL Rc4Decrypt(IN PBYTE pPayloadData, IN SIZE_T sPayloadSize, IN PBYTE pRc4Key, IN SIZE_T dwRc4KeySize, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize);
 
 /**
- * @brief Decrypts the given ciphertext using RSA decryption.
+ * @_brief Decrypts the given ciphertext using RSA decryption.
  *
  * @param pCipherTextData Pointer to the ciphertext data.
  * @param sCipherTextSize Size of the ciphertext data.
@@ -94,6 +100,7 @@ void ModExp(BYTE* result, BYTE* base, BYTE* exp, BYTE* mod, size_t modSize);
  * @return TRUE if decryption is successful, FALSE otherwise.
  * 
  * @name XOR Encryption
+ * @flags ENCRYPTED_PAYLOAD,XOR_ENCRYPTION
  */
 BOOL XorDecrypt(IN PBYTE pShellcode, IN SIZE_T sShellcodeSize, IN PBYTE bKey, IN SIZE_T sKeySize);
 

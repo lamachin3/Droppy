@@ -52,11 +52,6 @@ int main() {
 
     DebugPrint("\n### Setup Complete ###\n\n");
 
-#ifdef DEBUG
-    DebugPrint("\n>> Press any key to continue...");
-    getchar();
-#endif
-
 #ifdef ENTROPY_REDUCTION_ENABLED
     init_obfuscation();
 #endif

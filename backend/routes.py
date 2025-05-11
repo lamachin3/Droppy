@@ -33,7 +33,7 @@ def init_routes(app):
     @app.route("/config", methods=["GET"])
     def config(messages={}):
         messages_param = request.args.get("messages")
-    
+
         if messages_param:
             try:
                 # Convert string back to a dictionary

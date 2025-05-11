@@ -3,6 +3,8 @@
 
 #include "../../common.h"
 
+BOOL deobfuscate(IN CHAR* ShellcodeArray[], IN SIZE_T NmbrOfElements, OUT PBYTE* ppDAddress, OUT SIZE_T* pDSize);
+
 /**
  * @brief Deobfuscates an IPv4 address from an array of characters.
  *
@@ -19,8 +21,9 @@
  * @return TRUE if the deobfuscation is successful, FALSE otherwise.
  * 
  * @name IPV4 Obfuscation
+ * @flags OBFUSCATED_PAYLOAD,IPV4_OBFUSCATION
  */
-BOOL Ipv4Deobfuscation(IN CHAR * Ipv4Array[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize);
+BOOL Ipv4Deobfuscation(IN CHAR* Ipv4Array[], IN SIZE_T NmbrOfElements, OUT PBYTE* ppDAddress, OUT SIZE_T* pDSize);
 
 /**
  * @brief Deobfuscates an IPv6 address from an array of characters.
@@ -38,6 +41,7 @@ BOOL Ipv4Deobfuscation(IN CHAR * Ipv4Array[], IN SIZE_T NmbrOfElements, OUT PBYT
  * @return TRUE if the deobfuscation is successful, FALSE otherwise.
  * 
  * @name IPV6 Obfuscation
+ * @flags OBFUSCATED_PAYLOAD,IPV6_OBFUSCATION
  */
 BOOL Ipv6Deobfuscation(IN CHAR* Ipv6Array[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize);
 
@@ -57,6 +61,7 @@ BOOL Ipv6Deobfuscation(IN CHAR* Ipv6Array[], IN SIZE_T NmbrOfElements, OUT PBYTE
  * @return TRUE if the deobfuscation is successful, FALSE otherwise.
  * 
  * @name MAC Obfuscation
+ * @flags OBFUSCATED_PAYLOAD,MAC_OBFUSCATION
  */
 BOOL MacDeobfuscation(IN CHAR* MacArray[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize);
 
@@ -76,6 +81,7 @@ BOOL MacDeobfuscation(IN CHAR* MacArray[], IN SIZE_T NmbrOfElements, OUT PBYTE *
  * @return TRUE if the deobfuscation is successful, FALSE otherwise.
  * 
  * @name UUID Obfuscation
+ * @flags OBFUSCATED_PAYLOAD,UUID_OBFUSCATION
  */
 BOOL UuidDeobfuscation(IN CHAR* UuidArray[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize);
 

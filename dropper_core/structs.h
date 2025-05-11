@@ -6,7 +6,6 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-
 // this is what SystemFunction032 function take as a parameter
 typedef struct _USTRING {
     USHORT Length;
@@ -1180,6 +1179,34 @@ typedef NTSTATUS(NTAPI* NtCreateUserProcess_t)(
     PPS_CREATE_INFO					CreateInfo,
     PPS_ATTRIBUTE_LIST				pAttributeList);
 
+#define LIST_MODULES_DEFAULT 0x0  // This is the default one app would get without any flag.
+#define LIST_MODULES_32BIT   0x01  // list 32bit modules in the target process.
+#define LIST_MODULES_64BIT   0x02  // list all 64bit modules. 32bit exe will be stripped off.
+#define LIST_MODULES_ALL   (LIST_MODULES_32BIT | LIST_MODULES_64BIT)
+
+typedef struct _MODULEINFO {
+    LPVOID lpBaseOfDll;
+    DWORD SizeOfImage;
+    LPVOID EntryPoint;
+} MODULEINFO, * LPMODULEINFO;
+
+typedef BOOL(WINAPI* EnumProcessModules_t)(
+    HANDLE hProcess,
+    HMODULE *lphModule,
+    DWORD cb,
+    LPDWORD lpcbNeeded);
+
+typedef DWORD(WINAPI* GetModuleBaseNameA_t)(
+    IN           HANDLE  hProcess,
+    IN OPTIONAL  HMODULE hModule,
+    OUT          LPSTR   lpBaseName,
+    IN           DWORD   nSize);
+
+typedef BOOL(WINAPI* GetModuleInformation_t)(
+    IN          HANDLE       hProcess,
+    IN          HMODULE      hModule,
+    OUT         LPMODULEINFO lpmodinfo,
+    IN          DWORD        cb);
 
 #define PS_ATTRIBUTE_NUMBER_MASK    0x0000ffff
 #define PS_ATTRIBUTE_THREAD         0x00010000 // Attribute may be used with thread creation

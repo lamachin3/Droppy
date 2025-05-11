@@ -58,7 +58,6 @@ all: setup $(OUT_EXE)
 setup:
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BIN_DIR)
-	@$(foreach dir, $(sort $(dir $(SRCS))), mkdir -p $(OBJ_DIR)/$(dir);)
 
 # Build rule for executable
 $(OUT_EXE): $(OBJS)
