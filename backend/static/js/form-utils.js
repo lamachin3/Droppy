@@ -1,10 +1,11 @@
 function toggleTextBox(moduleId) {
-
-    const checkbox = document.getElementById(moduleId);
-    const textbox = document.getElementById('textbox_' + moduleId);
-    if (checkbox.checked) {
-        textbox.style.display = 'flex';
+    const textBox = document.getElementById(`textbox_${moduleId}`);
+    const checkBox = document.getElementById(moduleId);
+    if (checkBox.checked) {
+        textBox.style.display = "flex";
     } else {
-        textbox.style.display = 'none';
+        textBox.style.display = "none";
+        // Optionally clear the value if hidden
+        textBox.querySelector("input").value = "";
     }
 }

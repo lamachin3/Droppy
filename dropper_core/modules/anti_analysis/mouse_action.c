@@ -1,8 +1,6 @@
 #include "anti_analysis.h"
 
 /* GLOBAL VARIABLES */
-// global api hashing variable
-extern API_HASHING g_Api;
 // global hook handle variable
 HHOOK g_hMouseHook = NULL;
 // global mouse clicks counter
@@ -19,7 +17,7 @@ LRESULT CALLBACK HookEvent(int nCode, WPARAM wParam, LPARAM lParam) {
         g_dwMouseClicks++;
     }
 
-    return g_Api.pCallNextHookEx(g_hMouseHook, nCode, wParam, lParam);
+    return CallNextHookEx(g_hMouseHook, nCode, wParam, lParam);
 }
 
 BOOL MouseClicksLogger() {
@@ -27,7 +25,7 @@ BOOL MouseClicksLogger() {
     MSG         Msg = { 0 };
 
     // installing hook 
-    g_hMouseHook = g_Api.pSetWindowsHookExW(
+    g_hMouseHook = SetWindowsHookExW(
         WH_MOUSE_LL,
         (HOOKPROC)HookEvent,
         NULL,
@@ -38,8 +36,8 @@ BOOL MouseClicksLogger() {
     }
 
     // process unhandled events
-    while (g_Api.pGetMessageW(&Msg, NULL, 0, 0)) {
-		g_Api.pDefWindowProcW(Msg.hwnd, Msg.message, Msg.wParam, Msg.lParam);
+    while (GetMessageW(&Msg, NULL, 0, 0)) {
+		DefWindowProcW(Msg.hwnd, Msg.message, Msg.wParam, Msg.lParam);
     }
 
     return TRUE;

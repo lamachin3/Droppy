@@ -35,7 +35,7 @@ BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, 
  * @name Function Stomping
  * @flags FUNCTION_STOMPING
  */
-BOOL WritePayloadViaFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
+BOOL WritePayloadViaLocalFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
 
 /**
  * @brief Overwrites a function's memory section in a remote process with a payload.
@@ -51,7 +51,7 @@ BOOL WritePayloadViaFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPa
  * @name Remote Function Stomping
  * @flags FUNCTION_STOMPING
  */
-BOOL WritePayloadViaRemoteFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize, HANDLE hProcess);
+BOOL WritePayloadViaRemoteFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
 
 /**
  * @brief Writes a payload to a memory location via a local file mapping.

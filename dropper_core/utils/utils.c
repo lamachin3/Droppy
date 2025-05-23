@@ -6,10 +6,8 @@
 #endif
 
 
-
 // Gets the process handle of a process of name szProcessName
 BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
-
 	HANDLE			hSnapShot		= NULL;
 	PROCESSENTRY32W	Proc			= { .dwSize = sizeof(PROCESSENTRY32W) };
 
@@ -69,8 +67,6 @@ BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hP
 	// while there is still a valid output ftom Process32NextW, continue looping
 	} while (Process32NextW(hSnapShot, &Proc));
 	
-
-
 _EndOfFunction:
 	if (hSnapShot != NULL)
 		CloseHandle(hSnapShot);
@@ -197,56 +193,39 @@ _EndOfFunction:
     return (*dwProcessId != NULL && *hProcess != NULL);
 }
 
-BOOL GetRemoteProcAddress(HANDLE hProcess, LPCSTR lpModuleName, LPCSTR lpProcName, PVOID* ppAddress) {
-    HMODULE hMods[1024];
-    DWORD cbNeeded;
 
-    hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, GetProcessId(hProcess));
-    if (!hProcess) {
-        DebugPrint("[!] OpenProcess failed with error: %d\n", GetLastError());
-        return FALSE;
-    }
+BOOL GetFunctionAddressInRemoteProcess(HANDLE hProcess, LPCSTR lpFunctionName, LPCSTR lpModuleName, PVOID* pFunctionAddress) {
+	HMODULE hModules[1024];
+	DWORD cbNeeded;
+	char szModuleName[MAX_PATH];
+	*pFunctionAddress = NULL;
 
-    EnumProcessModules_t EnumProcessModules = (EnumProcessModules_t)GetProcAddress(LoadLibraryA("psapi"), "EnumProcessModules");
-    GetModuleBaseNameA_t GetModuleBaseNameA = (GetModuleBaseNameA_t)GetProcAddress(LoadLibraryA("psapi"), "GetModuleBaseNameA");
-    GetModuleInformation_t GetModuleInformation = (GetModuleInformation_t)GetProcAddress(LoadLibraryA("psapi"), "GetModuleInformation");
-    if (!EnumProcessModules) {
-        printf("Failed to resolve EnumProcessModules functions\n");
-        return 1;
+    HMODULE hPsapi = LoadLibraryA("psapi.dll");
+    if (!hPsapi) {
+        DebugPrint("Failed to load psapi.dll. Error: %ld\n", GetLastError());
+        return 0;
     }
-    if (!GetModuleBaseNameA) {
-        printf("Failed to resolve GetModuleBaseNameA functions\n");
-        return 1;
-    }
-    if (!GetModuleInformation) {
-        printf("Failed to resolve GetModuleInformation functions\n");
-        return 1;
-    }
+    EnumProcessModulesEx_t pEnumProcessModulesEx = (EnumProcessModulesEx_t)GetProcAddress(hPsapi, "EnumProcessModulesEx");
+    GetModuleBaseNameA_t pGetModuleBaseNameA = (GetModuleBaseNameA_t)GetProcAddress(hPsapi, "GetModuleBaseNameA");
 
-    // Get the list of modules in the target process
-    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
-        for (size_t i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
-            char szModuleName[MAX_PATH];
-            if (GetModuleBaseNameA(hProcess, hMods[i], szModuleName, sizeof(szModuleName))) {
-                DebugPrint("[i] Module: %s\n", szModuleName);
-            }
-            if (GetModuleBaseNameA(hProcess, hMods[i], szModuleName, sizeof(szModuleName))) {
-                if (_stricmp(lpModuleName, szModuleName) == 0) {
-                    // Match found; calculate remote function address
-                    MODULEINFO modInfo;
-                    GetModuleInformation(hProcess, hMods[i], &modInfo, sizeof(MODULEINFO));
-                    DWORD_PTR baseAddr = (DWORD_PTR)modInfo.lpBaseOfDll;
-                    DWORD_PTR localAddr = (DWORD_PTR)GetProcAddress(GetModuleHandleA(lpModuleName), lpProcName);
-                    *ppAddress = (PVOID)(baseAddr + (localAddr - (DWORD_PTR)GetModuleHandleA(lpModuleName)));
-                    return TRUE;
-                }
-            }
-        }
-    }
-    else {
-        DebugPrint("[!] EnumProcessModulesEx failed with error: %d\n", GetLastError());
-    }
-    return FALSE;
+	if (pEnumProcessModulesEx(hProcess, hModules, sizeof(hModules), &cbNeeded, LIST_MODULES_ALL)) {
+		for (int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
+			if (pGetModuleBaseNameA(hProcess, hModules[i], szModuleName, sizeof(szModuleName) / sizeof(char))) {
+				if (_stricmp(szModuleName, lpModuleName) == 0) {
+					HMODULE hLocalModule = GetModuleHandleA(lpModuleName);
+					if (hLocalModule != NULL) {
+						PVOID pLocalAddress = (PVOID)GetProcAddress(hLocalModule, lpFunctionName);
+						*pFunctionAddress = (PVOID)((BYTE*)hModules[i] + ((BYTE*)pLocalAddress - (BYTE*)hLocalModule));
+						return TRUE;
+					}
+				}
+			}
+		}
+	}
+	else {
+		DebugPrint("[X] EnumProcessModulesEx failed with error: %ld\n", GetLastError());
+	}
+	return FALSE;
 }
 
 

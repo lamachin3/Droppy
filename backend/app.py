@@ -5,7 +5,7 @@ import os
 
 def create_app():
     app = Flask(__name__)
-
+    
     # Load configurations from config.py
     app.config.from_object(Config)
     app.allowed_extensions = {'exe', 'dll', 'bin'}

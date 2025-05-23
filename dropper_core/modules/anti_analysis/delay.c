@@ -3,7 +3,6 @@
 
 #pragma comment(lib, "Synchronization.lib")
 
-extern API_HASHING g_Api;
 
 BOOL DelayExecutionVia_NtDE(FLOAT ftMinutes) {
     // converting minutes to milliseconds
@@ -19,7 +18,7 @@ BOOL DelayExecutionVia_NtDE(FLOAT ftMinutes) {
     Delay = dwMilliSeconds * 10000;
     DelayInterval.QuadPart = -Delay;
 
-    _T0 = g_Api.pGetTickCount64();
+    _T0 = GetTickCount64();
 
 #ifndef SW3_SYSCALL_ENABLED
     // Using Windows API
@@ -32,7 +31,7 @@ BOOL DelayExecutionVia_NtDE(FLOAT ftMinutes) {
     }
 #endif
 
-    _T1 = g_Api.pGetTickCount64();
+    _T1 = GetTickCount64();
 
     // slept for at least 'dwMilliSeconds' ms, then 'DelayExecutionVia_NtDE' succeeded, otherwise it failed
     if ((DWORD)(_T1 - _T0) < dwMilliSeconds)

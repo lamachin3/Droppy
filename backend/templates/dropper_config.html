@@ -3,9 +3,9 @@
 {% block content %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/event-handlers.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/form-utils.js') }}"></script>
+<script>const precompiledExecutablesData = {{ precompiled_executables|safe }};</script>
 
-
-<form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+<form method="POST" action="{{ url_for('build') }}" enctype="multipart/form-data">
     <div class="row">
         <div class="col-md-6">
             <div class="card text-white mb-4">
@@ -15,8 +15,7 @@
                         <p class="text-primary h5 fw-semibold  mt-4 mb-3">{{ section.replace('_', ' ').title() }}</p>
                         {% if 'encryption' in section or 'obfuscation' in section %}
                             <select class="form-select fw-medium" name="{{ section }}" aria-label="Choose an algorithm">
-                                <option selected disabled>Choose an option...</option>
-                                <option id="no_alg" value="">Cleartext</option>
+                                <option class="selected" id="no_alg" value="">Cleartext</option>
                                 {% for module in modules %}
                                     <option
                                         class="select-item"
@@ -39,12 +38,6 @@
                                         <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ module.brief }}"></i>
                                     </label>
                                 </div>
-                                {% if 'tags' in module and "remote_process" in module.tags %}
-                                    <div id="textbox_{{ module.name.replace(' ', '_') }}" class="input-group mb-3" style="display: none;">
-                                        <input type="text" class="form-control" name="process_name" placeholder="Process Name" aria-label="Process Name" aria-describedby="basic-addon2">
-                                        <span class="input-group-text" id="basic-addon2">.exe</span>
-                                    </div>
-                                {% endif %}
                             {% endfor %}
                         {% endif %}
                     {% endfor %}
@@ -56,11 +49,17 @@
                 <div class="card-body text-white">
                     <h5 class="text-primary fw-bold">Shellcode Input</h5>
                     <div class="tab-slider">
-                        <div class="tab-option active" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-shellcode">
-                            <i class="fas fa-upload me-2"></i> File Upload
+                        <div class="tab-option px-2 active" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-shellcode">
+                            <i class="fas fa-upload"></i>
+                            File Upload
                         </div>
-                        <div class="tab-option" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-shellcode">
-                            <i class="fas fa-code me-2"></i> Manual Input
+                        <div class="tab-option px-2" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-shellcode">
+                            <i class="fas fa-code"></i>
+                            Manual Input
+                        </div>
+                        <div class="tab-option px-2" id="executables-tab" data-bs-toggle="tab" data-bs-target="#executable">
+                            <span class="iconify fs-5" data-icon="lucide:file-search"></span>
+                            Executables
                         </div>
                         <div class="tab-slider-bg"></div>
                     </div>
@@ -97,9 +96,44 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- Arguments Section  -->
+                            <div class="input-group mt-3">
+                                <span class="input-group-text input-group-text-start" id="file-upload-arguments">Arguments</span>
+                                <input type="text" class="form-control" placeholder="" name="execution_arguments" aria-label="execution_arguments" aria-describedby="file-upload-arguments">
+                            </div>
                         </div>
                         <div class="tab-pane fade mt-3" id="text-shellcode">
-                            <textarea class="form-control" name="shellcode_text" placeholder="Enter hexadecimal shellcode..." rows="10"></textarea>
+                            <textarea id="textarea-shellcode" class="form-control" name="shellcode_text" placeholder="Enter hexadecimal shellcode..." rows="10"></textarea>
+                        </div>
+                        <div class="tab-pane fade mt-3" id="executable">
+                            <div class="position-relative">
+                                <div class="custom-search-bar mt-3">
+                                    <i class="fas fa-search ms-2 text-primary"></i>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="autocompleteInput"
+                                        placeholder="Search..."
+                                        autocomplete="off"
+                                    />
+                                    <input
+                                        type="hidden"
+                                        id="autocompleteValue"
+                                        name="executable"
+                                        value=""
+                                    />
+                                </div>
+                                <ul
+                                    class="dropdown-menu w-100"
+                                    id="autocompleteDropdown"
+                                ></ul>
+                            </div>
+                            <!-- Arguments Section  -->
+                            <div class="input-group mt-3">
+                                <span class="input-group-text input-group-text-start"  id="executable-arguments">Arguments</span>
+                                <input type="text" class="form-control" name="execution_arguments" placeholder="" aria-label="execution_arguments" aria-describedby="executable-arguments">
+                            </div>
                         </div>
                     </div>
 
@@ -117,6 +151,10 @@
                             Hide Console
                             <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Hide the console window when the dropper is executed."></i>
                         </label>
+                    </div>
+                    <div id="textbox_remote_process" class="input-group mb-3">
+                        <input type="text" class="form-control" name="process_name" placeholder="Target Remote Process Name" aria-label="Process Name" aria-describedby="basic-addon2">
+                        <span class="input-group-text input-group-text-end" id="basic-addon2">.exe</span>
                     </div>
 
                     <h5 class="text-primary fw-bold mt-4 mb-3">Output Settings</h5>

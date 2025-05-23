@@ -33,5 +33,8 @@ venv/
 *.obj
 *.log
 *.tlog
+*.bin
+*.raw
+*.hex
 
 *.DS_Store

@@ -10,24 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    /*** Tabs ***/
-    let fileTab = document.getElementById("file-tab");
-    let textTab = document.getElementById("text-tab");
-    let fileShellcode = document.getElementById("file-shellcode");
-    let textShellcode = document.getElementById("text-shellcode");
-
-    if (fileTab && textTab && fileShellcode && textShellcode) {
-        function switchTab(activeTab, inactiveTab, showElement, hideElement) {
-            activeTab.classList.add("is-active");
-            inactiveTab.classList.remove("is-active");
-            showElement.classList.remove("hidden");
-            hideElement.classList.add("hidden");
-        }
-
-        fileTab.addEventListener("click", () => switchTab(fileTab, textTab, fileShellcode, textShellcode));
-        textTab.addEventListener("click", () => switchTab(textTab, fileTab, textShellcode, fileShellcode));
-    }
-
     /*** Toast ***/
     let toastElement = document.getElementById("toastContainer");
     if (toastElement) {
@@ -160,44 +142,120 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    const fileTab = document.getElementById("file-tab");
-    const textTab = document.getElementById("text-tab");
-    const fileContent = document.getElementById("file-shellcode");
-    const textContent = document.getElementById("text-shellcode");
+    // Define tabs and their related content
+    const tabs = [
+        { tabId: "file-tab", elementId: "file-shellcode", contentElementId: "file-input" },
+        { tabId: "text-tab", elementId: "text-shellcode", contentElementId: "textarea-shellcode" },
+        { tabId: "executables-tab", elementId: "executable", contentElementId: "autocompleteInput" },
+    ];
+
     const sliderBg = document.querySelector(".tab-slider-bg");
     const tabOptions = document.querySelectorAll(".tab-option");
 
-    function switchTab(activeTab) {
-        // Reset both tab contents and hide them
-        fileContent.classList.remove("show", "active");
-        textContent.classList.remove("show", "active");
+    function disableInputs(tabElement) {
+        if (!tabElement) return;
+        const inputs = tabElement.querySelectorAll("input, textarea, select, button");
+        inputs.forEach(input => input.disabled = true);
+    }
 
-        // Activate the right tab content
-        if (activeTab === "file") {
-            sliderBg.style.transform = "translateX(0%)";
-            fileTab.classList.add("active");
-            textTab.classList.remove("active");
-            fileContent.classList.add("show", "active");
-        } else {
-            sliderBg.style.transform = "translateX(100%)";
-            textTab.classList.add("active");
-            fileTab.classList.remove("active");
-            textContent.classList.add("show", "active");
+    function enableInputs(tabElement) {
+        if (!tabElement) return;
+        const inputs = tabElement.querySelectorAll("input, textarea, select, button");
+        inputs.forEach(input => input.disabled = false);
+    }
+
+    function switchTab(activeTabId) {
+        // Reset all tab contents, hide them, and disable inputs
+        tabs.forEach(({ elementId, contentElementId }) => {
+            const tabElement = document.getElementById(elementId);
+            const contentElement = document.getElementById(contentElementId);
+
+            if (tabElement) {
+                tabElement.classList.remove("show", "active");
+                disableInputs(tabElement);
+            }
+            if (contentElement) contentElement.value = '';
+        });
+        document.getElementsByName("execution_arguments").forEach(arg => {
+            arg.value = ''; // Clear execution arguments
+        });
+        document.getElementById("autocompleteValue").value = '';
+
+        // Activate the selected tab content and enable its inputs
+        const activeTab = tabs.find(tab => tab.tabId === activeTabId);
+        if (activeTab) {
+            const activeTabIndex = tabs.findIndex(tab => tab.tabId === activeTabId);
+            sliderBg.style.transform = `translateX(${activeTabIndex * 100}%)`;
+
+            tabOptions.forEach(tabOption => {
+                tabOption.classList.remove("active");
+            });
+
+            const activeTabElement = document.getElementById(activeTabId);
+            activeTabElement.classList.add("active");
+
+            const activeContent = document.getElementById(activeTab.elementId);
+            activeContent.classList.add("show", "active");
+            enableInputs(activeContent);
         }
     }
 
     tabOptions.forEach(tabOption => {
         tabOption.addEventListener("click", () => {
-            const activeTab = tabOption.id === "file-tab" ? "file" : "text";
-            switchTab(activeTab);
+            switchTab(tabOption.id);
         });
     });
 
     // Optional: handle background slider position on page load
     const activeTab = document.querySelector(".tab-option.active");
-    const position = activeTab.offsetLeft;
-    const width = activeTab.offsetWidth;
-    sliderBg.style.left = position + "px";
-    sliderBg.style.width = width + "px";
+    if (activeTab) {
+        const position = activeTab.offsetLeft;
+        const width = activeTab.offsetWidth;
+        sliderBg.style.left = position + "px";
+        sliderBg.style.width = width + "px";
+    }
 });
 
+
+document.addEventListener("DOMContentLoaded", function () {
+    const data = precompiledExecutablesData || [];
+    const input = document.getElementById("autocompleteInput");
+    const inputValue = document.getElementById("autocompleteValue");
+    const dropdown = document.getElementById("autocompleteDropdown");
+
+    input.addEventListener("input", () => {
+        const query = input.value.toLowerCase();
+        dropdown.innerHTML = "";
+
+        if (query) {
+            const filteredData = data.filter(file =>
+                file.filename.toLowerCase().includes(query)
+            );
+
+            if (filteredData.length) {
+                filteredData.forEach(file => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `<button class="dropdown-item text-primary" type="button">${file.filename}</button>`;
+                    li.querySelector("button").addEventListener("click", () => {
+                        input.value = file.filename;
+                        inputValue.value = JSON.stringify(file);
+                        dropdown.innerHTML = "";
+                    });
+                    dropdown.appendChild(li);
+                });
+
+                dropdown.classList.add("show");
+            } else {
+                dropdown.classList.remove("show");
+            }
+        } else {
+            dropdown.classList.remove("show");
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!dropdown.contains(e.target) && e.target !== input) {
+            dropdown.classList.remove("show");
+        }
+    });
+});

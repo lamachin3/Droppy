@@ -1208,6 +1208,13 @@ typedef BOOL(WINAPI* GetModuleInformation_t)(
     OUT         LPMODULEINFO lpmodinfo,
     IN          DWORD        cb);
 
+typedef BOOL (WINAPI* EnumProcessModulesEx_t)(
+    IN          HANDLE      hProcess,
+    OUT         HMODULE     *lphModule,
+    IN          DWORD       cb,
+    OUT         LPDWORD     lpcbNeeded,
+    IN          DWORD       dwFilterFlag);
+
 #define PS_ATTRIBUTE_NUMBER_MASK    0x0000ffff
 #define PS_ATTRIBUTE_THREAD         0x00010000 // Attribute may be used with thread creation
 #define PS_ATTRIBUTE_INPUT          0x00020000 // Attribute is input only

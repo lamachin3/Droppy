@@ -46,7 +46,7 @@ typedef enum _THREADINFOCLASS {
 BOOL CreateSuspendedProcessWithSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFORMATION* pPi) {
     HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
     if (!hNtdll) {
-        printf("[!] Failed to load ntdll.dll.\n");
+        DebugPrint("[!] Failed to load ntdll.dll.\n");
         return 1;
     }
 
@@ -61,7 +61,7 @@ BOOL CreateSuspendedProcessWithSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFOR
     // Allocate memory for the combined string
     PWSTR pwProcessPath = (PWSTR)malloc(totalLength * sizeof(wchar_t));
     if (!pwProcessPath) {
-        wprintf(L"Memory allocation failed.\n");
+        WDebugPrint(L"Memory allocation failed.\n");
         return 1;
     }
 
@@ -109,7 +109,7 @@ BOOL CreateSuspendedProcessWithSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFOR
     );
 
     if (!NT_SUCCESS(status)) {
-        printf("[!] Process creation failed with status: 0x%X\n", status);
+        DebugPrint("[!] Process creation failed with status: 0x%X\n", status);
         RtlDestroyProcessParameters(ProcessParameters);
         return FALSE;
     }
@@ -119,7 +119,7 @@ BOOL CreateSuspendedProcessWithSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFOR
     pPi->dwProcessId = GetProcessId(hProcess);
     pPi->dwThreadId = GetThreadId(hThread);
 
-    printf("[+] Process created successfully in a suspended state.\n");
+    DebugPrint("[+] Process created successfully in a suspended state.\n");
     RtlDestroyProcessParameters(ProcessParameters);
 
     return TRUE;
