@@ -137,7 +137,7 @@
                         </div>
                     </div>
 
-                    <h5 class="text-primary fw-bold mt-4 mb-3">Options</h5>
+                    <h5 class="text-primary fw-bold mt-4 mb-3">Global Options</h5>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="debug" id="debug" value="debug">
                         <label class="form-check-label" for="debug">
@@ -150,6 +150,14 @@
                         <label class="form-check-label" for="hide_console">
                             Hide Console
                             <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Hide the console window when the dropper is executed."></i>
+                        </label>
+                    </div>
+                    <h5 class="text-primary fw-bold mt-4 mb-3">Remote Injection Options</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="redirect_output" id="redirect_output" value="redirect_output">
+                        <label class="form-check-label" for="redirect_output">
+                            Redirect Output
+                            <i class="fas fa-info-circle text-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Redirect the output of the remotly executed shellcode to the main process console."></i>
                         </label>
                     </div>
                     <div id="textbox_remote_process" class="input-group mb-3">

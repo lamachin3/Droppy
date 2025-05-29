@@ -18,37 +18,7 @@
     <ClInclude Include="common.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="modules\anti_analysis\anti_analysis.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="modules\encryption\encryption.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="modules\entropy\entropy.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="modules\injection\injection.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="modules\obfuscation\obfuscation.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="modules\payload_loading\payload_loading.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="modules\stealth_techniques\api_hashing.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="syscalls\hw_indirect_syscalls.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="syscalls\syscalls.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\debug.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\utils.h">
+    <ClInclude Include="config.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="structs.h">
@@ -57,54 +27,120 @@
     <ClInclude Include="typedef.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
+    <ClInclude Include="syscalls\hw_indirect_syscalls.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="syscalls\api_calls\api_calls.h">
+    <ClInclude Include="syscalls\router.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="utils\syscall_functions.h">
+    <ClInclude Include="syscalls\syscalls.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\anti_sandbox\anti_sandbox.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\crypto\crypto.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\encoders\encoders.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\entropy\entropy.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\injectors\injectors.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\loaders\loaders.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\stealth_techniques\api_hashing.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="modules\unhooking\unhooking.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="utils\debug.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
     <ClInclude Include="utils\process_utils.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\syscall_functions.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\utils.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="modules\anti_analysis\anti_analysis.c">
+    <None Include="Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="config.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\anti_analysis\delay.c">
+    <ClCompile Include="dropper.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\anti_analysis\mouse_action.c">
+    <ClCompile Include="syscalls\hw_indirect_syscalls.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\anti_analysis\self_delete.c">
+    <ClCompile Include="syscalls\router.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\encryption\aes_encryption.c">
+    <ClCompile Include="syscalls\syscalls.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\encryption\chacha20_encryption.c">
+    <ClCompile Include="modules\anti_sandbox\anti_sandbox.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\encryption\des_encryption.c">
+    <ClCompile Include="modules\anti_sandbox\delay.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\encryption\encryption.c">
+    <ClCompile Include="modules\anti_sandbox\mouse_action.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\encryption\rc4_encryption.c">
+    <ClCompile Include="modules\anti_sandbox\self_delete.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\encryption\rsa_encryption.c">
+    <ClCompile Include="modules\crypto\aes_encryption.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\encryption\xor_encryption.c">
+    <ClCompile Include="modules\crypto\chacha20_encryption.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\crypto\crypto.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\crypto\des_encryption.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\crypto\rc4_encryption.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\crypto\rsa_encryption.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\crypto\xor_encryption.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\encoders\dictionnary_encoding.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\encoders\encoders.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\encoders\ipv4_encoding.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\encoders\ipv6_encoding.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\encoders\mac_encoding.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\encoders\uuid_encoding.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="modules\entropy\custom_win_api.c">
@@ -113,76 +149,37 @@
     <ClCompile Include="modules\entropy\entropy.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\injection\apc_injection.c">
+    <ClCompile Include="modules\injectors\apc_injection.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\injection\early_bird_apc_injection.c">
+    <ClCompile Include="modules\injectors\early_bird_apc_injection.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\injection\injection.c">
+    <ClCompile Include="modules\injectors\injectors.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\injection\remote_process_injection.c">
+    <ClCompile Include="modules\injectors\remote_process_injection.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\injection\thread_hijacking.c">
+    <ClCompile Include="modules\injectors\thread_hijacking.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\obfuscation\dictionnary_obfuscation.c">
+    <ClCompile Include="modules\loaders\file_mapping.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\obfuscation\ipv4_obfuscation.c">
+    <ClCompile Include="modules\loaders\function_stomping.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\obfuscation\ipv6_obfuscation.c">
+    <ClCompile Include="modules\loaders\in_memory.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="modules\obfuscation\mac_obfuscation.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\obfuscation\obfuscation.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\obfuscation\uuid_obfuscation.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\payload_loading\file_mapping.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\payload_loading\function_stomping.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\payload_loading\in_memory.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="modules\payload_loading\payload_loading.c">
+    <ClCompile Include="modules\loaders\loaders.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="modules\stealth_techniques\api_hashing.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="modules\stealth_techniques\iat_obfuscation.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="syscalls\hw_indirect_syscalls.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="syscalls\syscalls.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\debug.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\utils.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="dropper.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="config.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\syscall_functions.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="modules\unhooking\known_dlls_unhooking.c">
@@ -194,11 +191,17 @@
     <ClCompile Include="modules\unhooking\unhooking.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="utils\debug.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
     <ClCompile Include="utils\process_utils.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Makefile" />
+    <ClCompile Include="utils\syscall_functions.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\utils.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

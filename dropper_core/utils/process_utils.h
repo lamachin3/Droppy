@@ -5,6 +5,7 @@
 
 BOOL AttachRemoteProcessOutput(HANDLE* hStdOutRead, HANDLE* hStdOutWrite, SECURITY_ATTRIBUTES* saAttr);
 void ReadFromRemotePipe(HANDLE hStdOutRead);
-BOOL CreateSuspendedProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hProcess, HANDLE* hThread, HANDLE hStdOutput, HANDLE hStdError);
+BOOL CreateRunningProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hProcess, HANDLE* hThread, HANDLE hStdOutput, HANDLE hStdError);
+BOOL CreateSuspendedProcess(LPWSTR lpProcessName, OUT PROCESS_INFORMATION* pPi, HANDLE hStdOutput, HANDLE hStdError);
 
 #endif

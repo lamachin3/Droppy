@@ -1,7 +1,9 @@
-#include "encryption.h"
+#include "crypto.h"
+
+#define BCRYPT_CHACHA20_POLY1305_ALGORITHM L"CHACHA20_POLY1305"
 
 
-BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pIv, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize) {
+BOOL ChaCha20Decrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKey, IN PBYTE pNonce, OUT PBYTE *pPlainTextData, OUT SIZE_T *sPlainTextSize) {
     BCRYPT_KEY_HANDLE hKey = NULL;
     BCRYPT_ALG_HANDLE hAlg = NULL;
     NTSTATUS status;
@@ -9,7 +11,7 @@ BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKe
     PBYTE decrypted = NULL;
 
     // Open an algorithm handle
-    status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_DES_ALGORITHM, NULL, 0);
+    status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_CHACHA20_POLY1305_ALGORITHM, NULL, 0);
     if (FAILED(status)) {
         DebugPrint("Error opening algorithm provider: 0x%x\n", status);
         return FALSE;
@@ -33,7 +35,7 @@ BOOL DesDecrypt(IN PVOID pCipherTextData, IN DWORD sCipherTextSize, IN PBYTE pKe
     }
 
     // Decrypt the data
-    status = BCryptDecrypt(hKey, (PUCHAR)pCipherTextData, sCipherTextSize, NULL, pIv, sizeof(pIv), decrypted, sCipherTextSize, &decryptedSize, BCRYPT_BLOCK_PADDING);
+    status = BCryptDecrypt(hKey, (PUCHAR)pCipherTextData, sCipherTextSize, NULL, pNonce, sizeof(pNonce), decrypted, sCipherTextSize, &decryptedSize, BCRYPT_BLOCK_PADDING);
     if (FAILED(status)) {
         DebugPrint("Error decrypting data: 0x%x\n", status);
         free(decrypted);

@@ -47,9 +47,6 @@ BOOL WritePayloadViaLocalFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_
  * @param[in] sPayloadSize Size of the payload in bytes.
  * 
  * @return TRUE if successful, FALSE otherwise.
- * 
- * @name Remote Function Stomping
- * @flags FUNCTION_STOMPING
  */
 BOOL WritePayloadViaRemoteFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
 
@@ -64,7 +61,7 @@ BOOL WritePayloadViaRemoteFunctionStomping(PVOID *pAddress, PBYTE pPayload, SIZE
  * 
  * @return TRUE if successful, FALSE otherwise.
  * 
- * @name Local File Mapping
+ * @name File Mapping
  * @flags FILE_MAPPING
  */
 BOOL  WritePayloadViaLocalFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize, OUT PVOID* pAddress);
@@ -80,8 +77,6 @@ BOOL  WritePayloadViaLocalFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize,
  * 
  * @return TRUE if successful, FALSE otherwise.
  * 
- * @name Remote File Mapping
- * @flags FILE_MAPPING
  */
 BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize, OUT PVOID* pAddress, IN HANDLE hProcess);
 

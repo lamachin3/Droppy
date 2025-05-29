@@ -59,6 +59,67 @@ void ReadFromRemotePipe(HANDLE hStdOutRead) {
     }
 }
 
+BOOL CreateRunningProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hProcess, HANDLE* hThread, HANDLE hStdOutput, HANDLE hStdError) {
+    WCHAR lpPath[MAX_PATH * 2];
+    WCHAR WnDr[MAX_PATH];
+
+    STARTUPINFOW Si = { 0 };
+    PROCESS_INFORMATION Pi = { 0 };
+
+    // Cleaning the structs
+    RtlSecureZeroMemory(&Si, sizeof(STARTUPINFOW));
+    RtlSecureZeroMemory(&Pi, sizeof(PROCESS_INFORMATION));
+
+    // Setting the size of the structure
+    Si.cb = sizeof(STARTUPINFOW);
+    Si.hStdError = hStdError;
+    Si.hStdOutput = hStdOutput;
+    Si.dwFlags |= STARTF_USESTDHANDLES;
+
+    // Creating the target process path
+    wcscpy_s(lpPath, MAX_PATH * 2, lpProcessName);
+    DebugPrint("\n\t[i] Running : \"%ls\" ...\n", lpPath);
+
+    // Create the process without CREATE_SUSPENDED
+    if (!CreateProcessW(
+        NULL,             // Application name
+        lpPath,           // Command line
+        NULL,             // Process security attributes
+        NULL,             // Thread security attributes
+        TRUE,             // Inherit handles
+        0,                // No special creation flags
+        NULL,             // Use parent environment
+        NULL,             // Use parent current directory
+        &Si,              // Startup information
+        &Pi               // Process information
+    )) {
+        DebugPrint("[!] CreateProcessW Failed with Error : %d \n", GetLastError());
+        return FALSE;
+    }
+
+    DebugPrint("[+] Process Created and Running \n");
+
+    // Populating the OUTPUT parameter with 'CreateProcessW's output'
+    *dwProcessId = Pi.dwProcessId;
+    *hProcess = Pi.hProcess;
+    *hThread = Pi.hThread;
+
+    // Doing a check to verify we got everything we need
+    if (*dwProcessId != NULL && *hProcess != NULL && *hThread != NULL)
+        return TRUE;
+
+    return FALSE;
+}
+
+
+BOOL CreateSuspendedProcess(LPWSTR lpProcessName, OUT PROCESS_INFORMATION* pPi, HANDLE hStdOutput, HANDLE hStdError) {
+#ifdef SYSCALL_ENABLED
+    return CreateSuspendedProcessSyscall(lpProcessName, pPi);
+#else
+    return CreateSuspendedProcessWinAPI(lpProcessName, pPi, hStdOutput, hStdError);
+#endif
+}
+
 /*
 Parameters:
 	- lpProcessName; a process name under '\System32\' to create
@@ -68,7 +129,7 @@ Parameters:
 
 Creates a new process 'lpProcessName' in suspended state and return its pid, handle, and the handle of its main thread
 */
-BOOL CreateSuspendedProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hProcess, HANDLE* hThread, HANDLE hStdOutput, HANDLE hStdError) {
+BOOL CreateSuspendedProcessWinAPI(LPWSTR lpProcessName, OUT PROCESS_INFORMATION* pPi, HANDLE hStdOutput, HANDLE hStdError) {
     WCHAR lpPath[MAX_PATH * 2];
     WCHAR WnDr[MAX_PATH];
 
@@ -107,13 +168,9 @@ BOOL CreateSuspendedProcess(LPWSTR lpProcessName, DWORD* dwProcessId, HANDLE* hP
     DebugPrint("[+] DONE \n");
 
     // Populating the OUTPUT parameter with 'CreateProcessW's output'
-    *dwProcessId = Pi.dwProcessId;
-    *hProcess = Pi.hProcess;
-    *hThread = Pi.hThread;
+    pPi->dwProcessId = Pi.dwProcessId;
+    pPi->hProcess = Pi.hProcess;
+    pPi->hThread = Pi.hThread;
 
-    // Doing a check to verify we got everything we need
-    if (*dwProcessId != NULL && *hProcess != NULL && *hThread != NULL)
-        return TRUE;
-
-    return FALSE;
+    return TRUE;
 }

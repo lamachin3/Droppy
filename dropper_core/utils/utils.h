@@ -3,10 +3,15 @@
 
 #include "../common.h"
 
+#ifndef STATUS_INFO_LENGTH_MISMATCH
+#define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
+#endif
+#ifndef TH32CS_SNAPPROCESS
+# define TH32CS_SNAPPROCESS      0x2
+#endif
+
 BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess);
-BOOL FetchEnvironmentVariable(LPCWSTR lpName, LPWSTR lpBuffer, DWORD nSize);
 BOOL GetFunctionAddressInRemoteProcess(HANDLE hProcess, LPCSTR lpFunctionName, LPCSTR lpModuleName, PVOID* pFunctionAddress);
-PPEB GetPEBStealthy();
 BOOL IsHandleValid(HANDLE h);
 wchar_t* _wcscpy(wchar_t* d, const wchar_t* s);
 wchar_t* _wcscat(wchar_t* dest, const wchar_t* src);

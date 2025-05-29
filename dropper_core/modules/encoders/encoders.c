@@ -1,4 +1,4 @@
-#include "obfuscation.h"
+#include "encoders.h"
 
 
 BOOL deobfuscate(IN CHAR * ShellcodeArray[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize) {

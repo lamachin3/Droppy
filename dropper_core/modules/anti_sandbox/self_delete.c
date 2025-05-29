@@ -1,4 +1,4 @@
-#include "anti_analysis.h"
+#include "anti_sandbox.h"
 
 
 BOOL DeleteSelf() {

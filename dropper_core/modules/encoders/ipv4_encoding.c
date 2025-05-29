@@ -1,4 +1,4 @@
-#include "obfuscation.h"
+#include "encoders.h"
 
 
 typedef NTSTATUS (NTAPI* fnRtlIpv4StringToAddressA)(
@@ -16,7 +16,11 @@ BOOL Ipv4Deobfuscation(IN CHAR * Ipv4Array[], IN SIZE_T NmbrOfElements, OUT PBYT
         NTSTATUS        STATUS          = STATUS_SUCCESS;
         
         // getting RtlIpv4StringToAddressA address from ntdll.dll
-        fnRtlIpv4StringToAddressA pRtlIpv4StringToAddressA = (fnRtlIpv4StringToAddressA)GetProcAddress(GetModuleHandle(TEXT("NTDLL")), "RtlIpv4StringToAddressA");
+#ifdef UNICODE
+        fnRtlIpv4StringToAddressA pRtlIpv4StringToAddressA = (fnRtlIpv4StringToAddressA)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlIpv4StringToAddressA");
+#else
+        fnRtlIpv4StringToAddressA pRtlIpv4StringToAddressA = (fnRtlIpv4StringToAddressA)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlIpv4StringToAddressA");
+#endif
         if (pRtlIpv4StringToAddressA == NULL) {
                 DebugPrint("[!] GetProcAddress Failed With Error : %d \n", GetLastError());
                 return FALSE;

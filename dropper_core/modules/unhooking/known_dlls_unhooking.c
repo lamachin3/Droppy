@@ -40,7 +40,7 @@ BOOL MapNtdllFromKnownDlls(OUT PVOID* ppNtdllBuf) {
 #ifdef HW_INDIRECT_SYSCALL
     NtOpenSection_t pNtOpenSection = (NtOpenSection_t)PrepareSyscallHash(NtOpenSection_JOAA);
 #else
-    fnNtOpenSection pNtOpenSection = (fnNtOpenSection)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtOpenSection");
+    fnNtOpenSection pNtOpenSection = (fnNtOpenSection)GetProcAddressH(LoadLibrary("ntdll.dll"), NtOpenSection_JOAA);
 #endif
 
     // getting the handle of ntdll.dll from KnownDlls

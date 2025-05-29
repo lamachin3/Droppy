@@ -2,14 +2,14 @@
 
 #include <windows.h>
 #include "typedef.h"
+#include "common.h"
 
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-// this is what SystemFunction032 function take as a parameter
 typedef struct _USTRING {
-    USHORT Length;
-    USHORT MaximumLength;
+    DWORD Length;
+    DWORD MaximumLength;
     PCHAR Buffer;
 } USTRING, *PUSTRING;
 
@@ -93,8 +93,6 @@ typedef struct _RTL_DRIVE_LETTER_CURDIR
 
 } RTL_DRIVE_LETTER_CURDIR, * PRTL_DRIVE_LETTER_CURDIR;
 
-
-#define RTL_MAX_DRIVE_LETTERS 32
 
 typedef struct _RTL_USER_PROCESS_PARAMETERS
 {
@@ -937,7 +935,6 @@ typedef struct _SYSTEM_PROCESS_INFORMATION
 } SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
 
 typedef struct _API_HASHING {
-
 	fnGetTickCount64				pGetTickCount64;
 	fnOpenProcess					pOpenProcess;
 	fnCallNextHookEx				pCallNextHookEx;
@@ -949,57 +946,44 @@ typedef struct _API_HASHING {
 	fnCreateFileW					pCreateFileW;
 	fnSetFileInformationByHandle	pSetFileInformationByHandle;
 	fnCloseHandle					pCloseHandle;
-
 }API_HASHING, * PAPI_HASHING;
 
-#ifndef InitializeObjectAttributes
-#define InitializeObjectAttributes(p, n, a, r, s) { \
-    (p)->Length = sizeof(OBJECT_ATTRIBUTES);       \
-    (p)->RootDirectory = r;                        \
-    (p)->Attributes = a;                           \
-    (p)->ObjectName = n;                           \
-    (p)->SecurityDescriptor = s;                   \
-    (p)->SecurityQualityOfService = NULL;          \
-}
-#endif
-
-
 typedef NTSTATUS(NTAPI* fnSystemFunction032_t)(
-    USTRING* Img,
-    USTRING* Key
+    USTRING*            Img,
+    USTRING*            Key
 );
 
 typedef BOOL(WINAPI* WaitOnAddress_t)(
-    IN           volatile VOID *Address,
-    IN           PVOID         CompareAddress,
-    IN           SIZE_T        AddressSize,
-    IN OPTIONAL  DWORD         dwMilliseconds);
+    IN volatile VOID    *Address,
+    IN PVOID            CompareAddress,
+    IN SIZE_T           AddressSize,
+    IN OPTIONAL DWORD   dwMilliseconds);
 
 typedef PVOID(WINAPI* MapViewOfFile2_t)(
-    IN           HANDLE  FileMappingHandle,
-    IN           HANDLE  ProcessHandle,
-    IN           ULONG64 Offset,
-    IN OPTIONAL    PVOID   BaseAddress,
-    IN           SIZE_T  ViewSize,
-    IN           ULONG   AllocationType,
-    IN           ULONG   PageProtection);
+    IN HANDLE           FileMappingHandle,
+    IN HANDLE           ProcessHandle,
+    IN ULONG64          Offset,
+    IN OPTIONAL PVOID   BaseAddress,
+    IN SIZE_T           ViewSize,
+    IN ULONG            AllocationType,
+    IN ULONG            PageProtection);
 
 // Syscall structures
 
 typedef NTSTATUS(WINAPI* NtOpenProcess_t)(
-	OUT          PHANDLE            ProcessHandle,
-	IN           ACCESS_MASK        DesiredAccess,
-	IN           POBJECT_ATTRIBUTES ObjectAttributes,
-	IN OPTIONAL  PCLIENT_ID         ClientId);
+	OUT PHANDLE             ProcessHandle,
+	IN ACCESS_MASK          DesiredAccess,
+	IN POBJECT_ATTRIBUTES   ObjectAttributes,
+	IN OPTIONAL PCLIENT_ID  ClientId);
 
 typedef NTSTATUS(NTAPI* NtCreateSection_t)(
-	OUT PHANDLE SectionHandle,
-	IN ACCESS_MASK DesiredAccess,
-	IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,
-	IN PLARGE_INTEGER MaximumSize OPTIONAL,
-	IN ULONG SectionPageProtection,
-	IN ULONG AllocationAttributes,
-	IN HANDLE FileHandle OPTIONAL);
+	OUT PHANDLE             SectionHandle,
+	IN ACCESS_MASK          DesiredAccess,
+	IN POBJECT_ATTRIBUTES   ObjectAttributes OPTIONAL,
+	IN PLARGE_INTEGER       MaximumSize OPTIONAL,
+	IN ULONG                SectionPageProtection,
+	IN ULONG                AllocationAttributes,
+	IN HANDLE               FileHandle OPTIONAL);
 
 typedef NTSTATUS(NTAPI* NtProtectVirtualMemory_t)(
 	IN HANDLE               ProcessHandle,
@@ -1051,12 +1035,12 @@ typedef NTSTATUS(NTAPI* NtFreeVirtualMemory_t)(
     IN HANDLE               ProcessHandle,
     IN PVOID                *BaseAddress,
     IN OUT PSIZE_T           RegionSize,
-    IN ULONG                FreeType );
+    IN ULONG                FreeType ); 
 
 typedef enum _EVENT_TYPE {
     NotificationEvent = 0,
     SynchronizationEvent = 1
-} EVENT_TYPE;    
+} EVENT_TYPE;
 
 typedef NTSTATUS(NTAPI* NtCreateEvent_t)(
     OUT PHANDLE             EventHandle,
@@ -1083,9 +1067,9 @@ typedef struct _IO_STATUS_BLOCK
 } IO_STATUS_BLOCK, * PIO_STATUS_BLOCK;
 
 typedef VOID(NTAPI* PIO_APC_ROUTINE)(
-    IN PVOID ApcContext,
-    IN PIO_STATUS_BLOCK IoStatusBlock,
-    IN ULONG Reserved);
+    IN PVOID                ApcContext,
+    IN PIO_STATUS_BLOCK     IoStatusBlock,
+    IN ULONG                Reserved);
 
 typedef NTSTATUS(NTAPI* NtQueueApcThread_t)(
     IN HANDLE               ThreadHandle,
@@ -1095,7 +1079,6 @@ typedef NTSTATUS(NTAPI* NtQueueApcThread_t)(
     IN ULONG                ApcReserved OPTIONAL );
 
 typedef HANDLE(NTAPI* NtCurrentProcess_t)(void);
-#define NtCurrentProcess() ( (HANDLE)(LONG_PTR) -1 )
 
 typedef NTSTATUS(NTAPI* NtQuerySystemEnvironmentValue_t)(
     IN PUNICODE_STRING      VariableName,
@@ -1123,17 +1106,16 @@ typedef NTSTATUS(NTAPI* NtOpenSection_t)(
     IN POBJECT_ATTRIBUTES   ObjectAttributes );
 
 typedef NTSTATUS(NTAPI* NtMapViewOfSection_t)(
-    IN HANDLE SectionHandle,
-    IN HANDLE ProcessHandle,
-    IN OUT PVOID* BaseAddress,
-    IN ULONG ZeroBits,
-    IN SIZE_T CommitSize,
-    IN OUT PLARGE_INTEGER SectionOffset,
-    IN PSIZE_T ViewSize,
-    IN DWORD InheritDisposition,
-    IN ULONG AllocationType,
-    IN ULONG Protect
-    );
+    IN HANDLE               SectionHandle,
+    IN HANDLE               ProcessHandle,
+    IN OUT PVOID*           BaseAddress,
+    IN ULONG                ZeroBits,
+    IN SIZE_T               CommitSize,
+    IN OUT PLARGE_INTEGER   SectionOffset,
+    IN PSIZE_T              ViewSize,
+    IN DWORD                InheritDisposition,
+    IN ULONG                AllocationType,
+    IN ULONG                Protect);
 
 typedef NTSTATUS(NTAPI* NtUnmapViewOfSection_t)(
     IN HANDLE               ProcessHandle,
@@ -1146,6 +1128,19 @@ typedef NTSTATUS(NTAPI* NtTerminateProcess_t)(
 typedef NTSTATUS(NTAPI* NtResumeThread_t)(
     IN HANDLE               ThreadHandle,
     OUT PULONG              SuspendCount OPTIONAL);
+
+typedef struct tagPROCESSENTRY32W {
+    DWORD                   dwSize;
+    DWORD                   cntUsage;
+    DWORD                   th32ProcessID;
+    DWORD                   th32DefaultHeapID;
+    DWORD                   th32ModuleID;
+    DWORD                   cntThreads;
+    DWORD                   th32ParentProcessID;
+    LONG                    pcPriClassBase;
+    DWORD                   dwFlags;
+    WCHAR                   szExeFile[MAX_PATH];
+} PROCESSENTRY32W, *PPROCESSENTRY32W, *LPPROCESSENTRY32W;
 
 
 // https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntrtl.h#L2722
@@ -1191,34 +1186,29 @@ typedef struct _MODULEINFO {
 } MODULEINFO, * LPMODULEINFO;
 
 typedef BOOL(WINAPI* EnumProcessModules_t)(
-    HANDLE hProcess,
-    HMODULE *lphModule,
-    DWORD cb,
-    LPDWORD lpcbNeeded);
+    HANDLE                  hProcess,
+    HMODULE                 *lphModule,
+    DWORD                   cb,
+    LPDWORD                 lpcbNeeded);
 
 typedef DWORD(WINAPI* GetModuleBaseNameA_t)(
-    IN           HANDLE  hProcess,
-    IN OPTIONAL  HMODULE hModule,
-    OUT          LPSTR   lpBaseName,
-    IN           DWORD   nSize);
+    IN HANDLE               hProcess,
+    IN OPTIONAL HMODULE     hModule,
+    OUT LPSTR               lpBaseName,
+    IN DWORD                nSize);
 
 typedef BOOL(WINAPI* GetModuleInformation_t)(
-    IN          HANDLE       hProcess,
-    IN          HMODULE      hModule,
-    OUT         LPMODULEINFO lpmodinfo,
-    IN          DWORD        cb);
+    IN HANDLE               hProcess,
+    IN HMODULE              hModule,
+    OUT LPMODULEINFO        lpmodinfo,
+    IN DWORD                cb);
 
 typedef BOOL (WINAPI* EnumProcessModulesEx_t)(
-    IN          HANDLE      hProcess,
-    OUT         HMODULE     *lphModule,
-    IN          DWORD       cb,
-    OUT         LPDWORD     lpcbNeeded,
-    IN          DWORD       dwFilterFlag);
-
-#define PS_ATTRIBUTE_NUMBER_MASK    0x0000ffff
-#define PS_ATTRIBUTE_THREAD         0x00010000 // Attribute may be used with thread creation
-#define PS_ATTRIBUTE_INPUT          0x00020000 // Attribute is input only
-#define PS_ATTRIBUTE_ADDITIVE       0x00040000 // Attribute may be "accumulated", e.g. bitmasks, counters, etc.
+    IN HANDLE               hProcess,
+    OUT HMODULE             *lphModule,
+    IN DWORD                cb,
+    OUT LPDWORD             lpcbNeeded,
+    IN DWORD                dwFilterFlag);
 
 // https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntpsapi.h#L1930
 
@@ -1252,127 +1242,6 @@ typedef enum _PS_ATTRIBUTE_NUM
     PsAttributeDesktopAppPolicy,
     PsAttributeMax
 } PS_ATTRIBUTE_NUM;
-
-// https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntpsapi.h#L1974
-
-#define PsAttributeValue(Number, Thread, Input, Additive)		\
-    (((Number) & PS_ATTRIBUTE_NUMBER_MASK)	|					\
-    ((Thread) ? PS_ATTRIBUTE_THREAD : 0)	|					\
-    ((Input) ? PS_ATTRIBUTE_INPUT : 0)		|					\
-    ((Additive) ? PS_ATTRIBUTE_ADDITIVE : 0))
-
-// Specifies the parent process of the new process
-#define PS_ATTRIBUTE_PARENT_PROCESS \
-    PsAttributeValue(PsAttributeParentProcess, FALSE, TRUE, TRUE)
-// Specifies the debug port to use
-#define PS_ATTRIBUTE_DEBUG_PORT \
-    PsAttributeValue(PsAttributeDebugPort, FALSE, TRUE, TRUE)
-// Specifies the token to assign to the new process
-#define PS_ATTRIBUTE_TOKEN \
-    PsAttributeValue(PsAttributeToken, FALSE, TRUE, TRUE)
-// Specifies the client ID to assign to the new process
-#define PS_ATTRIBUTE_CLIENT_ID \
-    PsAttributeValue(PsAttributeClientId, TRUE, FALSE, FALSE)
-// Specifies the TEB address to use for the new process
-#define PS_ATTRIBUTE_TEB_ADDRESS \
-    PsAttributeValue(PsAttributeTebAddress, TRUE, FALSE, FALSE)
-// Specifies the image name of the new process
-#define PS_ATTRIBUTE_IMAGE_NAME \
-    PsAttributeValue(PsAttributeImageName, FALSE, TRUE, FALSE)
-// Specifies the image information of the new process
-#define PS_ATTRIBUTE_IMAGE_INFO \
-    PsAttributeValue(PsAttributeImageInfo, FALSE, FALSE, FALSE)
-// Specifies the amount of memory to reserve for the new process
-#define PS_ATTRIBUTE_MEMORY_RESERVE \
-    PsAttributeValue(PsAttributeMemoryReserve, FALSE, TRUE, FALSE)
-// Specifies the priority class to use for the new process
-#define PS_ATTRIBUTE_PRIORITY_CLASS \
-    PsAttributeValue(PsAttributePriorityClass, FALSE, TRUE, FALSE)
-// Specifies the error mode to use for the new process
-#define PS_ATTRIBUTE_ERROR_MODE \
-    PsAttributeValue(PsAttributeErrorMode, FALSE, TRUE, FALSE)
-// Specifies the standard handle information to use for the new process
-#define PS_ATTRIBUTE_STD_HANDLE_INFO \
-    PsAttributeValue(PsAttributeStdHandleInfo, FALSE, TRUE, FALSE)
-// Specifies the handle list to use for the new process
-#define PS_ATTRIBUTE_HANDLE_LIST \
-    PsAttributeValue(PsAttributeHandleList, FALSE, TRUE, FALSE)
-// Specifies the group affinity to use for the new process
-#define PS_ATTRIBUTE_GROUP_AFFINITY \
-    PsAttributeValue(PsAttributeGroupAffinity, TRUE, TRUE, FALSE)
-// Specifies the preferred NUMA node to use for the new process
-#define PS_ATTRIBUTE_PREFERRED_NODE \
-    PsAttributeValue(PsAttributePreferredNode, FALSE, TRUE, FALSE)
-// Specifies the ideal processor to use for the new process
-#define PS_ATTRIBUTE_IDEAL_PROCESSOR \
-    PsAttributeValue(PsAttributeIdealProcessor, TRUE, TRUE, FALSE)
-// Specifies the process mitigation options to use for the new process
-#define PS_ATTRIBUTE_MITIGATION_OPTIONS \
-    PsAttributeValue(PsAttributeMitigationOptions, FALSE, TRUE, FALSE)
-// Specifies the protection level to use for the new process
-#define PS_ATTRIBUTE_PROTECTION_LEVEL \
-    PsAttributeValue(PsAttributeProtectionLevel, FALSE, TRUE, FALSE)
-// Specifies the UMS thread to associate with the new process
-#define PS_ATTRIBUTE_UMS_THREAD \
-    PsAttributeValue(PsAttributeUmsThread, TRUE, TRUE, FALSE)
-// Specifies whether the new process is a secure process
-#define PS_ATTRIBUTE_SECURE_PROCESS \
-    PsAttributeValue(PsAttributeSecureProcess, FALSE, TRUE, FALSE)
-// Specifies the job list to associate with the new process
-#define PS_ATTRIBUTE_JOB_LIST \
-    PsAttributeValue(PsAttributeJobList, FALSE, TRUE, FALSE)
-// Specifies the child process policy to use for the new process
-#define PS_ATTRIBUTE_CHILD_PROCESS_POLICY \
-    PsAttributeValue(PsAttributeChildProcessPolicy, FALSE, TRUE, FALSE)
-// Specifies the all application packages policy to use for the new process
-#define PS_ATTRIBUTE_ALL_APPLICATION_PACKAGES_POLICY \
-    PsAttributeValue(PsAttributeAllApplicationPackagesPolicy, FALSE, TRUE, FALSE)
-// Specifies the child process should have access to the Win32k subsystem.
-#define PS_ATTRIBUTE_WIN32K_FILTER	\
-    PsAttributeValue(PsAttributeWin32kFilter, FALSE, TRUE, FALSE)
-// Specifies the child process is allowed to claim a specific origin when making a safe file open prompt
-#define PS_ATTRIBUTE_SAFE_OPEN_PROMPT_ORIGIN_CLAIM	\
-    PsAttributeValue(PsAttributeSafeOpenPromptOriginClaim, FALSE, TRUE, FALSE)
-// Specifies the child process is isolated using the BNO framework
-#define PS_ATTRIBUTE_BNO_ISOLATION	\
-    PsAttributeValue(PsAttributeBnoIsolation, FALSE, TRUE, FALSE)
-// Specifies that the child's process desktop application policy  
-#define PS_ATTRIBUTE_DESKTOP_APP_POLICY	\
-    PsAttributeValue(PsAttributeDesktopAppPolicy, FALSE, TRUE, FALSE)
-
-
-// https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntpsapi.h#L1315
-
-#define PROCESS_CREATE_FLAGS_BREAKAWAY 0x00000001 // NtCreateProcessEx & NtCreateUserProcess
-#define PROCESS_CREATE_FLAGS_NO_DEBUG_INHERIT 0x00000002 // NtCreateProcessEx & NtCreateUserProcess
-#define PROCESS_CREATE_FLAGS_INHERIT_HANDLES 0x00000004 // NtCreateProcessEx & NtCreateUserProcess
-#define PROCESS_CREATE_FLAGS_PROTECTED_PROCESS 0x00000040 // NtCreateUserProcess only
-#define PROCESS_CREATE_FLAGS_CREATE_SESSION 0x00000080 // NtCreateProcessEx & NtCreateUserProcess, requires SeLoadDriver
-#define PROCESS_CREATE_FLAGS_INHERIT_FROM_PARENT 0x00000100 // NtCreateProcessEx & NtCreateUserProcess
-#define PROCESS_CREATE_FLAGS_SUSPENDED 0x00000200 // NtCreateProcessEx & NtCreateUserProcess
-#define PROCESS_CREATE_FLAGS_FORCE_BREAKAWAY 0x00000400 // NtCreateProcessEx & NtCreateUserProcess, requires SeTcb
-#define PROCESS_CREATE_FLAGS_RELEASE_SECTION 0x00001000 // NtCreateProcessEx & NtCreateUserProcess
-#define PROCESS_CREATE_FLAGS_AUXILIARY_PROCESS 0x00008000 // NtCreateProcessEx & NtCreateUserProcess, requires SeTcb
-#define PROCESS_CREATE_FLAGS_CREATE_STORE 0x00020000 // NtCreateProcessEx & NtCreateUserProcess
-#define PROCESS_CREATE_FLAGS_USE_PROTECTED_ENVIRONMENT 0x00040000 // NtCreateProcessEx & NtCreateUserProcess
-
-
-
-// https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntrtl.h#L2688
-
-
-#define RTL_USER_PROC_PARAMS_NORMALIZED 0x00000001	// indicates that the parameters passed to the process are already in a normalized form
-#define RTL_USER_PROC_PROFILE_USER 0x00000002		// enables user-mode profiling for the process
-#define RTL_USER_PROC_PROFILE_KERNEL 0x00000004		// enables kernel-mode profiling for the process
-#define RTL_USER_PROC_PROFILE_SERVER 0x00000008		// enables server-mode profiling for the process
-#define RTL_USER_PROC_RESERVE_1MB 0x00000020		// reserves 1 megabyte (MB) of virtual address space for the process
-#define RTL_USER_PROC_RESERVE_16MB 0x00000040		// reserves 16 MB of virtual address space for the process
-#define RTL_USER_PROC_CASE_SENSITIVE 0x00000080		// sets the process to be case-sensitive
-#define RTL_USER_PROC_DISABLE_HEAP_DECOMMIT 0x00000100	// disables heap decommitting for the process
-#define RTL_USER_PROC_DLL_REDIRECTION_LOCAL 0x00001000	// enables local DLL redirection for the process
-#define RTL_USER_PROC_APP_MANIFEST_PRESENT 0x00002000	// indicates that an application manifest is present for the process
-#define RTL_USER_PROC_IMAGE_KEY_MISSING 0x00004000	// indicates that the image key is missing for the process
-#define RTL_USER_PROC_OPTIN_PROCESS 0x00020000		// indicates that the process has opted in to some specific behavior or feature
     
 
 #endif // !STRUCTS_H

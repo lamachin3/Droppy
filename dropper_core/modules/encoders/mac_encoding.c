@@ -1,4 +1,4 @@
-#include "obfuscation.h"
+#include "encoders.h"
 
 
 typedef NTSTATUS (NTAPI* fnRtlEthernetStringToAddressA)(
@@ -15,7 +15,11 @@ BOOL MacDeobfuscation(IN CHAR* MacArray[], IN SIZE_T NmbrOfElements, OUT PBYTE *
         NTSTATUS        STATUS          = STATUS_SUCCESS;
         
         // getting fnRtlEthernetStringToAddressA  address from ntdll.dll
-        fnRtlEthernetStringToAddressA  pRtlEthernetStringToAddressA  = (fnRtlEthernetStringToAddressA)GetProcAddress(GetModuleHandle(TEXT("NTDLL")), "RtlEthernetStringToAddressA");
+#ifdef UNICODE
+        fnRtlEthernetStringToAddressA  pRtlEthernetStringToAddressA = (fnRtlEthernetStringToAddressA)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlEthernetStringToAddressA");
+#else
+        fnRtlEthernetStringToAddressA  pRtlEthernetStringToAddressA = (fnRtlEthernetStringToAddressA)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlEthernetStringToAddressA");
+#endif
         if (pRtlEthernetStringToAddressA  == NULL) {
                 DebugPrint("[!] GetProcAddress Failed With Error : %d \n", GetLastError());
                 return FALSE;
