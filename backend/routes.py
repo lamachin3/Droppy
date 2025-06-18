@@ -51,8 +51,6 @@ def init_routes(app):
         try:
             # Initialize a single dictionary to store all data
             dropper_config = extract_form_data()
-            print(dropper_config)
-            print("Files:", request.files)
             
             # Process preprocessing macros and placeholder options
             process_dropper_config(dropper_config)
@@ -77,6 +75,8 @@ def init_routes(app):
                     return redirect(redirect_url)
 
             # Call build_dropper with the form data
+            #print(dropper_config)
+            print("Files:", request.files)
             build_dropper(dropper_config)
         except Exception as e:
             print(f"Error during build: {e}")

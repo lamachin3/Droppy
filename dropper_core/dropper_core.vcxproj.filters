@@ -24,10 +24,7 @@
     <ClInclude Include="structs.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="typedef.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="syscalls\hw_indirect_syscalls.h">
+    <ClInclude Include="constants.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="syscalls\router.h">
@@ -72,6 +69,21 @@
     <ClInclude Include="utils\utils.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="syscalls\direct\SysWhispers3\sw3_syscalls.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="syscalls\indirect\HWSyscalls\hw_syscalls.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\amsi_bypass\amsi_bypass.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\etw_bypass\etw_bypass.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\hardware_breakpoints.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -81,9 +93,6 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="dropper.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="syscalls\hw_indirect_syscalls.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="syscalls\router.c">
@@ -203,5 +212,34 @@
     <ClCompile Include="utils\utils.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="syscalls\direct\SysWhispers3\sw3_syscalls.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="syscalls\indirect\HWSyscalls\hw_syscalls.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\amsi_bypass\amsi_bypass.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\amsi_bypass\function_patching.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\etw_bypass\etw_bypass.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\etw_bypass\function_patching.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\etw_bypass\hbp_hooking.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\hardware_breakpoints.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="syscalls\direct\SysWhispers3\sw3_syscalls-asm.x64.asm">
+      <Filter>Fichiers sources</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

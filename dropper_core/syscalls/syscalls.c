@@ -2,7 +2,7 @@
 
 
 BOOL InitializeSyscalls() {
-#if defined(HW_INDIRECT_SYSCALL)
+#if defined(HW_SYSCALLS)
    if(!InitHWSyscalls()){
       DebugPrint("[i] Successfully initiadted HWSyscalls...\n");
       return FALSE;

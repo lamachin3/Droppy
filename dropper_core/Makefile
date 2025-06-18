@@ -20,20 +20,26 @@ else
 endif
 
 CC = $(CROSS_PREFIX)gcc
+ASM = nasm
+ASMFLAGS = -f win64
 
 # Directories
 OBJ_DIR = build
 BIN_DIR = bin
 
 # Source files (fill these in, or use wildcard to include all .c files)
-SRCS = /* SOURCE_FILES */
+C_SRCS = /* SOURCE_FILES */
+
+ASM_SRCS  = /* ASM_SOURCE_FILES */
 
 # Output binary
 OUT_FILENAME ?= dropper
 OUT_EXE = $(BIN_DIR)/$(OUT_FILENAME)$(EXT)
 
 # Object files
-OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
+C_OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(C_SRCS))
+ASM_OBJS = $(patsubst %.nasm,$(OBJ_DIR)/%.obj,$(ASM_SRCS))
+OBJS = $(C_OBJS) $(ASM_OBJS)
 
 # Compiler and linker flags
 CFLAGS = -Wall -Wextra -O2 -g -Wno-implicit-function-declaration
@@ -69,6 +75,12 @@ $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	echo "Compiling $< -> $@"
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# Assemble .nasm files
+$(OBJ_DIR)/%.obj: %.nasm
+	@mkdir -p $(dir $@)
+	@echo "Assembling $< -> $@"
+	$(ASM) $(ASMFLAGS) -o $@ $<
 
 # Clean rule
 .PHONY: clean

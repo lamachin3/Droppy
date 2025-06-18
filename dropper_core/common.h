@@ -4,8 +4,9 @@
 // Section: Configuration & Dependencies
 //----------------------------------------
 #include "config.h"
-#include "typedef.h"
+#include "constants.h"
 #include "structs.h"
+#include "utils/hardware_breakpoints.h"
 #include "syscalls/syscalls.h"
 
 //----------------------------------------
@@ -45,6 +46,9 @@ UINT32 HashStringJenkinsOneAtATime32BitA(_In_ PCHAR  String);
 #define NtQueueApcThread_JOAA               0xEB15EA8A
 #define NtOpenProcess_JOAA                  0x837FAFFE
 #define NtOpenSection_JOAA                  0x0C31B099
+#define NtResumeThread_JOAA                 0x13684121
+#define NtCreateUserProcess_JOAA            0xAB7CAA87
+#define NtReadVirtualMemory_JOAA            0x487E6470
 #define GetTickCount64_JOAA                 0x00BB616E
 #define OpenProcess_JOAA                    0xAF03507E
 #define CallNextHookEx_JOAA                 0xB8B1ADC1

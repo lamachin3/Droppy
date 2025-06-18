@@ -123,6 +123,16 @@ if ($mingwCheckCommand.ExitCode -ne 0) {
     Write-Host "make is already installed."
 }
 
+# Step 9: Install nasm in MSYS2
+Write-Host "Checking if nasm is installed..."
+$mingwCheckCommand = Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Q", "mingw-w64-x86_64-nasm" -NoNewWindow -Wait -PassThru
+if ($mingwCheckCommand.ExitCode -ne 0) {
+    Write-Host "Installing nasm..."
+    Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Sy", "mingw-w64-x86_64-nasm --noconfirm" -Wait
+} else {
+    Write-Host "nasm is already installed."
+}
+
 Write-Host "Setup completed successfully!"
 Write-Host ""
 Write-Host "[ ATTENTION ] Restart your IDE or console to apply PATH changes..." -ForegroundColor Red

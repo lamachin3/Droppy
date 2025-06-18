@@ -1,6 +1,6 @@
 // Credits: https://github.com/Dec0ne/HWSyscalls
 
-#include "hw_indirect_syscalls.h"
+#include "hw_syscalls.h"
 
 #pragma region GlobalVariables
 
@@ -244,80 +244,9 @@ UINT64 PrepareSyscallHash(UINT32 functionHash) {
 }
 #pragma optimize("", on)
 
-PVOID		g_DetourFuncs[4]	= { 0 }; // Maximum 4 hardware breakpoints 
-typedef enum _DRX{
-    Dr0,
-    Dr1,
-    Dr2,
-    Dr3
-} DRX, * PDRX;  
-
-unsigned long long SetDr7Bits(unsigned long long CurrentDr7Register, int StartingBitPosition, int NmbrOfBitsToModify, unsigned long long NewBitValue) {
-	unsigned long long mask           = (1UL << NmbrOfBitsToModify) - 1UL;
-	unsigned long long NewDr7Register = (CurrentDr7Register & ~(mask << StartingBitPosition)) | (NewBitValue << StartingBitPosition);
-
-	return NewDr7Register;
-}
-
-
-BOOL SetHardwareBreakingPnt(IN PVOID pAddress, IN PVOID fnHookFunc, IN DRX Drx) {
-
-	if (!pAddress || !fnHookFunc)
-		return FALSE;
-
-    GetThreadContext_t pGetThreadContext = (GetThreadContext_t)GetSymbolAddress(GetModuleAddress((LPWSTR)L"KERNEL32.DLL"), "GetThreadContext");
-    SetThreadContext_t pSetThreadContext = (SetThreadContext_t)GetSymbolAddress(GetModuleAddress((LPWSTR)L"KERNEL32.DLL"), "SetThreadContext");
-
-	CONTEXT ThreadCtx = { .ContextFlags = CONTEXT_DEBUG_REGISTERS };
-
-	// Get local thread context
-	if (!pGetThreadContext((HANDLE)-2, &ThreadCtx))
-		return FALSE;
-        //return ReportError(TEXT("GetThreadContext"), NULL);
-
-	// Sets the value of the Dr0-3 registers 
-	switch (Drx) {
-		case Dr0: {
-			if (!ThreadCtx.Dr0)
-				ThreadCtx.Dr0 = (DWORD64)pAddress;
-			break;
-		}
-		case Dr1: {
-			if (!ThreadCtx.Dr1)
-				ThreadCtx.Dr1 = (DWORD64)pAddress;
-			break;
-		}
-		case Dr2: {
-			if (!ThreadCtx.Dr2)
-				ThreadCtx.Dr2 = (DWORD64)pAddress;
-			break;
-		}
-		case Dr3: {
-			if (!ThreadCtx.Dr3)
-				ThreadCtx.Dr3 = (DWORD64)pAddress;
-			break;
-		}
-		default:
-			return FALSE;
-	}
-
-	// Saves the address of the detour function at index 'Drx' in 'g_DetourFuncs'
-	g_DetourFuncs[Drx] = fnHookFunc;
-
-	// Enable the breakpoint: Populate the G0-3 flags depending on the saved breakpoint position in the Dr0-3 registers
-	ThreadCtx.Dr7 = SetDr7Bits(ThreadCtx.Dr7, (Drx * 2), 1, 1);
-
-	// Set the thread context after editing it
-	if (!pSetThreadContext((HANDLE)-2, &ThreadCtx))
-        return FALSE;
-		//return ReportError(TEXT("SetThreadContext"), NULL);
-
-	return TRUE;
-}
-
 BOOL SetMainBreakpoint() {
-    SetHardwareBreakingPnt((PVOID)&PrepareSyscall, (PVOID)&HWSyscallExceptionHandler, Dr0);
-    SetHardwareBreakingPnt((PVOID)&PrepareSyscallHash, (PVOID)&HWSyscallExceptionHandler, Dr1);
+	InstallHardwareBreakingPntHook((PUINT_VAR_T)&PrepareSyscall, Dr0, (PVOID)&HWSyscallExceptionHandler, ALL_THREADS);
+	InstallHardwareBreakingPntHook((PUINT_VAR_T)&PrepareSyscallHash, Dr1, (PVOID)&HWSyscallExceptionHandler, ALL_THREADS);
 
     DebugPrint("[+] Main HWBPs set successfully\n");
     return TRUE;
@@ -444,6 +373,9 @@ BOOL InitHWSyscalls() {
         DebugPrint("[!] Could not find a suitable \"ADD RSP,68;RET\" gadget in kernel32 or kernelbase. InitHWSyscalls failed.");
         return FALSE;
     }
+
+    if (!InitHardwareBreakpointHooking())
+        return FALSE;
 
     // Register exception handler
     exceptionHandlerHandle = AddVectoredExceptionHandler(1, &HWSyscallExceptionHandler);

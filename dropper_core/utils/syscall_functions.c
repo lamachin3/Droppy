@@ -44,16 +44,19 @@ typedef enum _THREADINFOCLASS {
 
 
 BOOL CreateSuspendedProcessSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFORMATION* pPi, HANDLE hStdOutput, HANDLE hStdError) {
+#ifdef UNICODE
+    HMODULE hNtdll = (HMODULE)GetModuleHandle(L"ntdll.dll");
+#else
     HMODULE hNtdll = (HMODULE)GetModuleHandle("ntdll.dll");
+#endif
     if (!hNtdll) {
         DebugPrint("[!] Failed to load ntdll.dll.\n");
-        return 1;
+        return FALSE;
     }
 
-    NtCreateUserProcess_t NtCreateUserProcess = (NtCreateUserProcess_t)PrepareSyscall((char *)("NtCreateUserProcess"));
-    tRtlAllocateHeap RtlAllocateHeap = (tRtlAllocateHeap)GetProcAddressH(hNtdll, RtlAllocateHeap_JOAA);
-    tRtlDestroyProcessParameters RtlDestroyProcessParameters = (tRtlDestroyProcessParameters)GetProcAddressH(hNtdll, RtlDestroyProcessParameters_JOAA);
-    tRtlCreateProcessParametersEx RtlCreateProcessParametersEx = (tRtlCreateProcessParametersEx)GetProcAddressH(hNtdll, RtlCreateProcessParametersEx_JOAA);
+    tRtlAllocateHeap RtlAllocateHeap = (tRtlAllocateHeap)GetProcAddress(hNtdll, "RtlAllocateHeap");
+    tRtlDestroyProcessParameters RtlDestroyProcessParameters = (tRtlDestroyProcessParameters)GetProcAddress(hNtdll, "RtlDestroyProcessParameters");
+    tRtlCreateProcessParametersEx RtlCreateProcessParametersEx = (tRtlCreateProcessParametersEx)GetProcAddress(hNtdll, "RtlCreateProcessParametersEx");
 
     const wchar_t* basePath = L"C:\\Windows\\System32\\";
     size_t totalLength = _wcslen(basePath) + _wcslen(pwProcessName) + 1;
@@ -62,7 +65,7 @@ BOOL CreateSuspendedProcessSyscall(IN PWSTR pwProcessName, OUT PROCESS_INFORMATI
     PWSTR pwProcessPath = (PWSTR)malloc(totalLength * sizeof(wchar_t));
     if (!pwProcessPath) {
         WDebugPrint(L"Memory allocation failed.\n");
-        return 1;
+        return FALSE;
     }
 
     // Combine the strings
@@ -202,8 +205,8 @@ BOOL GetRemoteProcessHandleSyscall(LPWSTR szProcessName, DWORD* dwProcessId, HAN
     OBJECT_ATTRIBUTES ObjectAttributes;
     CLIENT_ID ClientId;
     InitializeObjectAttributes(&ObjectAttributes, NULL, 0, NULL, NULL);
-    ClientId.UniqueProcessId = (HANDLE)(ULONG_PTR)*dwProcessId;
-    ClientId.UniqueThreadId = NULL;
+    ClientId.UniqueProcess = (HANDLE)(ULONG_PTR)*dwProcessId;
+    ClientId.UniqueThread = NULL;
 
     status = pNtOpenProcess(hProcess, PROCESS_ALL_ACCESS, &ObjectAttributes, &ClientId);
 

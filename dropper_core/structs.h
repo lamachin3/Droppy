@@ -1,7 +1,7 @@
 #pragma once
 
 #include <windows.h>
-#include "typedef.h"
+#include "constants.h"
 #include "common.h"
 
 #ifndef STRUCTS_H
@@ -30,6 +30,41 @@ typedef struct _UNICODE_STRING {
 typedef PVOID PACTIVATION_CONTEXT;
 typedef PVOID PAPI_SET_NAMESPACE;
 
+//----------------------------------------
+// TlHelp32 Structs
+//----------------------------------------
+
+typedef struct tagMODULEENTRY32
+{
+    DWORD   dwSize;
+    DWORD   th32ModuleID;       // This module
+    DWORD   th32ProcessID;      // owning process
+    DWORD   GlblcntUsage;       // Global usage count on the module
+    DWORD   ProccntUsage;       // Module usage count in th32ProcessID's context
+    BYTE  * modBaseAddr;        // Base address of module in th32ProcessID's context
+    DWORD   modBaseSize;        // Size in bytes of module starting at modBaseAddr
+    HMODULE hModule;            // The hModule of this module in th32ProcessID's context
+    char    szModule[MAX_MODULE_NAME32 + 1];
+    char    szExePath[MAX_PATH];
+} MODULEENTRY32;
+typedef MODULEENTRY32 *  PMODULEENTRY32;
+typedef MODULEENTRY32 *  LPMODULEENTRY32;
+
+typedef struct tagMODULEENTRY32W
+{
+    DWORD   dwSize;
+    DWORD   th32ModuleID;       // This module
+    DWORD   th32ProcessID;      // owning process
+    DWORD   GlblcntUsage;       // Global usage count on the module
+    DWORD   ProccntUsage;       // Module usage count in th32ProcessID's context
+    BYTE  * modBaseAddr;        // Base address of module in th32ProcessID's context
+    DWORD   modBaseSize;        // Size in bytes of module starting at modBaseAddr
+    HMODULE hModule;            // The hModule of this module in th32ProcessID's context
+    WCHAR   szModule[MAX_MODULE_NAME32 + 1];
+    WCHAR   szExePath[MAX_PATH];
+} MODULEENTRY32W;
+typedef MODULEENTRY32W *  PMODULEENTRY32W;
+typedef MODULEENTRY32W *  LPMODULEENTRY32W;
 
 
 // https://www.nirsoft.net/kernel_struct/vista/PEB_LDR_DATA.html
@@ -435,8 +470,8 @@ typedef struct _OBJECT_ATTRIBUTES
 } OBJECT_ATTRIBUTES, * POBJECT_ATTRIBUTES;
 
 typedef struct __CLIENT_ID {
-    HANDLE UniqueProcessId;
-    HANDLE UniqueThreadId;
+    HANDLE UniqueProcess;
+    HANDLE UniqueThread;
 } CLIENT_ID, * PCLIENT_ID;
 
 typedef struct _TEB_ACTIVE_FRAME_CONTEXT {
@@ -883,57 +918,6 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 // https://processhacker.sourceforge.io/doc/ntbasic_8h.html
 typedef LONG KPRIORITY;
 
-
-
-// https://doxygen.reactos.org/da/df4/struct__SYSTEM__PROCESS__INFORMATION.html
-typedef struct _SYSTEM_PROCESS_INFORMATION
-{
-    ULONG NextEntryOffset;
-    ULONG NumberOfThreads;
-    LARGE_INTEGER WorkingSetPrivateSize; //VISTA
-    ULONG HardFaultCount; //WIN7
-    ULONG NumberOfThreadsHighWatermark; //WIN7
-    ULONGLONG CycleTime; //WIN7
-    LARGE_INTEGER CreateTime;
-    LARGE_INTEGER UserTime;
-    LARGE_INTEGER KernelTime;
-    UNICODE_STRING ImageName;
-    KPRIORITY BasePriority;
-    HANDLE UniqueProcessId;
-    HANDLE InheritedFromUniqueProcessId;
-    ULONG HandleCount;
-    ULONG SessionId;
-    ULONG_PTR PageDirectoryBase;
-
-    //
-    // This part corresponds to VM_COUNTERS_EX.
-    // NOTE: *NOT* THE SAME AS VM_COUNTERS!
-    //
-    SIZE_T PeakVirtualSize;
-    SIZE_T VirtualSize;
-    ULONG PageFaultCount;
-    SIZE_T PeakWorkingSetSize;
-    SIZE_T WorkingSetSize;
-    SIZE_T QuotaPeakPagedPoolUsage;
-    SIZE_T QuotaPagedPoolUsage;
-    SIZE_T QuotaPeakNonPagedPoolUsage;
-    SIZE_T QuotaNonPagedPoolUsage;
-    SIZE_T PagefileUsage;
-    SIZE_T PeakPagefileUsage;
-    SIZE_T PrivatePageCount;
-
-    //
-    // This part corresponds to IO_COUNTERS
-    //
-    LARGE_INTEGER ReadOperationCount;
-    LARGE_INTEGER WriteOperationCount;
-    LARGE_INTEGER OtherOperationCount;
-    LARGE_INTEGER ReadTransferCount;
-    LARGE_INTEGER WriteTransferCount;
-    LARGE_INTEGER OtherTransferCount;
-    //    SYSTEM_THREAD_INFORMATION TH[1];
-} SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
-
 typedef struct _API_HASHING {
 	fnGetTickCount64				pGetTickCount64;
 	fnOpenProcess					pOpenProcess;
@@ -957,13 +941,13 @@ typedef BOOL(WINAPI* WaitOnAddress_t)(
     IN volatile VOID    *Address,
     IN PVOID            CompareAddress,
     IN SIZE_T           AddressSize,
-    IN OPTIONAL DWORD   dwMilliseconds);
+    IN DWORD           dwMilliseconds OPTIONAL);
 
 typedef PVOID(WINAPI* MapViewOfFile2_t)(
     IN HANDLE           FileMappingHandle,
     IN HANDLE           ProcessHandle,
     IN ULONG64          Offset,
-    IN OPTIONAL PVOID   BaseAddress,
+    IN PVOID           BaseAddress OPTIONAL,
     IN SIZE_T           ViewSize,
     IN ULONG            AllocationType,
     IN ULONG            PageProtection);
@@ -974,7 +958,7 @@ typedef NTSTATUS(WINAPI* NtOpenProcess_t)(
 	OUT PHANDLE             ProcessHandle,
 	IN ACCESS_MASK          DesiredAccess,
 	IN POBJECT_ATTRIBUTES   ObjectAttributes,
-	IN OPTIONAL PCLIENT_ID  ClientId);
+	IN PCLIENT_ID           ClientId OPTIONAL);
 
 typedef NTSTATUS(NTAPI* NtCreateSection_t)(
 	OUT PHANDLE             SectionHandle,
@@ -1133,7 +1117,7 @@ typedef struct tagPROCESSENTRY32W {
     DWORD                   dwSize;
     DWORD                   cntUsage;
     DWORD                   th32ProcessID;
-    DWORD                   th32DefaultHeapID;
+    ULONG_PTR               th32DefaultHeapID;
     DWORD                   th32ModuleID;
     DWORD                   cntThreads;
     DWORD                   th32ParentProcessID;
@@ -1242,6 +1226,159 @@ typedef enum _PS_ATTRIBUTE_NUM
     PsAttributeDesktopAppPolicy,
     PsAttributeMax
 } PS_ATTRIBUTE_NUM;
-    
+
+
+//----------------------------------------
+// Hardware Breakpoint structures
+//----------------------------------------
+typedef enum _DRX{
+    Dr0,
+    Dr1,
+    Dr2,
+    Dr3
+} DRX, * PDRX;
+
+typedef struct __HARDWARE_ENGINE_INIT_SETTINGS_GLOBAL {
+	PVOID	HandlerObject;
+	BOOL	IsInit;
+}HARDWARE_ENGINE_INIT_SETTINGS_GLOBAL, * PHARDWARE_ENGINE_INIT_SETTINGS_GLOBAL;
+
+typedef uintptr_t PUINT_VAR_T;
+
+typedef struct DESCRIPTOR_ENTRY {
+	PUINT_VAR_T					Address;		// Address of the breaking point
+	DRX					        Drx;			// The index of the breaking point in Dr0-3 debug registers
+	DWORD						ThreadId;		// The thread id of where the breaking point is installed
+	VOID(*CallbackFunction)(PCONTEXT);			// The callback function pointer (the detour function)
+	BOOL						Processed;		// Used as a flag to show that the node is processed in the VEH handler function - resolving the bug: https://github.com/vxunderground/VX-API/blob/main/VX-API/ExceptHandlerCallbackRoutine.cpp#L19
+	struct DESCRIPTOR_ENTRY* Next;			// Pointer to the next element in the linked list
+	struct DESCRIPTOR_ENTRY* Previous;		// Pointer to the previous element in the linked list
+}DESCRIPTOR_ENTRY, * PDESCRIPTOR_ENTRY;
+
+// https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntkeapi.h#L17
+typedef enum _KTHREAD_STATE {
+    Initialized,
+    Ready,
+    Running,
+    Standby,
+    Terminated,
+    Waiting,
+    Transition,
+    DeferredReady,
+    GateWaitObsolete,
+    WaitingForProcessInSwap,
+    MaximumThreadState
+} KTHREAD_STATE, * PKTHREAD_STATE;
+
+// https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntkeapi.h#L50
+typedef enum _KWAIT_REASON {
+    Executive,
+    FreePage,
+    PageIn,
+    PoolAllocation,
+    DelayExecution,
+    Suspended,
+    UserRequest,
+    WrExecutive,
+    WrFreePage,
+    WrPageIn,
+    WrPoolAllocation,
+    WrDelayExecution,
+    WrSuspended,
+    WrUserRequest,
+    WrEventPair,
+    WrQueue,
+    WrLpcReceive,
+    WrLpcReply,
+    WrVirtualMemory,
+    WrPageOut,
+    WrRendezvous,
+    WrKeyedEvent,
+    WrTerminated,
+    WrProcessInSwap,
+    WrCpuRateControl,
+    WrCalloutStack,
+    WrKernel,
+    WrResource,
+    WrPushLock,
+    WrMutex,
+    WrQuantumEnd,
+    WrDispatchInt,
+    WrPreempted,
+    WrYieldExecution,
+    WrFastMutex,
+    WrGuardedMutex,
+    WrRundown,
+    WrAlertByThreadId,
+    WrDeferredPreempt,
+    WrPhysicalFault,
+    WrIoRing,
+    WrMdlCache,
+    MaximumWaitReason
+} KWAIT_REASON, * PKWAIT_REASON;
+
+// https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntexapi.h#L1706
+typedef struct _SYSTEM_THREAD_INFORMATION {
+    LARGE_INTEGER KernelTime;
+    LARGE_INTEGER UserTime;
+    LARGE_INTEGER CreateTime;
+    ULONG WaitTime;
+    PVOID StartAddress;
+    CLIENT_ID ClientId;
+    KPRIORITY Priority;
+    KPRIORITY BasePriority;
+    ULONG ContextSwitches;
+    KTHREAD_STATE ThreadState;
+    KWAIT_REASON WaitReason;
+} SYSTEM_THREAD_INFORMATION, * PSYSTEM_THREAD_INFORMATION;
+
+// https://doxygen.reactos.org/da/df4/struct__SYSTEM__PROCESS__INFORMATION.html
+typedef struct _SYSTEM_PROCESS_INFORMATION
+{
+    ULONG NextEntryOffset;
+    ULONG NumberOfThreads;
+    LARGE_INTEGER WorkingSetPrivateSize; //VISTA
+    ULONG HardFaultCount; //WIN7
+    ULONG NumberOfThreadsHighWatermark; //WIN7
+    ULONGLONG CycleTime; //WIN7
+    LARGE_INTEGER CreateTime;
+    LARGE_INTEGER UserTime;
+    LARGE_INTEGER KernelTime;
+    UNICODE_STRING ImageName;
+    KPRIORITY BasePriority;
+    HANDLE UniqueProcessId;
+    HANDLE InheritedFromUniqueProcessId;
+    ULONG HandleCount;
+    ULONG SessionId;
+    ULONG_PTR PageDirectoryBase;
+
+    //
+    // This part corresponds to VM_COUNTERS_EX.
+    // NOTE: *NOT* THE SAME AS VM_COUNTERS!
+    //
+    SIZE_T PeakVirtualSize;
+    SIZE_T VirtualSize;
+    ULONG PageFaultCount;
+    SIZE_T PeakWorkingSetSize;
+    SIZE_T WorkingSetSize;
+    SIZE_T QuotaPeakPagedPoolUsage;
+    SIZE_T QuotaPagedPoolUsage;
+    SIZE_T QuotaPeakNonPagedPoolUsage;
+    SIZE_T QuotaNonPagedPoolUsage;
+    SIZE_T PagefileUsage;
+    SIZE_T PeakPagefileUsage;
+    SIZE_T PrivatePageCount;
+
+    //
+    // This part corresponds to IO_COUNTERS
+    //
+    LARGE_INTEGER ReadOperationCount;
+    LARGE_INTEGER WriteOperationCount;
+    LARGE_INTEGER OtherOperationCount;
+    LARGE_INTEGER ReadTransferCount;
+    LARGE_INTEGER WriteTransferCount;
+    LARGE_INTEGER OtherTransferCount;
+    SYSTEM_THREAD_INFORMATION Threads[1];
+} SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
 
 #endif // !STRUCTS_H

@@ -54,6 +54,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -131,20 +132,24 @@
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="modules\amsi_bypass\amsi_bypass.h" />
     <ClInclude Include="modules\anti_sandbox\anti_sandbox.h" />
     <ClInclude Include="modules\crypto\crypto.h" />
     <ClInclude Include="modules\encoders\encoders.h" />
     <ClInclude Include="modules\entropy\entropy.h" />
+    <ClInclude Include="modules\etw_bypass\etw_bypass.h" />
     <ClInclude Include="modules\injectors\injectors.h" />
     <ClInclude Include="modules\loaders\loaders.h" />
     <ClInclude Include="modules\stealth_techniques\api_hashing.h" />
     <ClInclude Include="modules\unhooking\unhooking.h" />
     <ClInclude Include="structs.h" />
-    <ClInclude Include="syscalls\hw_indirect_syscalls.h" />
+    <ClInclude Include="syscalls\direct\SysWhispers3\sw3_syscalls.h" />
+    <ClInclude Include="syscalls\indirect\HWSyscalls\hw_syscalls.h" />
     <ClInclude Include="syscalls\router.h" />
     <ClInclude Include="syscalls\syscalls.h" />
-    <ClInclude Include="typedef.h" />
+    <ClInclude Include="constants.h" />
     <ClInclude Include="utils\debug.h" />
+    <ClInclude Include="utils\hardware_breakpoints.h" />
     <ClInclude Include="utils\process_utils.h" />
     <ClInclude Include="utils\syscall_functions.h" />
     <ClInclude Include="utils\utils.h" />
@@ -152,6 +157,8 @@
   <ItemGroup>
     <ClCompile Include="config.c" />
     <ClCompile Include="dropper.c" />
+    <ClCompile Include="modules\amsi_bypass\amsi_bypass.c" />
+    <ClCompile Include="modules\amsi_bypass\function_patching.c" />
     <ClCompile Include="modules\anti_sandbox\anti_sandbox.c" />
     <ClCompile Include="modules\anti_sandbox\delay.c" />
     <ClCompile Include="modules\anti_sandbox\mouse_action.c" />
@@ -171,6 +178,9 @@
     <ClCompile Include="modules\encoders\uuid_encoding.c" />
     <ClCompile Include="modules\entropy\custom_win_api.c" />
     <ClCompile Include="modules\entropy\entropy.c" />
+    <ClCompile Include="modules\etw_bypass\etw_bypass.c" />
+    <ClCompile Include="modules\etw_bypass\function_patching.c" />
+    <ClCompile Include="modules\etw_bypass\hbp_hooking.c" />
     <ClCompile Include="modules\injectors\apc_injection.c" />
     <ClCompile Include="modules\injectors\early_bird_apc_injection.c" />
     <ClCompile Include="modules\injectors\injectors.c" />
@@ -185,18 +195,24 @@
     <ClCompile Include="modules\unhooking\known_dlls_unhooking.c" />
     <ClCompile Include="modules\unhooking\suspended_unhooking.c" />
     <ClCompile Include="modules\unhooking\unhooking.c" />
-    <ClCompile Include="syscalls\hw_indirect_syscalls.c" />
+    <ClCompile Include="syscalls\direct\SysWhispers3\sw3_syscalls.c" />
+    <ClCompile Include="syscalls\indirect\HWSyscalls\hw_syscalls.c" />
     <ClCompile Include="syscalls\router.c" />
     <ClCompile Include="syscalls\syscalls.c" />
     <ClCompile Include="utils\debug.c" />
+    <ClCompile Include="utils\hardware_breakpoints.c" />
     <ClCompile Include="utils\process_utils.c" />
     <ClCompile Include="utils\syscall_functions.c" />
     <ClCompile Include="utils\utils.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
+    <MASM Include="syscalls\direct\SysWhispers3\sw3_syscalls-asm.x64.asm">
+      <FileType>Document</FileType>
+    </MASM>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

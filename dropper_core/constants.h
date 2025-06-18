@@ -24,6 +24,7 @@ typedef unsigned long   DWORD;
 #define MAX_BUFFER_SIZE 1024
 #define RTL_MAX_DRIVE_LETTERS 32
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#define STATUS_INFO_LENGTH_MISMATCH 0xC0000004
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 
 //----------------------------------------
@@ -36,6 +37,46 @@ typedef unsigned long   DWORD;
 
 // Self handle
 #define NtCurrentProcess() ((HANDLE)(LONG_PTR)-1)
+
+//----------------------------------------
+// TlHelp32 Constants
+//----------------------------------------
+#define TH32CS_SNAPPROCESS      0x2
+#define TH32CS_SNAPMODULE       0x00000008
+#define TH32CS_SNAPMODULE32     0x00000010
+#define MAX_MODULE_NAME32       255
+
+HANDLE WINAPI CreateToolhelp32Snapshot(DWORD dwFlags, DWORD th32ProcessID);
+
+//----------------------------------------
+// Hardware Breakpoint Constants
+//----------------------------------------
+#define ALL_THREADS		0x00
+// Get Parameters
+#define GETPARM_1(CTX)(GetFunctionArgument(CTX, 0x1))	
+#define GETPARM_2(CTX)(GetFunctionArgument(CTX, 0x2))
+#define GETPARM_3(CTX)(GetFunctionArgument(CTX, 0x3))
+#define GETPARM_4(CTX)(GetFunctionArgument(CTX, 0x4))
+#define GETPARM_5(CTX)(GetFunctionArgument(CTX, 0x5))
+#define GETPARM_6(CTX)(GetFunctionArgument(CTX, 0x6))
+#define GETPARM_7(CTX)((ULONG)GetFunctionArgument(CTX, 0x7))
+#define GETPARM_8(CTX)(GetFunctionArgument(CTX, 0x8))
+#define GETPARM_9(CTX)(GetFunctionArgument(CTX, 0x9))
+#define GETPARM_A(CTX)(GetFunctionArgument(CTX, 0xA))
+#define GETPARM_B(CTX)(GetFunctionArgument(CTX, 0xB))
+
+// Set Parameters
+#define SETPARM_1(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x1))
+#define SETPARM_2(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x2))
+#define SETPARM_3(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x3))
+#define SETPARM_4(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x4))
+#define SETPARM_5(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x5))
+#define SETPARM_6(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x6))
+#define SETPARM_7(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x7))
+#define SETPARM_8(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x8))
+#define SETPARM_9(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0x9))
+#define SETPARM_A(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0xA))
+#define SETPARM_B(CTX, VALUE)(SetFunctionArgument(CTX, VALUE, 0xB))
 
 //----------------------------------------
 // Section: Process Attribute Macros

