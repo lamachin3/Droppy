@@ -1,7 +1,4 @@
 #include "sw3_syscalls.h"
-#include <stdio.h>
-
-//#define DEBUG
 
 // JUMPER
 

@@ -137,44 +137,25 @@ BOOL GetRemoteProcessHandleSyscall(LPWSTR szProcessName, DWORD* dwProcessId, HAN
     HANDLE hSnapShot = NULL;
     PROCESSENTRY32W	Proc = { .dwSize = sizeof(PROCESSENTRY32W) };
 
-    NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)PrepareSyscallHash(NtQuerySystemInformation_JOAA);
-
-    if (!pNtQuerySystemInformation) {
-        DebugPrint("[-] Failed to prepare syscall for NtQuerySystemInformation.\n");
-        return FALSE;
-    }
-
     ULONG bufferSize = 0;
     PVOID pProcessInfo = NULL;
-    NTSTATUS status = pNtQuerySystemInformation(SystemProcessInformation, pProcessInfo, 0, &bufferSize);
+    NTSTATUS status = 0;
 
+    status = NtQuerySystemInformation(SystemProcessInformation, pProcessInfo, 0, &bufferSize);
     if (status != STATUS_INFO_LENGTH_MISMATCH) {
         DebugPrint("[-] NtQuerySystemInformation failed: 0x%X\n", status);
         return FALSE;
     }
 
-	NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
-    
-    if (!pNtAllocateVirtualMemory) {
-        DebugPrint("[-] Failed to prepare syscall for NtAllocateVirtualMemory.\n");
-        return FALSE;
-    }
 
     SIZE_T regionSize = bufferSize;
-    status = pNtAllocateVirtualMemory(
-        GetCurrentProcess(),
-        &pProcessInfo,
-        0,
-        &regionSize,
-        MEM_COMMIT | MEM_RESERVE,
-        PAGE_READWRITE
-    );
+    status = NtAllocateVirtualMemory(GetCurrentProcess(), &pProcessInfo, 0, &regionSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	if (!NT_SUCCESS(status)) {
         DebugPrint("[-] NtAllocateVirtualMemory failed: 0x%X\n", status);
         return FALSE;
     }
 
-    status = pNtQuerySystemInformation(SystemProcessInformation, pProcessInfo, bufferSize, &bufferSize);
+    status = NtQuerySystemInformation(SystemProcessInformation, pProcessInfo, bufferSize, &bufferSize);
     if (!NT_SUCCESS(status)) {
         DebugPrint("[-] NtQuerySystemInformation failed: 0x%X\n", status);
         HeapFree(GetProcessHeap(), 0, pProcessInfo);
@@ -195,21 +176,13 @@ BOOL GetRemoteProcessHandleSyscall(LPWSTR szProcessName, DWORD* dwProcessId, HAN
         goto _EndOfFunction;
     }
 
-    NtOpenProcess_t pNtOpenProcess = (NtOpenProcess_t)PrepareSyscallHash(NtOpenProcess_JOAA);
-
-    if (!pNtOpenProcess) {
-        DebugPrint("[-] Failed to prepare syscall for NtOpenProcess.\n");
-        return FALSE;
-    }
-
     OBJECT_ATTRIBUTES ObjectAttributes;
     CLIENT_ID ClientId;
     InitializeObjectAttributes(&ObjectAttributes, NULL, 0, NULL, NULL);
     ClientId.UniqueProcess = (HANDLE)(ULONG_PTR)*dwProcessId;
     ClientId.UniqueThread = NULL;
 
-    status = pNtOpenProcess(hProcess, PROCESS_ALL_ACCESS, &ObjectAttributes, &ClientId);
-
+    status = NtOpenProcess(hProcess, PROCESS_ALL_ACCESS, &ObjectAttributes, &ClientId);
     if (!NT_SUCCESS(status)) {
         DebugPrint("[!] NtOpenProcess Failed With Error: 0x%X \n", status);
         return FALSE;
@@ -217,13 +190,7 @@ BOOL GetRemoteProcessHandleSyscall(LPWSTR szProcessName, DWORD* dwProcessId, HAN
 
 _EndOfFunction:
     if (pProcessInfo) {
-        NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscallHash(NtFreeVirtualMemory_JOAA);
-        if (!pNtFreeVirtualMemory) {
-            DebugPrint("[-] Failed to prepare syscall for NtFreeVirtualMemory.\n");
-            return FALSE;
-        }
-
-        NTSTATUS status = pNtFreeVirtualMemory(
+        NTSTATUS status = NtFreeVirtualMemory(
             GetCurrentProcess(),  // Using the current process handle
             &pProcessInfo,        // Pointer to the base address of the allocated memory
             &regionSize,          // Size of the allocated memory

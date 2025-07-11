@@ -20,8 +20,10 @@
 // Called in the detour function to block the execution of the original function
 VOID BLOCK_REAL(IN PCONTEXT pThreadCtx);
 
-PVOID fetchEtwpEventWriteFullAddr(HANDLE hProcess);
+//PVOID fetchEtwpEventWriteFullAddr(HANDLE hProcess);
+PVOID fetchEtwpEventWriteFullAddr();
 BOOL applyEtwBypass(HANDLE hProcess);
+PBYTE findRetInstruction(PVOID function_start);
 
 /**
  * @brief Modify the SSN of ETW related syscalls to return an error. 
@@ -55,6 +57,7 @@ BOOL SyscallPatchEtw(HANDLE hProcess, LPSTR syscallName);
  * @section etw_bypass
  * @flags JMP_RET_BASED_ETW_PATCH
 */
+//Failing
 BOOL JmpRetBasedEtwPatch(HANDLE hProcess, LPSTR functionName);
 
 /**
@@ -71,6 +74,7 @@ BOOL JmpRetBasedEtwPatch(HANDLE hProcess, LPSTR functionName);
  * @section etw_bypass
  * @flags CALL_BASED_ETW_PATCH
 */
+//-> Failing
 BOOL CallBasedEtwPatch(HANDLE hProcess, LPSTR functionName);
 
 /**
@@ -83,7 +87,7 @@ BOOL CallBasedEtwPatch(HANDLE hProcess, LPSTR functionName);
  *
  * @return TRUE if the hooking was successful, FALSE otherwise.
  *
- * @name Hardware Breakpoint Hooking
+ * @name_ Hardware Breakpoint Hooking
  * @section etw_bypass
  * @flags HBP_ETW_HOOKING
 */

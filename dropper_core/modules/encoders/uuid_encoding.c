@@ -15,9 +15,9 @@ BOOL UuidDeobfuscation(IN CHAR* UuidArray[], IN SIZE_T NmbrOfElements, OUT PBYTE
         
         // getting UuidFromStringA   address from Rpcrt4.dll
 #ifdef UNICODE
-        fnUuidFromStringA pUuidFromStringA = (fnUuidFromStringA)GetProcAddressH(LoadLibrary(L"rpcrt4.dll"), L"UuidFromStringA");
+        fnUuidFromStringA pUuidFromStringA = (fnUuidFromStringA)GetProcAddress(LoadLibrary(L"rpcrt4.dll"), "UuidFromStringA");
 #else
-        fnUuidFromStringA pUuidFromStringA = (fnUuidFromStringA)GetProcAddressH(LoadLibrary("rpcrt4.dll"), "UuidFromStringA");
+        fnUuidFromStringA pUuidFromStringA = (fnUuidFromStringA)GetProcAddress(LoadLibrary("rpcrt4.dll"), "UuidFromStringA");
 #endif
         if (pUuidFromStringA == NULL) {
                 DebugPrint("[!] GetProcAddress Failed With Error : %d \n", GetLastError());

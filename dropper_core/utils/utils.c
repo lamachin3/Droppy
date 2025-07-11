@@ -100,8 +100,9 @@ BOOL GetFunctionAddressInRemoteProcess(HANDLE hProcess, LPCSTR lpFunctionName, L
         DebugPrint("Failed to load psapi.dll. Error: %ld\n", GetLastError());
         return 0;
     }
-    EnumProcessModulesEx_t pEnumProcessModulesEx = (EnumProcessModulesEx_t)GetProcAddressH(hPsapi, EnumProcessModulesEx_JOAA);
-    GetModuleBaseNameA_t pGetModuleBaseNameA = (GetModuleBaseNameA_t)GetProcAddressH(hPsapi, GetModuleBaseNameA_JOAA);
+
+    EnumProcessModulesEx_t pEnumProcessModulesEx = (EnumProcessModulesEx_t)GetProcAddress(hPsapi, "EnumProcessModulesEx");
+	GetModuleBaseNameA_t pGetModuleBaseNameA = (GetModuleBaseNameA_t)GetProcAddress(hPsapi, "GetModuleBaseNameA");
 
 	if (pEnumProcessModulesEx(hProcess, hModules, sizeof(hModules), &cbNeeded, LIST_MODULES_ALL)) {
 		for (int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {

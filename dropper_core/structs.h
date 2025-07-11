@@ -988,21 +988,21 @@ typedef NTSTATUS(NTAPI* NtWriteVirtualMemory_t)(
     IN HANDLE               ProcessHandle,
     IN PVOID                BaseAddress,
     IN PVOID                Buffer,
-    IN SIZE_T                NumberOfBytesToWrite,
-    OUT PSIZE_T              NumberOfBytesWritten OPTIONAL);
+    IN SIZE_T               NumberOfBytesToWrite,
+    OUT PSIZE_T             NumberOfBytesWritten OPTIONAL);
 
 typedef	NTSTATUS(NTAPI* NtCreateThreadEx_t)(
     OUT PHANDLE             hThread,
     IN ACCESS_MASK          DesiredAccess,
     IN POBJECT_ATTRIBUTES   ObjectAttributes OPTIONAL,
     IN HANDLE               ProcessHandle,
-    IN PVOID                lpStartAddress,
-    IN PVOID                lpParameter OPTIONAL,
-    IN ULONG                Flags,
-    IN SIZE_T               StackZeroBits,
-    IN SIZE_T               SizeOfStackCommit,
-    IN SIZE_T               SizeOfStackReserve,
-    OUT PVOID               lpBytesBuffer OPTIONAL);
+    IN PVOID                StartRoutine,
+    IN PVOID                Argument OPTIONAL,
+    IN ULONG                CreateFlags,
+    IN SIZE_T               ZeroBits,
+    IN SIZE_T               StackSize,
+    IN SIZE_T               MaximumStackSize,
+    OUT PPS_ATTRIBUTE_LIST  AttributeList OPTIONAL);
 	
 typedef NTSTATUS(NTAPI* NtWaitForSingleObject_t)(
 	IN HANDLE               ObjectHandle,

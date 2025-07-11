@@ -1,7 +1,7 @@
 #include "router.h"
 
 NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength) {
-    DebugPrint("[i] Calling NtQuerySystemInformation");
+    DebugPrint("[i] Calling NtQuerySystemInformation\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtQuerySystemInformation(SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength);
 #elif defined(HW_SYSCALLS)
@@ -14,7 +14,7 @@ NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClas
 }
 
 NTSTATUS NtCreateSection(PHANDLE SectionHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PLARGE_INTEGER MaximumSize, ULONG SectionPageProtection, ULONG AllocationAttributes, HANDLE FileHandle){
-    DebugPrint("[i] Calling NtCreateSection");
+    DebugPrint("[i] Calling NtCreateSection\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtCreateSection(SectionHandle, DesiredAccess, ObjectAttributes, MaximumSize, SectionPageProtection, AllocationAttributes, FileHandle);
 #elif defined(HW_SYSCALLS)
@@ -27,7 +27,7 @@ NTSTATUS NtCreateSection(PHANDLE SectionHandle, ACCESS_MASK DesiredAccess, POBJE
 }
 
 NTSTATUS NtMapViewOfSection(HANDLE SectionHandle, HANDLE ProcessHandle, PVOID* BaseAddress, ULONG ZeroBits, SIZE_T CommitSize, PLARGE_INTEGER SectionOffset, PSIZE_T ViewSize, DWORD InheritDisposition, ULONG AllocationType, ULONG Protect){
-    DebugPrint("[i] Calling NtMapViewOfSection");
+    DebugPrint("[i] Calling NtMapViewOfSection\n");
 #if defined(SW3_SYSCALLS)
     return  Sw3NtMapViewOfSection(SectionHandle, ProcessHandle, BaseAddress, ZeroBits, CommitSize, SectionOffset, ViewSize, InheritDisposition, AllocationType, Protect);
 #elif defined(HW_SYSCALLS)
@@ -40,7 +40,7 @@ NTSTATUS NtMapViewOfSection(HANDLE SectionHandle, HANDLE ProcessHandle, PVOID* B
 }
 
 NTSTATUS NtUnmapViewOfSection(HANDLE ProcessHandle, PVOID BaseAddress){
-    DebugPrint("[i] Calling NtUnmapViewOfSection");
+    DebugPrint("[i] Calling NtUnmapViewOfSection\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtUnmapViewOfSection(ProcessHandle, BaseAddress);
 #elif defined(HW_SYSCALLS)
@@ -53,7 +53,7 @@ NTSTATUS NtUnmapViewOfSection(HANDLE ProcessHandle, PVOID BaseAddress){
 }
 
 NTSTATUS NtClose(HANDLE ObjectHandle){
-    DebugPrint("[i] Calling NtClose");
+    DebugPrint("[i] Calling NtClose\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtClose(ObjectHandle);
 #elif defined(HW_SYSCALLS)
@@ -65,21 +65,21 @@ NTSTATUS NtClose(HANDLE ObjectHandle){
 #endif
 }
 
-NTSTATUS NtCreateThreadEx(PHANDLE hThread, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, PVOID lpStartAddress, PVOID lpParameter, ULONG Flags, SIZE_T StackZeroBits, SIZE_T SizeOfStackCommit, SIZE_T SizeOfStackReserve, PVOID lpBytesBuffer){
-    DebugPrint("[i] Calling NtCreateThreadEx");
+NTSTATUS NtCreateThreadEx(PHANDLE hThread, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, PVOID StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList){
+    DebugPrint("[i] Calling NtCreateThreadEx\n");
 #if defined(SW3_SYSCALLS)
-    return Sw3NtCreateThreadEx(hThread, DesiredAccess, ObjectAttributes, ProcessHandle, lpStartAddress, lpParameter, Flags, StackZeroBits, SizeOfStackCommit, SizeOfStackReserve, lpBytesBuffer);
+    return Sw3NtCreateThreadEx(hThread, DesiredAccess, ObjectAttributes, ProcessHandle, StartRoutine, Argument, CreateFlags, ZeroBits, StackSize, MaximumStackSize, AttributeList);
 #elif defined(HW_SYSCALLS)
     NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscallHash(NtCreateThreadEx_JOAA);
     if (!pNtCreateThreadEx) {
         return FALSE;
     }
-    return pNtCreateThreadEx(hThread, DesiredAccess, ObjectAttributes, ProcessHandle, lpStartAddress, lpParameter, Flags, StackZeroBits, SizeOfStackCommit, SizeOfStackReserve, lpBytesBuffer);
+    return pNtCreateThreadEx(hThread, DesiredAccess, ObjectAttributes, ProcessHandle, StartRoutine, Argument, CreateFlags, ZeroBits, StackSize, MaximumStackSize, AttributeList);
 #endif
 }
 
 NTSTATUS NtWaitForSingleObject(HANDLE ObjectHandle, BOOLEAN Alertable, PLARGE_INTEGER TimeOut){
-    DebugPrint("[i] Calling NtWaitForSingleObject");
+    DebugPrint("[i] Calling NtWaitForSingleObject\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtWaitForSingleObject(ObjectHandle, Alertable, TimeOut);
 #elif defined(HW_SYSCALLS)
@@ -92,7 +92,7 @@ NTSTATUS NtWaitForSingleObject(HANDLE ObjectHandle, BOOLEAN Alertable, PLARGE_IN
 }
 
 NTSTATUS NtDelayExecution(BOOLEAN Alertable, PLARGE_INTEGER DelayInterval){
-    DebugPrint("[i] Calling NtDelayExecution");
+    DebugPrint("[i] Calling NtDelayExecution\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtDelayExecution(Alertable, DelayInterval);
 #elif defined(HW_SYSCALLS)
@@ -105,7 +105,7 @@ NTSTATUS NtDelayExecution(BOOLEAN Alertable, PLARGE_INTEGER DelayInterval){
 }
 
 NTSTATUS NtAllocateVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect){
-    DebugPrint("[i] Calling NtAllocateVirtualMemory");
+    DebugPrint("[i] Calling NtAllocateVirtualMemory\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtAllocateVirtualMemory(ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect);
 #elif defined(HW_SYSCALLS)
@@ -118,7 +118,7 @@ NTSTATUS NtAllocateVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG
 }
 
 NTSTATUS NtWriteVirtualMemory(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten){
-    DebugPrint("[i] Calling NtWriteVirtualMemory");
+    DebugPrint("[i] Calling NtWriteVirtualMemory\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, NumberOfBytesToWrite, NumberOfBytesWritten);
 #elif defined(HW_SYSCALLS)
@@ -131,7 +131,7 @@ NTSTATUS NtWriteVirtualMemory(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buf
 }
 
 NTSTATUS NtProtectVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T NumberOfBytesToProtect, ULONG NewAccessProtection, PULONG OldAccessProtection){
-    DebugPrint("[i] Calling NtProtectVirtualMemory");
+    DebugPrint("[i] Calling NtProtectVirtualMemory\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtProtectVirtualMemory(ProcessHandle, BaseAddress, NumberOfBytesToProtect, NewAccessProtection, OldAccessProtection);
 #elif defined(HW_SYSCALLS)
@@ -144,7 +144,7 @@ NTSTATUS NtProtectVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_
 }
 
 NTSTATUS NtFreeVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG FreeType){
-    DebugPrint("[i] Calling NtFreeVirtualMemory");
+    DebugPrint("[i] Calling NtFreeVirtualMemory\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtFreeVirtualMemory(ProcessHandle, BaseAddress, RegionSize, FreeType);
 #elif defined(HW_SYSCALLS)
@@ -157,7 +157,7 @@ NTSTATUS NtFreeVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T R
 }
 
 NTSTATUS NtQueueApcThread(HANDLE ThreadHandle, PIO_APC_ROUTINE ApcRoutine, PVOID ApcRoutineContext, PIO_STATUS_BLOCK ApcStatusBlock, ULONG ApcReserved){
-    DebugPrint("[i] Calling NtQueueApcThread");
+    DebugPrint("[i] Calling NtQueueApcThread\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtQueueApcThread(ThreadHandle, (PKNORMAL_ROUTINE)ApcRoutine, ApcRoutineContext, ApcStatusBlock, (PVOID)ApcReserved);
 #elif defined(HW_SYSCALLS)
@@ -170,7 +170,7 @@ NTSTATUS NtQueueApcThread(HANDLE ThreadHandle, PIO_APC_ROUTINE ApcRoutine, PVOID
 }
 
 NTSTATUS NtOpenProcess(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PCLIENT_ID  ClientId){
-    DebugPrint("[i] Calling NtOpenProcess");
+    DebugPrint("[i] Calling NtOpenProcess\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);
 #elif defined(HW_SYSCALLS)
@@ -183,7 +183,7 @@ NTSTATUS NtOpenProcess(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT
 }
 
 NTSTATUS NtOpenSection(PHANDLE SectionHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes){
-    DebugPrint("[i] Calling NtOpenSection");
+    DebugPrint("[i] Calling NtOpenSection\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtOpenSection(SectionHandle, DesiredAccess, ObjectAttributes);
 #elif defined(HW_SYSCALLS)
@@ -196,7 +196,7 @@ NTSTATUS NtOpenSection(PHANDLE SectionHandle, ACCESS_MASK DesiredAccess, POBJECT
 }
 
 NTSTATUS NtResumeThread(HANDLE ThreadHandle, PULONG SuspendCount) {
-    DebugPrint("[i] Calling NtResumeThread");
+    DebugPrint("[i] Calling NtResumeThread\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtResumeThread(ThreadHandle, SuspendCount);
 #elif defined(HW_SYSCALLS)
@@ -209,7 +209,7 @@ NTSTATUS NtResumeThread(HANDLE ThreadHandle, PULONG SuspendCount) {
 }
 
 NTSTATUS NtReadVirtualMemory(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, ULONG NumberOfBytesToRead, PSIZE_T NumberOfBytesReaded) {
-    DebugPrint("[i] Calling NtReadVirtualMemory");
+    DebugPrint("[i] Calling NtReadVirtualMemory\n");
 #if defined(SW3_SYSCALLS)
     return Sw3NtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer, NumberOfBytesToRead, NumberOfBytesReaded);
 #elif defined(HW_SYSCALLS)

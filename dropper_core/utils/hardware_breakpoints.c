@@ -311,10 +311,7 @@ EXIT_ROUTINE:
 	* Drx				= Can be 0 -> 3, represnting Dr0-Dr3 registers					\
 	* bInitializeHWBP	= Set(TRUE)/Remove(FALSE) a hardware breakpoint					\
 	* ThreadId			= Thread Identifier to hook	| 0 to hook all threads				
-BOOL SnapshotInsertHardwareBreakpointHookIntoTargetThread(IN PUINT_VAR_T Address, IN DRX Drx, IN BOOL bInitializeHWBP, IN DWORD ThreadId)
-{
-
-	NtQuerySystemInformation_t		pNtQuerySystemInformation = NULL;
+BOOL SnapshotInsertHardwareBreakpointHookIntoTargetThread(IN PUINT_VAR_T Address, IN DRX Drx, IN BOOL bInitializeHWBP, IN DWORD ThreadId){
 	ULONG							uReturnLen1 = 0,
 									uReturnLen2 = 0;
 	PSYSTEM_PROCESS_INFORMATION		SystemProcInfo = NULL;
@@ -322,7 +319,7 @@ BOOL SnapshotInsertHardwareBreakpointHookIntoTargetThread(IN PUINT_VAR_T Address
 	NTSTATUS						STATUS = 0;
 	BOOL							bFlag = FALSE;
 
-	pNtQuerySystemInformation = (NtQuerySystemInformation_t)GetProcAddress(GetModuleHandleA("ntdll"), "NtQuerySystemInformation");
+	NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)GetProcAddress(GetModuleHandleA("ntdll"), "NtQuerySystemInformation");
 	if (pNtQuerySystemInformation == NULL)
 		goto _EndOfFunc;
 

@@ -38,3 +38,5 @@ venv/
 *.hex
 
 *.DS_Store
+
+todo.*

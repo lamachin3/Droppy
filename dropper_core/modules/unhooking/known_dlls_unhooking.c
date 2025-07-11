@@ -67,10 +67,8 @@ BOOL MapNtdllFromKnownDlls(OUT PVOID* ppNtdllBuf) {
         goto _EndOfFunc;
     }
 #else
-    fnNtOpenSection pNtOpenSection = (fnNtOpenSection)GetProcAddressH(LoadLibrary("ntdll.dll"), NtOpenSection_JOAA);
-
     // getting the handle of ntdll.dll from KnownDlls
-    STATUS = pNtOpenSection(&hSection, SECTION_MAP_READ | SECTION_MAP_EXECUTE, &ObjAtr);
+    STATUS = NtOpenSection(&hSection, SECTION_MAP_READ | SECTION_MAP_EXECUTE, &ObjAtr);
     if (STATUS != 0x00) {
         DebugPrint("[!] NtOpenSection Failed With Error : 0x%08X \n", (unsigned int)STATUS);
         goto _EndOfFunc;

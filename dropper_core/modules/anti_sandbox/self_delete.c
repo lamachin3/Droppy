@@ -19,8 +19,8 @@ BOOL DeleteSelf() {
 	}
 
 	// cleaning up the structuresF
-	ZeroMemory(szPath, sizeof(szPath));
-	ZeroMemory(&Delete, sizeof(FILE_DISPOSITION_INFO));
+	RtlSecureZeroMemory(szPath, sizeof(szPath));
+	RtlSecureZeroMemory(&Delete, sizeof(FILE_DISPOSITION_INFO));
 
 	//--------------------------------------------------------------------------------------------------------------------------
 	// marking the file for deletion (used in the 2nd SetFileInformationByHandle call) 

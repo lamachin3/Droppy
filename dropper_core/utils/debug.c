@@ -41,14 +41,14 @@ void PrintMemoryBytes(HANDLE hProcess, PVOID pAddress, SIZE_T byteCount) {
     }
 
     if (ReadProcessMemory(hProcess, pAddress, buffer, byteCount, &bytesRead)) {
-        DebugPrint("\n\n<===    MEMORY OUTPUT    ===>\n\n");
+        DebugPrint("\n<========     MEMORY OUTPUT     ========>\n");
         DebugPrint("[i] Memory at 0x%p (First %llu bytes):\n", pAddress, byteCount);
         for (SIZE_T i = 0; i < bytesRead; i++) {
             DebugPrint("%02X ", buffer[i]);
         }
-        DebugPrint("\n\n<===========================>\n\n");
     }
     else {
         DebugPrint("[!] Failed to read process memory at 0x%p. Error: %lu\n", pAddress, GetLastError());
     }
+    DebugPrint("\n<===================================================>\n\n");
 }
