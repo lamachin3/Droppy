@@ -98,6 +98,8 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
         return FALSE;
     }
 
+    WaitForSingleObject(hThread, INFINITE); 
+
     CloseHandle(hThread);
 
     DebugPrint("[+] APC Injection Successful \n");

@@ -62,10 +62,33 @@ Write-Host "Exiting virtual environment..."
 $deactivateScript = "$backendPath\venv\Scripts\deactivate"
 . $deactivateScript
 
+
 # Step 5: Install MSYS2
-$msys2Path = "C:\msys64\usr\bin"
+function Find-Msys2Path {
+    $drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -ne $null }
+
+    foreach ($drive in $drives) {
+        try {
+            $results = Get-ChildItem -Path $drive.Root -Directory -Recurse -Depth 4 -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $_.Name -ieq "msys64" -and (Test-Path "$($_.FullName)\mingw64")
+                }
+
+            if ($results.Count -gt 0) {
+                return $results[0].FullName
+            }
+        } catch {
+            # Ignore errors like access denied
+        }
+    }
+
+    return $null
+}
+
+$msys2Path = Find-Msys2Path
+
 Write-Host "Checking if MSYS2 is installed..."
-if (-Not (Test-Path "C:\msys64")) {
+if (-Not $msys2Path) {
     Write-Host "MSYS2 not found. Installing MSYS2..."
     $msys2InstallerUrl = "https://repo.msys2.org/distrib/x86_64/msys2-x86_64-20250221.exe"
     $msys2InstallerPath = "$env:TEMP\msys2-installer.exe"
@@ -74,61 +97,106 @@ if (-Not (Test-Path "C:\msys64")) {
 
     Start-Process -FilePath $msys2InstallerPath -ArgumentList "/S" -Wait
 
-    Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Syuu", "--noconfirm" -Wait
+    Start-Process -FilePath "$pacmanPath" -ArgumentList "-Syuu", "--noconfirm" -Wait
 } else {
     Write-Host "MSYS2 is already installed."
 }
 
 # Step 6: Check if MSYS2 bin path in the user PATH
+$msys2Path = Find-Msys2Path
+
+# Ask user if not found
+if (-not $msys2Path) {
+    Write-Warning "Could not find a valid msys64 installation with mingw64 subfolder."
+    $msys2Path = Read-Host "Please enter your MSYS2 installation path (e.g. D:\Tools\msys64)"
+    
+    # Validate input
+    while (-not (Test-Path "$msys2Path\mingw64")) {
+        Write-Warning "Invalid path. mingw64 folder not found inside the specified directory."
+        $msys2Path = Read-Host "Please enter a valid MSYS2 installation path"
+    }
+}
+
+# Add to PATH if not already included
 $currentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User)
-Write-Output $currentPath
+
 if ($currentPath -notlike "*$msys2Path*") {
-    $newPath = "$currentPath;$msys2Path;C:\msys64\mingw64\bin"
+    $mingwPath = "$msys2Path\mingw64\bin"
+    $newPath = "$currentPath;$msys2Path;$mingwPath"
 
     [System.Environment]::SetEnvironmentVariable("Path", $newPath, "User")
     $env:Path = $newPath
 
-    Write-Output "The folder has been added to the PATH for the user and the current session."
+    Write-Output "MSYS2 path has been added to the PATH for the user and the current session."
 } else {
-    Write-Output "MSYS2 bin path is already in the PATH."
+    Write-Output "MSYS2 path is already in the PATH."
 }
 
+
 # Step 7: Install mingw-w64 gcc compiler in MSYS2
+function Find-PacmanPath {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$msys2Path
+    )
+
+    try {
+        $results = Get-ChildItem -Path $msys2Path -Recurse -Depth 4 -Filter "pacman.exe" -File -ErrorAction SilentlyContinue
+
+        if ($results.Count -gt 0) {
+            return $results[0].FullName
+        }
+    } catch {
+        Write-Warning "Error occurred while searching for pacman.exe: $_"
+    }
+
+    return $null
+}
+
+$pacmanPath = Find-PacmanPath -msys2Path $msys2Path
+
+if (-not $pacmanPath) {
+    Write-Host "pacman.exe path not found under $msys2Path. Exiting..."
+    return
+}
+
+Write-Host "Found pacman.exe at: $pacmanPath"
+
 Write-Host "Checking if mingw-w64-ucrt-x86_64-gcc is installed..."
-$mingwCheckCommand = Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Q", "mingw-w64-ucrt-x86_64-gcc" -NoNewWindow -Wait -PassThru
+$mingwCheckCommand = Start-Process -FilePath "$pacmanPath" -ArgumentList "-Q", "mingw-w64-ucrt-x86_64-gcc" -NoNewWindow -Wait -PassThru
 if ($mingwCheckCommand.ExitCode -ne 0) {
     Write-Host "Installing mingw-w64-ucrt-x86_64-gcc..."
-    Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Sy", "mingw-w64-ucrt-x86_64-gcc --noconfirm" -Wait
+    Start-Process -FilePath "$pacmanPath" -ArgumentList "-Sy", "mingw-w64-ucrt-x86_64-gcc --noconfirm" -Wait
 } else {
     Write-Host "mingw-w64-ucrt-x86_64-gcc is already installed."
 }
 
 # Step 8: Install mingw-w64 toolchain in MSYS2
 Write-Host "Checking if mingw-w64-x86_64-toolchain is installed..."
-$mingwCheckCommand = Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Q", "mingw-w64-x86_64-toolchain" -NoNewWindow -Wait -PassThru
+$mingwCheckCommand = Start-Process -FilePath "$pacmanPath" -ArgumentList "-Q", "mingw-w64-x86_64-toolchain" -NoNewWindow -Wait -PassThru
 if ($mingwCheckCommand.ExitCode -ne 0) {
     Write-Host "Installing mingw-w64-x86_64-toolchain..."
-    Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Sy", "mingw-w64-x86_64-toolchain --noconfirm" -Wait
+    Start-Process -FilePath "$pacmanPath" -ArgumentList "-Sy", "mingw-w64-x86_64-toolchain --noconfirm" -Wait
 } else {
     Write-Host "mingw-w64-x86_64-toolchain is already installed."
 }
 
 # Step 9: Install make in MSYS2
 Write-Host "Checking if make is installed..."
-$mingwCheckCommand = Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Q", "make" -NoNewWindow -Wait -PassThru
+$mingwCheckCommand = Start-Process -FilePath "$pacmanPath" -ArgumentList "-Q", "make" -NoNewWindow -Wait -PassThru
 if ($mingwCheckCommand.ExitCode -ne 0) {
     Write-Host "Installing make..."
-    Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Sy", "make --noconfirm" -Wait
+    Start-Process -FilePath "$pacmanPath" -ArgumentList "-Sy", "make --noconfirm" -Wait
 } else {
     Write-Host "make is already installed."
 }
 
 # Step 9: Install nasm in MSYS2
 Write-Host "Checking if nasm is installed..."
-$mingwCheckCommand = Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Q", "mingw-w64-x86_64-nasm" -NoNewWindow -Wait -PassThru
+$mingwCheckCommand = Start-Process -FilePath "$pacmanPath" -ArgumentList "-Q", "mingw-w64-x86_64-nasm" -NoNewWindow -Wait -PassThru
 if ($mingwCheckCommand.ExitCode -ne 0) {
     Write-Host "Installing nasm..."
-    Start-Process -FilePath "$msys2Path\pacman.exe" -ArgumentList "-Sy", "mingw-w64-x86_64-nasm --noconfirm" -Wait
+    Start-Process -FilePath "$pacmanPath" -ArgumentList "-Sy", "mingw-w64-x86_64-nasm --noconfirm" -Wait
 } else {
     Write-Host "nasm is already installed."
 }
