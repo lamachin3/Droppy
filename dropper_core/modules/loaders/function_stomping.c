@@ -27,7 +27,7 @@ BOOL WritePayloadViaLocalFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload
 size_t GetFunctionSize(PVOID function_start) {
     PBYTE retAddress = (PBYTE)findRetInstruction(function_start);
     if (!retAddress) {
-        printf("Failed to find RET instruction within the search range\n");
+        DebugPrint("Failed to find RET instruction within the search range\n");
         return 0;
     }
     return (size_t)(retAddress - (PBYTE)function_start + 1); // Include RET in size

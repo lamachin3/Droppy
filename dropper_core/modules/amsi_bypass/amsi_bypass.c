@@ -8,12 +8,12 @@ BOOL applyAmsiBypass(HANDLE hProcess) {
     
 #if defined(JNE_BASED_AMSI_PATCH)
     if (!LoadLibraryA("amsi.dll")) {
-        printf("[!] LoadLibrary amsi.dll Failed With Error: %ld \n", GetLastError());
+        DebugPrint("[!] LoadLibrary amsi.dll Failed With Error: %ld \n", GetLastError());
         return -1;
     }
 
     if (!LoadLibraryA("wldp.dll")) {
-        printf("[!] LoadLibrary wldp.dll Failed With Error: %ld \n", GetLastError());
+        DebugPrint("[!] LoadLibrary wldp.dll Failed With Error: %ld \n", GetLastError());
         return -1;
     }
 

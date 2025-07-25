@@ -54,7 +54,7 @@ def init_routes(app):
             
             # Process preprocessing macros and placeholder options
             process_dropper_config(dropper_config)
-        
+            print(f"Processed dropper config: {dropper_config}")
             # Handle file uploads
             if 'executable' in dropper_config and dropper_config['executable']:
                 print("Collecting executable from URL")
