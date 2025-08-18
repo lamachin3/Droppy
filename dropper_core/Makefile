@@ -42,7 +42,7 @@ ASM_OBJS = $(patsubst %.nasm,$(OBJ_DIR)/%.obj,$(ASM_SRCS))
 OBJS = $(C_OBJS) $(ASM_OBJS)
 
 # Compiler and linker flags
-CFLAGS = -Wall -Wextra -O2 -g -Wno-implicit-function-declaration
+CFLAGS = -Wall -Wextra -O2 -Wno-implicit-function-declaration
 LIBS = -lkernel32 -luser32 -lgdi32 -lwinspool -lcomdlg32 -ladvapi32 \
 	   -lshell32 -lole32 -loleaut32 -luuid -lodbc32 -lodbccp32 -lbcrypt -lsetupapi
 LDFLAGS = -lmingw32 -lmsvcrt
@@ -53,6 +53,16 @@ ifeq ($(HIDE_CONSOLE),true)
 	LDFLAGS += -Wl,--subsystem,windows
 else
 	LDFLAGS += -Wl,--subsystem,console
+endif
+
+# Optional: Debug toggle
+DEBUG ?= false
+ifeq ($(DEBUG),true)
+	CFLAGS += -g
+	LDFLAGS += -g
+else
+	CFLAGS += -s
+	LDFLAGS += -s
 endif
 
 # Default rule

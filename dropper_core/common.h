@@ -57,8 +57,11 @@ UINT32 HashStringJenkinsOneAtATime32BitA(_In_ PCHAR  String);
 #define DefWindowProcW_JOAA                 0xD96CEDDC
 #define UnhookWindowsHookEx_JOAA            0x9D2856D0
 #define GetModuleFileNameW_JOAA             0xAB3A6AA1
-#define CreateFileW_JOAA                    0xADD132CA
 #define SetFileInformationByHandle_JOAA     0x6DF54277
+#define CreateFileW_JOAA                    0xADD132CA
+#define CreateRemoteThread_JOAA             0x9E1F5A2B
+#define CreateFileMapping_JOAA              0x8D4C3A2F
+#define CreateFileMappingW_JOAA             0x7B2E6D1A
 #define SetFileInformationByHandle_JOAA     0x6DF54277
 #define CloseHandle_JOAA                    0x9E5456F2
 #define SystemFunction032_JOAA              0x8CFD40A8
@@ -77,6 +80,11 @@ UINT32 HashStringJenkinsOneAtATime32BitA(_In_ PCHAR  String);
 #define USER32DLL_JOAA                      0x349D72E7
 #define ADVAPI32DLL_JOAA                    0xD675A2CB
 #define RPCRT4DLL_JOAA                      0x256E8F49
+#define Process32FirstW_JOAA                0x2C1E9C0D
+#define Process32NextW_JOAA                 0x3B2E8D1E
+#define VirtualAllocEx_JOAA                 0xE8D1C2B3
+#define VirtualProtectEx_JOAA               0x9B8A7C6D
+#define WriteProcessMemory_JOAA             0x4F3E2D1A
 
 //----------------------------------------
 // Section: Miscellaneous Macros

@@ -1126,6 +1126,19 @@ typedef struct tagPROCESSENTRY32W {
     WCHAR                   szExeFile[MAX_PATH];
 } PROCESSENTRY32W, *PPROCESSENTRY32W, *LPPROCESSENTRY32W;
 
+typedef struct tagPROCESSENTRY32 {
+    DWORD     dwSize;
+    DWORD     cntUsage;
+    DWORD     th32ProcessID;
+    ULONG_PTR th32DefaultHeapID;
+    DWORD     th32ModuleID;
+    DWORD     cntThreads;
+    DWORD     th32ParentProcessID;
+    LONG      pcPriClassBase;
+    DWORD     dwFlags;
+    CHAR      szExeFile[MAX_PATH];
+} PROCESSENTRY32, *PPROCESSENTRY32, *LPPROCESSENTRY32;
+
 
 // https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntrtl.h#L2722
 
@@ -1380,5 +1393,40 @@ typedef struct _SYSTEM_PROCESS_INFORMATION
     LARGE_INTEGER OtherTransferCount;
     SYSTEM_THREAD_INFORMATION Threads[1];
 } SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
+
+
+typedef BOOL(WINAPI* Process32First_t)(
+    IN  HANDLE           hSnapshot,
+    OUT LPPROCESSENTRY32 lppe
+);
+
+typedef BOOL(WINAPI* Process32Next_t)(
+    IN  HANDLE           hSnapshot,
+    OUT LPPROCESSENTRY32 lppe
+);
+
+typedef LPVOID(WINAPI* VirtualAllocEx_t)(
+    IN           HANDLE hProcess,
+    IN LPVOID lpAddress,
+    IN           SIZE_T dwSize,
+    IN           DWORD  flAllocationType,
+    IN           DWORD  flProtect
+);
+
+typedef BOOL(WINAPI* VirtualProtectEx_t)(
+    IN HANDLE           hProcess,
+    IN LPVOID           lpAddress,
+    IN SIZE_T           dwSize,
+    IN DWORD            flNewProtect,
+    OUT LPDWORD          lpflOldProtect
+);
+
+typedef BOOL(WINAPI* WriteProcessMemory_t)(
+    IN HANDLE           hProcess,
+    IN LPVOID           lpBaseAddress,
+    IN LPCVOID          lpBuffer,
+    IN SIZE_T           nSize,
+    OUT SIZE_T          *lpNumberOfBytesWritten
+);
 
 #endif // !STRUCTS_H

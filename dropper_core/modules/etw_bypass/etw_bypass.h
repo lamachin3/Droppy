@@ -37,7 +37,7 @@ PBYTE findRetInstruction(PVOID function_start);
  * 
  * @name Syscall ETW Patch
  * @section etw_bypass
- * @flags SYSCALL_BASED_ETW_PATCH
+ * @flags ETW_BYPASS,SYSCALL_BASED_ETW_PATCH
 */
 BOOL SyscallPatchEtw(HANDLE hProcess, LPSTR syscallName);
 
@@ -55,7 +55,7 @@ BOOL SyscallPatchEtw(HANDLE hProcess, LPSTR syscallName);
  *
  * @name Jmp Ret Based ETW Patch
  * @section etw_bypass
- * @flags JMP_RET_BASED_ETW_PATCH
+ * @flags ETW_BYPASS,JMP_RET_BASED_ETW_PATCH
 */
 //Failing
 BOOL JmpRetBasedEtwPatch(HANDLE hProcess, LPSTR functionName);
@@ -72,7 +72,7 @@ BOOL JmpRetBasedEtwPatch(HANDLE hProcess, LPSTR functionName);
  *
  * @name Call Based ETW Patch
  * @section etw_bypass
- * @flags CALL_BASED_ETW_PATCH
+ * @flags ETW_BYPASS,CALL_BASED_ETW_PATCH
 */
 //-> Failing
 BOOL CallBasedEtwPatch(HANDLE hProcess, LPSTR functionName);
@@ -89,7 +89,7 @@ BOOL CallBasedEtwPatch(HANDLE hProcess, LPSTR functionName);
  *
  * @name_ Hardware Breakpoint Hooking
  * @section etw_bypass
- * @flags HBP_ETW_HOOKING
+ * @flags ETW_BYPASS,HBP_ETW_HOOKING
 */
 BOOL HbpEtwHooking(HANDLE hProcess, LPSTR functionName);
 

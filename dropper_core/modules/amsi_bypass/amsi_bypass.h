@@ -24,7 +24,7 @@ BOOL applyAmsiBypass(HANDLE hProcess);
  * 
  *  @name JNE Based AMSI Patch
  *  @section amsi_bypass
- *  @flags JNE_BASED_AMSI_PATCH
+ *  @flags AMSI_BYPASS,JNE_BASED_AMSI_PATCH
 */
 BOOL JnePatchAmsiFunction(IN PBYTE pAmsiFunctionAddress);
 

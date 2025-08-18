@@ -1,7 +1,6 @@
 import os
 import re
 import json
-from datetime import datetime
 from flask import render_template, request, redirect, url_for, send_from_directory, jsonify, flash
 from urllib.parse import urlencode
 
@@ -28,7 +27,12 @@ def init_routes(app):
                 flash("Invalid message format", "error")
         
         modules = fetch_available_modules()
-        precompiled_executables = fetch_precompiled_executables()
+        try:
+            precompiled_executables = fetch_precompiled_executables()
+        except Exception as e:
+            print(f"[WARNIN] failed to fetch precompiled binaries: {e}")
+            precompiled_executables = []
+ 
         return render_template("dropper_config.html", modules=modules, precompiled_executables=json.dumps(precompiled_executables))
 
     

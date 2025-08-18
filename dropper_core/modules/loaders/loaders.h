@@ -15,7 +15,7 @@ BOOL payload_loading(PVOID* pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
  * @return TRUE if the payload is successfully written, FALSE otherwise.
  * 
  * @name In Memory
- * @flags
+ * @flags IN_MEMORY
  */
 BOOL WritePayloadInMemory(PVOID *pAddress, PBYTE pPayload, SIZE_T sPayloadSize);
 

