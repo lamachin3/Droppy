@@ -6,6 +6,8 @@
 #include "config.h"
 #include "constants.h"
 #include "structs.h"
+#include "utils/asm_utils.h"
+#include "utils/peb_utils.h"
 #include "utils/hardware_breakpoints.h"
 #include "syscalls/syscalls.h"
 

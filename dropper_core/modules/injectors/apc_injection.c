@@ -1,6 +1,6 @@
 #include "injectors.h"
 
-DWORD AlertableFunction() {
+DWORD WINAPI AlertableFunction(LPVOID lpParam) {
     HANDLE hEvent1 = NULL;
     HANDLE hEvent2 = NULL;
 

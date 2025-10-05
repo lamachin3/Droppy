@@ -1,0 +1,1 @@
+export { FileDetailsTabs } from './file-details-tabs';

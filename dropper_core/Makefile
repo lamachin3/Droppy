@@ -33,8 +33,8 @@ C_SRCS = /* SOURCE_FILES */
 ASM_SRCS  = /* ASM_SOURCE_FILES */
 
 # Output binary
-OUT_FILENAME ?= dropper
-OUT_EXE = $(BIN_DIR)/$(OUT_FILENAME)$(EXT)
+OUTPUT_FILE ?= dropper.exe
+OUT_EXE = $(BIN_DIR)/$(OUTPUT_FILE)
 
 # Object files
 C_OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(C_SRCS))

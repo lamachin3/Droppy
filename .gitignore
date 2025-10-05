@@ -36,6 +36,7 @@ venv/
 *.bin
 *.raw
 *.hex
+*.sqlite3
 
 *.DS_Store
 

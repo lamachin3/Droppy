@@ -24,16 +24,6 @@ BOOL WritePayloadViaLocalFunctionStomping(OUT PVOID *pAddress, IN PBYTE pPayload
 	return TRUE;
 }
 
-PBYTE findRetInstruction(PVOID function_start) {
-	unsigned char* ptr = (unsigned char*)function_start;
-	for (int i = 0; i < 0x400; i++) { // Scan up to 1024 bytes (arbitrary limit)
-		if (ptr[i] == 0xC3) {         // Check for RET instruction (0xC3)
-			return &ptr[i];
-		}
-	}
-	return NULL; // No RET found in the scanned range
-}
-
 size_t GetFunctionSize(PVOID function_start) {
     PBYTE retAddress = (PBYTE)findRetInstruction(function_start);
     if (!retAddress) {
@@ -43,11 +33,19 @@ size_t GetFunctionSize(PVOID function_start) {
     return (size_t)(retAddress - (PBYTE)function_start + 1); // Include RET in size
 }
 
+/*SIZE_T GetFunctionSizeInRemoteProcess(PVOID function_start) {
+	BYTE retOpcode = 0xC3;
+    LPBYTE retAddress = find_asm_pattern(&retOpcode, 1, (LPBYTE)function_start, 0, 0x400);
+    if (!retAddress) {
+        DebugPrint("Failed to find RET instruction within the search range\n");
+        return 0;
+    }
+    return (SIZE_T)(retAddress - (LPBYTE)function_start + 1); // Include RET in size
+}*/
+
 BOOL WritePayloadViaRemoteFunctionStomping(OUT PVOID* pAddress, IN PBYTE pPayload, IN SIZE_T sPayloadSize) {
 	DWORD dwOldProtection = 0;
 	SIZE_T sNumberOfBytesWritten = 0;
-
-	DebugPrint("\n\n[i] Running with RemoteFunctionStomping ...\n\n");
 	HANDLE hProcess = NULL;
 	DWORD dwProcessId = 0;
 

@@ -1,0 +1,39 @@
+@import "@fontsource/jetbrains-mono";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/400-italic.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";
+@import "@fontsource/jetbrains-mono/700.css";
+@import "@fontsource/jetbrains-mono/800.css";
+
+html {
+  background-color: #050505;
+}
+
+:root {
+  font-family: "JetBrains Mono";
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #050505;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #ebebeb;
+    background-color: #050505;
+  }
+}

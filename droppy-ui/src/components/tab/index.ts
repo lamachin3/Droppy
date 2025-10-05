@@ -1,0 +1,1 @@
+export { default as SlidingTab } from './sliding-tab';

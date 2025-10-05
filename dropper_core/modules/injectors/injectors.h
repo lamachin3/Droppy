@@ -70,4 +70,26 @@ BOOL ApcInjection(HANDLE hProcess, HANDLE hThread, PBYTE pPayload, SIZE_T sPaylo
 */
 BOOL EarlyBirdApcInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName, PBYTE pPayload, SIZE_T sPayloadSize);
 
+/**
+ * @brief Injects a payload into a specified process using the Early Cascade technique.
+ * 
+ * This function implements the Early Cascade Injection technique which leverages the
+ * g_pfnSE_DllLoaded callback in ntdll.dll to execute code early in the process
+ * initialization phase.
+ * 
+ * @param hProcess Handle to the target process.
+ * @param hThread Handle to the target thread.
+ * @param szProcessName Name of the target process.
+ * @param pPayload Pointer to the payload to be injected.
+ * @param sPayloadSize Size of the payload in bytes.
+ * 
+ * @return TRUE if the payload was successfully injected, FALSE otherwise.
+ * 
+ * @name Early Cascade Injection
+ * @section injection_technique
+ * @flags EARLY_CASCADE_INJECTION
+ * @tags remote_process
+*/
+BOOL EarlyCascadeInjection(HANDLE hProcess, HANDLE hThread, LPWSTR szProcessName, PBYTE pPayload, SIZE_T sPayloadSize);
+
 #endif

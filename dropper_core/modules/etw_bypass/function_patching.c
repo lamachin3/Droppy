@@ -1,15 +1,5 @@
 #include "etw_bypass.h"
 
-PBYTE findRetInstruction(PVOID function_start) {
-	unsigned char* ptr = (unsigned char*)function_start;
-	for (int i = 0; i < 0x400; i++) { // Scan up to 1024 bytes (arbitrary limit)
-		if (ptr[i] == 0xC3) {         // Check for RET instruction (0xC3)
-			return &ptr[i];
-		}
-	}
-	return NULL; // No RET found in the scanned range
-}
-
 BOOL CallBasedEtwPatch(HANDLE hProcess, LPSTR functionName) {
 	int i = 0;
 	DWORD dwOldProtection = 0;

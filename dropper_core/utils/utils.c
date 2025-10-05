@@ -33,8 +33,9 @@ BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HAND
 	// Get Process32FirstW address using API hashing
 	PProcess32FirstW pProcess32FirstW_func = (PProcess32FirstW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), Process32FirstW_JOAA);
 	if (!pProcess32FirstW_func) {
-		DebugPrint("[!] Failed to get Process32FirstW address\n");
-		goto _EndOfFunction;
+		DebugPrint("[!] Failed to get Process32FirstW address through API Hashing\n");
+		pProcess32FirstW_func = (PProcess32FirstW)GetProcAddress(GetModuleHandleA("kernel32.dll"), "Process32FirstW");
+		//goto _EndOfFunction;
 	}
 
 	// Retrieves information about the first process encountered in the snapshot.
@@ -81,8 +82,9 @@ BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HAND
 		if (!pProcess32NextW_func) {
 			pProcess32NextW_func = (PProcess32NextW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), Process32NextW_JOAA);
 			if (!pProcess32NextW_func) {
-				DebugPrint("[!] Failed to get Process32NextW address\n");
-				goto _EndOfFunction;
+				DebugPrint("[!] Failed to get Process32NextW address through API Hashing\n");
+				pProcess32NextW_func = (PProcess32NextW)GetProcAddress(GetModuleHandleA("kernel32.dll"), "Process32NextW");
+				//goto _EndOfFunction;
 			}
 		}
 
