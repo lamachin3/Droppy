@@ -62,7 +62,7 @@ export default function Home() {
           <ModuleCard
             icon={<Icon icon="solar:magic-stick-3-linear" width={28} height={28} color={theme.palette.primary.main} />}
             title="Basic dropper"
-            status="beta"
+            status="new"
             content="Easy to use dropper builder with predefined evasion techniques"
             buttonText="Access module"
             onAction={() => navigate(ROUTES.BASIC_DROPPER)}
@@ -72,7 +72,7 @@ export default function Home() {
         <ModuleCard
           icon={<Icon icon="solar:mask-happly-linear" width={28} height={28} color={theme.palette.primary.main} />}
           title="Advanced dropper"
-          status="beta"
+          status="new"
           content="Build your dropper with more control over the evasion techniques implemented"
           buttonText="Access module"
           onAction={() => navigate(ROUTES.ADVANCED_DROPPER)}

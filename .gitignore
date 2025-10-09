@@ -37,6 +37,8 @@ venv/
 *.raw
 *.hex
 *.sqlite3
+*.yara
+*.yar
 
 *.DS_Store
 

@@ -1,0 +1,16 @@
+FROM node:24-alpine
+
+ENV NODE_ENV=development
+WORKDIR /app
+
+# Copy dependency files first
+COPY droppy-ui/package.json droppy-ui/yarn.lock ./
+RUN yarn install --frozen-lockfile --network-timeout 100000
+
+# Copy the rest
+COPY droppy-ui/ .
+
+EXPOSE 5173
+
+ENV PATH=/app/node_modules/.bin:$PATH
+CMD ["yarn", "dev"]

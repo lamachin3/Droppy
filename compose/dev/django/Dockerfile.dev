@@ -1,0 +1,29 @@
+FROM python:3.13-slim
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+ENV YARA_RULES_URL="https://github.com/BlackSnufkin/LitterBox/archive/refs/heads/main.zip"
+ENV YARA_RULES_DIR="/app/api/analysis/services/yara_rules/rules"
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libmagic1 \
+    libyara-dev \
+    libzstd1 \
+    libzstd-dev \
+    pkg-config \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt .
+
+RUN pip install --upgrade pip
+RUN pip install --force-reinstall --no-cache-dir --compile zstandard
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY compose/local/django/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

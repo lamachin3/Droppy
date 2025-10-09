@@ -9,6 +9,19 @@ export default function ModuleCard({ icon, title="", status="", content, buttonT
 
   const isUpcoming = status?.toLowerCase() === 'upcoming';
 
+  function statusToColor(status: string) {
+    switch (status.toLowerCase()) {
+      case 'new':
+        return theme.palette.success.main;
+      case 'beta':
+        return theme.palette.warning.main;
+      case 'upcoming':
+        return theme.palette.text.secondary;
+      default:
+        return theme.palette.text.secondary;
+    }
+  };
+
   return (
     <Card
       elevation={0}
@@ -63,11 +76,8 @@ export default function ModuleCard({ icon, title="", status="", content, buttonT
               {title.toUpperCase()}
             </Typography>
 
-            {status?.toLowerCase() === "beta" && (
-              <StatusBadge text={`[${status.toUpperCase()}]`} color={theme.palette.warning.main} />
-            )}
-            {isUpcoming && (
-              <StatusBadge text="COMING SOON" color={theme.palette.text.secondary} />
+            {status && (
+              <StatusBadge text={`[${status.toUpperCase()}]`} color={statusToColor(status)} />
             )}
           </Box>
         }
