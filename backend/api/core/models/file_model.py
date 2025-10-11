@@ -7,18 +7,22 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from polymorphic.models import PolymorphicModel
+from api.core.services.file_storage import FileStorage
+
 
 def safe_filename(instance, filename):
+    os.makedirs(settings.BUILDS_DIR, exist_ok=True)
     upload_path = os.path.join(settings.BUILDS_DIR, filename)
     
     if os.path.exists(upload_path):
         base, ext = os.path.splitext(filename)
-        return f'builds/{base}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.{ext}'
-    return f"builds/{filename}"
+        filename = f'{base}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.{ext}'
+   
+    return filename
 
 class FileModel(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    file = models.FileField(upload_to=safe_filename)
+    file = models.FileField(upload_to=safe_filename, storage=FileStorage())
     filename = models.CharField(max_length=255, unique=True)
     size = models.FloatField()
     md5_hash = models.CharField(max_length=255)

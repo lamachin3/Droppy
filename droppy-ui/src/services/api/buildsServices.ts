@@ -36,6 +36,8 @@ const DEFAULT_CONTENT_TYPE = 'application/octet-stream';
  */
 const extractFilenameFromHeaders = (headers: Record<string, string>, fallback: string): string => {
   const contentDisposition = headers['content-disposition'] || headers['Content-Disposition'];
+  console.log(headers);
+  console.log(contentDisposition);
   if (!contentDisposition) return fallback;
 
   const match = contentDisposition.split(';').find((header) => header.includes('filename='));
@@ -118,6 +120,7 @@ export const downloadBuild = async (
         type: response.headers['content-type'] || 'application/octet-stream',
       });
       const filename = extractFilenameFromHeaders(response.headers, 'droppy.exe');
+      console.log(filename);
   
       triggerFileDownload(blob, filename);
     } catch (error) {

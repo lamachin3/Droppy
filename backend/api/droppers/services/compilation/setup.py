@@ -99,6 +99,7 @@ def _get_required_source_files(preprocessing_macros):
         'utils/utils.c',
         'utils/asm_utils.c',
         'utils/peb_utils.c',
+        'utils/obfuscation.c'
     ]
     
     # Core NASM files that are always required

@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-cd /app
+cd /app/backend
 
 echo "Running Django setup commands..."
 python3 manage.py download_yara_rules || echo "Skipping yara rules"

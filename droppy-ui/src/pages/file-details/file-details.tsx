@@ -397,56 +397,61 @@ export default function FileDetails() {
                                                 <Typography variant="body2" color={theme.palette.grey[600]} sx={{ fontWeight: 600, fontSize: '15px' }}>
                                                     Debug Mode
                                                 </Typography>
-                                                <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
-                                                    
-                                                    {file.config.options.debug_mode ? (
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Icon icon="prime:check-circle" width="18" height="18" color={theme.palette.primary.main} />
+                                                {file.config.options.debug_mode ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Icon icon="prime:check-circle" width="18" height="18" color={theme.palette.primary.main} />
+                                                        <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
                                                             Enabled
-                                                        </Box>
-                                                    ) : (
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Icon icon="prime:times-circle" width="18" height="18" color={theme.palette.grey[500]} />
+                                                        </Typography>
+                                                    </Box>
+                                                ) : (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Icon icon="prime:times-circle" width="18" height="18" color={theme.palette.grey[500]} />
+                                                        <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
                                                             Disabled
-                                                        </Box>
-                                                    )}
-                                                </Typography>
+                                                        </Typography>
+                                                    </Box>
+                                                )}
                                             </Grid>
                                             <Grid size={4}>
                                                 <Typography variant="body2" color={theme.palette.grey[600]} sx={{ fontWeight: 600, fontSize: '15px' }}>
                                                     Hide Console
                                                 </Typography>
-                                                <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
-                                                    {file.config.options.hide_console ? (
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Icon icon="prime:check-circle" width="18" height="18" color={theme.palette.primary.main} />
+                                                {file.config.options.hide_console ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Icon icon="prime:check-circle" width="18" height="18" color={theme.palette.primary.main} />
+                                                        <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
                                                             Enabled
-                                                        </Box>
-                                                    ) : (
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Icon icon="prime:times-circle" width="18" height="18" color={theme.palette.grey[500]} />
+                                                        </Typography>
+                                                    </Box>
+                                                ) : (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Icon icon="prime:times-circle" width="18" height="18" color={theme.palette.grey[500]} />
+                                                        <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
                                                             Disabled
-                                                        </Box>
-                                                    )}
-                                                </Typography>
+                                                        </Typography>
+                                                    </Box>
+                                                )}
                                             </Grid>
                                             <Grid size={4}>
                                                 <Typography variant="body2" color={theme.palette.grey[600]} sx={{ fontWeight: 600, fontSize: '15px' }}>
                                                     Output Redirection
                                                 </Typography>
-                                                <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
-                                                    {file.config.options.redirect_output ? (
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Icon icon="prime:check-circle" width="18" height="18" color={theme.palette.primary.main} />
+                                                {file.config.options.redirect_output ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Icon icon="prime:check-circle" width="18" height="18" color={theme.palette.primary.main} />
+                                                        <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
                                                             Enabled
-                                                        </Box>
-                                                    ) : (
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Icon icon="prime:times-circle" width="18" height="18" color={theme.palette.grey[500]} />
+                                                        </Typography>
+                                                    </Box>
+                                                ) : (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Icon icon="prime:times-circle" width="18" height="18" color={theme.palette.grey[500]} />
+                                                        <Typography variant="body2" color={theme.palette.primary.contrastText} sx={{ fontWeight: 600, fontSize: '16px' }}>
                                                             Disabled
-                                                        </Box>
-                                                    )}
-                                                </Typography>
+                                                        </Typography>
+                                                    </Box>
+                                                )}
                                             </Grid>
                                             {file.config.options.remote_process_name && (
                                                 <Grid size={4}>

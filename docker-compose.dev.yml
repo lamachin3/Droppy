@@ -4,11 +4,11 @@ services:
       context: .
       dockerfile: ./compose/dev/django/Dockerfile.dev
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
       - ./dropper_core:/app/dropper_core
-      - backend_static:/app/staticfiles
-      - backend_media:/app/media
-      - yara_rules:/app/api/analysis/services/yara_rules/rules
+      - backend_static:/app/backend/staticfiles
+      - backend_media:/app/backend/media
+      - yara_rules:/app/backend/api/analysis/services/yara_rules/rules
     env_file:
       - ./backend/.env.dev
     ports:
@@ -39,8 +39,8 @@ services:
       - "80:80"
     volumes:
       - ./compose/nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf
-      - backend_static:/app/staticfiles
-      - backend_media:/app/media
+      - backend_static:/app/backend/staticfiles
+      - backend_media:/app/backend/media
     depends_on:
       - backend
       - frontend

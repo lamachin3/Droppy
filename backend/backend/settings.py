@@ -41,7 +41,7 @@ if DEBUG:
 
     # CSRF settings for development
     csrf_trusted_origins = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
-    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins.split(',') if origin.strip()]
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173", "http://192.168.5.103:5173"]
 
     # Session settings for development
     SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
@@ -62,6 +62,9 @@ else:
     # Session settings for production
     SESSION_COOKIE_SAMESITE = 'Strict'
     CSRF_COOKIE_SAMESITE = 'Strict'
+
+CORS_EXPOSE_HEADERS = ['Content-Disposition', 'Content-Length', 'Content-Type']
+
 
 
 # Application definition

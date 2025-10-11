@@ -124,9 +124,10 @@ class DropperBuilder:
                 dropper.save()
 
                 print(f"[i] Dropper data saved to database: {config.__dict__}")
+                print(f"[i] Dropper file saved to database: {dropper_file.name}")
                 
                 # Update the compilation result with the download URL
-                compilation_result['download_url'] = f'/api/core/builds/download/{target_file.name}'
+                compilation_result['download_url'] = f'/api/core/files/download/{target_file.name}'
                 compilation_result['filename'] = target_file.name
                 
             return dropper

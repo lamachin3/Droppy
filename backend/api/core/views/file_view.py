@@ -23,23 +23,23 @@ class FileViewSet(viewsets.ModelViewSet):
         self.file_manager = FileManager()
 
     @extend_schema(
-        tags=['Builds'],
-        summary='List available builds',
-        description='Returns a list of all available builds.',
+        tags=['Files'],
+        summary='List available files',
+        description='Returns a list of all available files.',
         responses={
             200: OpenApiResponse(
-                description='List of available builds',
+                description='List of available files',
                 examples=[
                     OpenApiExample(
                         'Success Response',
                         value={
-                            'builds': [
+                            'files': [
                                 {
                                     'id': 'dropper.exe',
                                     'name': 'dropper.exe', 
                                     'size': 1024, 
                                     'created_at': 1694000000,
-                                    'download_url': 'http://example.com/api/builds/dropper.exe/download/'
+                                    'download_url': 'http://example.com/api/files/dropper.exe/download/'
                                 }
                             ]
                         }
@@ -57,104 +57,104 @@ class FileViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_200_OK)
 
     @extend_schema(
-        tags=['Builds'],
-        summary='Get build details',
-        description='Retrieves detailed information about a specific build.',
+        tags=['Files'],
+        summary='Get file details',
+        description='Retrieves detailed information about a specific file.',
         parameters=[
             OpenApiParameter(
                 name='pk',
                 type=str,
                 location=OpenApiParameter.PATH,
-                description='Name/ID of the build to retrieve',
+                description='Name/ID of the file to retrieve',
                 required=True
             )
         ],
         responses={
             200: OpenApiResponse(
-                description='Build details',
+                description='File details',
                 examples=[
                     OpenApiExample(
                         'Success Response',
                         value={
                             'id': 'dropper.exe',
                             'name': 'dropper.exe',
-                            'build_type': 'dropper',
+                            'file_type': 'dropper',
                             'size': 1024,
                             'created_at': '2023-09-06T12:00:00Z',
                             'metadata': {
                                 'version': '1.0.0',
                                 'platform': 'windows'
                             },
-                            'download_url': 'http://example.com/api/builds/dropper.exe/download/'
+                            'download_url': 'http://example.com/api/files/dropper.exe/download/'
                         }
                     )
                 ]
             ),
-            404: OpenApiResponse(description='Build not found')
+            404: OpenApiResponse(description='File not found')
         }
     )
     def retrieve(self, request, pk=None):
-        build = FileModel.objects.filter(id=pk).first() or FileModel.objects.filter(name=pk).first()
-        if not build:
-            raise Http404("Build not found")
+        file = FileModel.objects.filter(id=pk).first() or FileModel.objects.filter(filename=pk).first()
+        if not file:
+            raise Http404("File not found")
         
-        if isinstance(build, DropperModel):
+        if isinstance(file, DropperModel):
             serializer_class = DropperSerializer
         else:
             serializer_class = FileModelSerializer
 
-        serializer = serializer_class(build)
-        build_data = serializer.data
+        serializer = serializer_class(file)
+        file_data = serializer.data
 
-        return Response(build_data, status=status.HTTP_200_OK)
+        return Response(file_data, status=status.HTTP_200_OK)
 
 
     @extend_schema(
-        tags=['Builds'],
-        summary='Download a build',
-        description='Downloads a specific build by filename.',
+        tags=['Files'],
+        summary='Download a file',
+        description='Downloads a specific file by filename.',
         parameters=[
             OpenApiParameter(
                 name='pk',
                 type=str,
                 location=OpenApiParameter.PATH,
-                description='Name/ID of the build to download',
+                description='Name/ID of the file to download',
                 required=True
             )
         ],
         responses={
             200: OpenApiResponse(description='File download'),
-            404: OpenApiResponse(description='Build not found')
+            404: OpenApiResponse(description='File not found')
         }
     )
     @action(detail=True, methods=['get'], url_path='download', url_name='download')
     def download(self, request, pk=None, *args, **kwargs):
-        build = self.file_manager.get_build(pk)
-        if not build:            
-            raise Http404("Build not found")
+        file = self.file_manager.get_file(pk)
+        if not file:            
+            raise Http404("File not found")
         
-        build_path = self.file_manager.get_build_path(build.name)
-        response = FileResponse(open(build_path, 'rb'), content_type='application/octet-stream')
-        response['Content-Disposition'] = f'attachment; filename="{build.name}"'
+        file_path = self.file_manager.get_file_path(file.name)
+        response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{file.name}"'
         return response
         
     @extend_schema(
-        tags=['Builds'],
-        summary='Delete a build',
-        description='Deletes a specific build by filename or ID.',
+        tags=['Files'],
+        summary='Delete a file',
+        description='Deletes a specific file by filename or ID.',
         parameters=[
             OpenApiParameter(
                 name='pk',
                 type=str,
                 location=OpenApiParameter.PATH,
-                description='Name/ID of the build to delete',
+                description='Name/ID of the file to delete',
                 required=True
             )
         ],
         responses={
-            204: OpenApiResponse(description='Build deleted successfully'),
-            404: OpenApiResponse(description='Build not found'),
-            500: OpenApiResponse(description='Error deleting build')
+            204: OpenApiResponse(description='File deleted successfully'),
+            404: OpenApiResponse(description='File not found'),
+            500: OpenApiResponse(description='Error deleting file')
         }
     )
     def destroy(self, request, pk=None, *args, **kwargs):
@@ -163,7 +163,7 @@ class FileViewSet(viewsets.ModelViewSet):
                 file_obj = FileModel.objects.filter(id=pk).first()
             except FileModel.DoesNotExist:
                 return Response(
-                    {'detail': f'Build with ID "{pk}" not found'},
+                    {'detail': f'File with ID "{pk}" not found'},
                     status=status.HTTP_404_NOT_FOUND
                 )
 
@@ -173,6 +173,6 @@ class FileViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print(e)
             return Response(
-                {'detail': f'Error deleting build: {str(e)}'},
+                {'detail': f'Error deleting file: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
