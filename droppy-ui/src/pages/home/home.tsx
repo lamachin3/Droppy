@@ -1,4 +1,4 @@
-import { Box, Toolbar, Typography, CircularProgress, Alert, Grid, alpha } from '@mui/material';
+import { Box, Toolbar, Typography, CircularProgress, Alert, Grid, alpha, Snackbar } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { ModuleCard, FileListCard } from '@/components';
 import { useTheme } from '@mui/material';
@@ -14,7 +14,10 @@ export default function Home() {
   const navigate = useNavigate();
   const [builds, setBuilds] = useState<Build[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  const [openAlert, setOpenAlert] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBuilds = async () => {
@@ -25,6 +28,7 @@ export default function Home() {
       } catch (err) {
         console.error('Failed to fetch builds:', err);
         setError('Failed to load builds. Please try again later.');
+        setOpenAlert(true);
       } finally {
         setLoading(false);
       }
@@ -36,12 +40,13 @@ export default function Home() {
   const handleDeleteBuild = async (buildId: string) => {
     try {
       await deleteBuild(buildId);
-      // Remove the deleted build from the list
       setBuilds(builds.filter(build => build.id !== buildId));
+      setMessage('Build deleted successfully.');
     } catch (err) {
       console.error('Failed to delete build:', err);
       setError('Failed to delete build. Please try again.');
     }
+    setOpenAlert(true);
   };
 
   return (
@@ -175,6 +180,17 @@ export default function Home() {
             </Grid>
           ))}
         </Grid>
+      )}
+      {(message || error) && (
+        <Snackbar
+          open={openAlert} 
+          autoHideDuration={3000}
+          onClose={() => setOpenAlert(false)}
+        >
+          <Alert severity="success" sx={{ width: '100%' }}>
+            {message || error}
+          </Alert>
+        </Snackbar>
       )}
     </HomeLayout>
   )

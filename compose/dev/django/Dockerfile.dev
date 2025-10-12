@@ -1,21 +1,15 @@
-FROM python:3.13-slim
+FROM archlinux:latest
 
-ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
-ENV YARA_RULES_URL="https://github.com/BlackSnufkin/LitterBox/archive/refs/heads/main.zip"
-ENV YARA_RULES_DIR="/app/api/analysis/services/yara_rules/rules"
+# Environment setup
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    YARA_RULES_URL="https://github.com/BlackSnufkin/LitterBox/archive/refs/heads/main.zip" \
+    YARA_RULES_DIR="/app/api/analysis/services/yara_rules/rules"
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    libmagic1 \
-    libyara-dev \
-    libzstd1 \
-    libzstd-dev \
-    pkg-config \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
+# System update and minimal dependencies
+RUN pacman -Syu --noconfirm
 
 ADD setup.sh /setup.sh
 RUN chmod +x /setup.sh
@@ -23,9 +17,8 @@ RUN /setup.sh
 
 COPY backend/requirements.txt .
 
-RUN pip install --upgrade pip
-RUN pip install --force-reinstall --no-cache-dir --compile zstandard
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pacman -S --noconfirm --needed base-devel python python-pip python-zstandard python-wheel
+RUN pip install --break-system-packages -r requirements.txt
 
 COPY compose/dev/django/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

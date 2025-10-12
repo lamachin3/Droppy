@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Check if running as root
 if [ "$(id -u)" -eq 0 ]; then
@@ -11,7 +11,7 @@ fi
 
 # Function to check if a command exists
 command_exists() {
-    command -v "$1" &> /dev/null
+    command -v "$1" >/dev/null 2>&1
 }
 
 # Parse command line arguments
@@ -37,14 +37,14 @@ install_python() {
     # Check if Python3 is installed
     if ! command_exists python3; then
         echo "Python 3 not found, installing..."
-        if [[ -x "$(command -v apt)" ]]; then
+        if command -v apt >/dev/null 2>&1; then
             $SUDO apt update
             $SUDO apt install -y python3 python3-pip python3-venv
-        elif [[ -x "$(command -v dnf)" ]]; then
+        elif command -v dnf >/dev/null 2>&1; then
             $SUDO dnf install -y python3 python3-pip python3-virtualenv
-        elif [[ -x "$(command -v pacman)" ]]; then
+        elif command -v pacman >/dev/null 2>&1; then
             $SUDO pacman -Syu --noconfirm python python-pip python-virtualenv
-        elif [[ -x "$(command -v apk)" ]]; then
+        elif command -v apk >/dev/null 2>&1; then
             $SUDO apk add python3 py3-pip py3-virtualenv
         else
             echo "Package manager not supported. Exiting..."
@@ -66,7 +66,7 @@ install_python() {
 
 # Create a virtual environment and install requirements from requirements.txt
 setup_virtualenv() {
-    if [ "$SETUP_VENV" = false ]; then
+    if [ "$SETUP_VENV" = "false" ]; then
         echo "Skipping virtual environment setup (use --setup-venv to enable)"
         return 0
     fi
@@ -87,7 +87,7 @@ setup_virtualenv() {
 
     # Activate the virtual environment
     if [ -f "$BACKEND_DIR/venv/bin/activate" ]; then
-        source "$BACKEND_DIR/venv/bin/activate"
+        . "$BACKEND_DIR/venv/bin/activate"
         echo "Virtual environment activated."
     else
         echo "Failed to activate virtual environment."
@@ -108,14 +108,14 @@ install_mingw() {
 
     if ! command_exists x86_64-w64-mingw32-gcc; then
         echo "mingw-w64 not found, installing..."
-        if [[ -x "$(command -v apt)" ]]; then
+        if command -v apt >/dev/null 2>&1; then
             $SUDO apt update
             $SUDO apt install -y mingw-w64
-        elif [[ -x "$(command -v dnf)" ]]; then
+        elif command -v dnf >/dev/null 2>&1; then
             $SUDO dnf install -y mingw-w64
-        elif [[ -x "$(command -v pacman)" ]]; then
+        elif command -v pacman >/dev/null 2>&1; then
             $SUDO pacman -Syu --noconfirm mingw-w64
-        elif [[ -x "$(command -v apk)" ]]; then
+        elif command -v apk >/dev/null 2>&1; then
             $SUDO apk add mingw-w64
         else
             echo "Unsupported distribution for mingw-w64 installation."
@@ -130,18 +130,20 @@ install_mingw() {
 install_additional_packages() {
     echo "Checking if additional packages are installed..."
 
-    if ! command_exists mingw-w64-ucrt-x86_64-gcc; then
+    if ! command_exists mingw-w64-ucrt-x86_64-gcc || \
+       ! command_exists x86_64-w64-mingw32-gcc || \
+       ! command_exists mingw-w64-gcc; then
         echo "mingw-w64-ucrt-x86_64-gcc not found, installing..."
-        if [[ -x "$(command -v apt)" ]]; then
+        if command -v apt >/dev/null 2>&1; then
             $SUDO apt install -y mingw-w64-ucrt-x86_64-gcc
-        elif [[ -x "$(command -v dnf)" ]]; then
+        elif command -v dnf >/dev/null 2>&1; then
             $SUDO dnf install -y mingw-w64-ucrt-x86_64-gcc
-        elif [[ -x "$(command -v pacman)" ]]; then
+        elif command -v pacman >/dev/null 2>&1; then
             $SUDO pacman -Syu --noconfirm mingw-w64-ucrt-x86_64-gcc
-        elif [[ -x "$(command -v apk)" ]]; then
-            echo "Alpine does not support mingw-w64-ucrt-x86_64-gcc. Skipping..."
+        elif command -v apk >/dev/null 2>&1; then
+            $SUDO apk add mingw-w64-gcc
         else
-            echo "Unsupported distribution for mingw-w64-ucrt-x86_64-gcc installation."
+            echo "Unsupported distribution for mingw-w64-gcc installation."
             exit 1
         fi
     else
@@ -151,7 +153,7 @@ install_additional_packages() {
 
 # Main execution
 main() {
-    # Detect the OS type (Debian, Fedora, Arch, Alpine)
+    # Detect the OS type
     OS=$(uname -s)
 
     case $OS in
@@ -161,7 +163,7 @@ main() {
             # Read the distribution information from /etc/os-release
             if [ -f /etc/os-release ]; then
                 . /etc/os-release
-                DISTRO=$ID  # 'ID' contains the lowercase distribution name
+                DISTRO="$ID"  # 'ID' contains the lowercase distribution name
             else
                 echo "/etc/os-release not found. Unable to detect distribution."
                 exit 1

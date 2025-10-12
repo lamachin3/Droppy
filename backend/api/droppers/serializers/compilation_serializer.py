@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 class CompileDropperSerializer(serializers.Serializer):
     injector = serializers.ChoiceField(
-        choices=["APC_INJECTION", "REMOTE_INJECTION", "EARLY_BIRD_INJECTION", "EARLY_CASCADE_INJECTION", None, ""]
+        choices=["APC_INJECTION", "REMOTE_PROCESS_INJECTION", "EARLY_BIRD_INJECTION", "EARLY_CASCADE_INJECTION", None, ""]
     )
     loader = serializers.ChoiceField(
         choices=["IN_MEMORY", "FILE_MAPPING", "FUNCTION_STOMPING", None, ""]
@@ -52,7 +52,7 @@ class CompileDropperSerializer(serializers.Serializer):
         if type(data.get('remote_process_name')) == str and data.get('remote_process_name'):
             if not data.get('remote_process_name').endswith('.exe'):
                 raise serializers.ValidationError("Remote process name must end with '.exe'.")
-            if data.get('injector') not in ['REMOTE_INJECTION', 'EARLY_BIRD_INJECTION', 'EARLY_CASCADE_INJECTION']:
+            if data.get('injector') not in ['REMOTE_PROCESS_INJECTION', 'EARLY_BIRD_INJECTION', 'EARLY_CASCADE_INJECTION']:
                 raise serializers.ValidationError("Remote process name is only valid for remote injection methods.")
         
         return data

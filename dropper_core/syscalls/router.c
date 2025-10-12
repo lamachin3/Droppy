@@ -5,7 +5,7 @@ NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClas
 #if defined(SW3_SYSCALLS)
     return Sw3NtQuerySystemInformation(SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength);
 #elif defined(HW_SYSCALLS)
-    NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)PrepareSyscallHash(NtQuerySystemInformation_JOAA);
+    NtQuerySystemInformation_t pNtQuerySystemInformation = (NtQuerySystemInformation_t)PrepareSyscallHash(NtQuerySystemInformation_HASH);
     if (!pNtQuerySystemInformation) {
         return FALSE;
     }
@@ -18,7 +18,7 @@ NTSTATUS NtCreateSection(PHANDLE SectionHandle, ACCESS_MASK DesiredAccess, POBJE
 #if defined(SW3_SYSCALLS)
     return Sw3NtCreateSection(SectionHandle, DesiredAccess, ObjectAttributes, MaximumSize, SectionPageProtection, AllocationAttributes, FileHandle);
 #elif defined(HW_SYSCALLS)
-    NtCreateSection_t pNtCreateSection = (NtCreateSection_t)PrepareSyscallHash(NtCreateSection_JOAA);
+    NtCreateSection_t pNtCreateSection = (NtCreateSection_t)PrepareSyscallHash(NtCreateSection_HASH);
     if (!pNtCreateSection) {
         return FALSE;
     }
@@ -31,7 +31,7 @@ NTSTATUS NtMapViewOfSection(HANDLE SectionHandle, HANDLE ProcessHandle, PVOID* B
 #if defined(SW3_SYSCALLS)
     return  Sw3NtMapViewOfSection(SectionHandle, ProcessHandle, BaseAddress, ZeroBits, CommitSize, SectionOffset, ViewSize, InheritDisposition, AllocationType, Protect);
 #elif defined(HW_SYSCALLS)
-    NtMapViewOfSection_t pNtMapViewOfSection = (NtMapViewOfSection_t)PrepareSyscallHash(NtMapViewOfSection_JOAA);
+    NtMapViewOfSection_t pNtMapViewOfSection = (NtMapViewOfSection_t)PrepareSyscallHash(NtMapViewOfSection_HASH);
     if (!pNtMapViewOfSection) {
         return FALSE;
     }
@@ -44,7 +44,7 @@ NTSTATUS NtUnmapViewOfSection(HANDLE ProcessHandle, PVOID BaseAddress){
 #if defined(SW3_SYSCALLS)
     return Sw3NtUnmapViewOfSection(ProcessHandle, BaseAddress);
 #elif defined(HW_SYSCALLS)
-    NtUnmapViewOfSection_t pNtUnmapViewOfSection = (NtUnmapViewOfSection_t)PrepareSyscallHash(NtUnmapViewOfSection_JOAA);
+    NtUnmapViewOfSection_t pNtUnmapViewOfSection = (NtUnmapViewOfSection_t)PrepareSyscallHash(NtUnmapViewOfSection_HASH);
     if (!pNtUnmapViewOfSection) {
         return FALSE;
     }
@@ -57,7 +57,7 @@ NTSTATUS NtClose(HANDLE ObjectHandle){
 #if defined(SW3_SYSCALLS)
     return Sw3NtClose(ObjectHandle);
 #elif defined(HW_SYSCALLS)
-    NtClose_t pNtClose = (NtClose_t)PrepareSyscallHash(NtClose_JOAA);
+    NtClose_t pNtClose = (NtClose_t)PrepareSyscallHash(NtClose_HASH);
     if (!pNtClose) {
         return FALSE;
     }
@@ -70,7 +70,7 @@ NTSTATUS NtCreateThreadEx(PHANDLE hThread, ACCESS_MASK DesiredAccess, POBJECT_AT
 #if defined(SW3_SYSCALLS)
     return Sw3NtCreateThreadEx(hThread, DesiredAccess, ObjectAttributes, ProcessHandle, StartRoutine, Argument, CreateFlags, ZeroBits, StackSize, MaximumStackSize, AttributeList);
 #elif defined(HW_SYSCALLS)
-    NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscallHash(NtCreateThreadEx_JOAA);
+    NtCreateThreadEx_t pNtCreateThreadEx = (NtCreateThreadEx_t)PrepareSyscallHash(NtCreateThreadEx_HASH);
     if (!pNtCreateThreadEx) {
         return FALSE;
     }
@@ -83,7 +83,7 @@ NTSTATUS NtWaitForSingleObject(HANDLE ObjectHandle, BOOLEAN Alertable, PLARGE_IN
 #if defined(SW3_SYSCALLS)
     return Sw3NtWaitForSingleObject(ObjectHandle, Alertable, TimeOut);
 #elif defined(HW_SYSCALLS)
-    NtWaitForSingleObject_t pNtWaitForSingleObject = (NtWaitForSingleObject_t)PrepareSyscallHash(NtWaitForSingleObject_JOAA);
+    NtWaitForSingleObject_t pNtWaitForSingleObject = (NtWaitForSingleObject_t)PrepareSyscallHash(NtWaitForSingleObject_HASH);
     if (!pNtWaitForSingleObject) {
         return FALSE;
     }
@@ -96,7 +96,7 @@ NTSTATUS NtDelayExecution(BOOLEAN Alertable, PLARGE_INTEGER DelayInterval){
 #if defined(SW3_SYSCALLS)
     return Sw3NtDelayExecution(Alertable, DelayInterval);
 #elif defined(HW_SYSCALLS)
-    NtDelayExecution_t pNtDelayExecution = (NtDelayExecution_t)PrepareSyscallHash(NtDelayExecution_JOAA);
+    NtDelayExecution_t pNtDelayExecution = (NtDelayExecution_t)PrepareSyscallHash(NtDelayExecution_HASH);
     if (!pNtDelayExecution) {
         return FALSE;
     }
@@ -109,7 +109,7 @@ NTSTATUS NtAllocateVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG
 #if defined(SW3_SYSCALLS)
     return Sw3NtAllocateVirtualMemory(ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect);
 #elif defined(HW_SYSCALLS)
-    NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_JOAA);
+    NtAllocateVirtualMemory_t pNtAllocateVirtualMemory = (NtAllocateVirtualMemory_t)PrepareSyscallHash(NtAllocateVirtualMemory_HASH);
     if (!pNtAllocateVirtualMemory) {
         return FALSE;
     }
@@ -122,7 +122,7 @@ NTSTATUS NtWriteVirtualMemory(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buf
 #if defined(SW3_SYSCALLS)
     return Sw3NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer, NumberOfBytesToWrite, NumberOfBytesWritten);
 #elif defined(HW_SYSCALLS)
-    NtWriteVirtualMemory_t pNtWriteVirtualMemory = (NtWriteVirtualMemory_t)PrepareSyscallHash(NtWriteVirtualMemory_JOAA);
+    NtWriteVirtualMemory_t pNtWriteVirtualMemory = (NtWriteVirtualMemory_t)PrepareSyscallHash(NtWriteVirtualMemory_HASH);
     if (!pNtWriteVirtualMemory) {
         return FALSE;
     }
@@ -135,7 +135,7 @@ NTSTATUS NtProtectVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_
 #if defined(SW3_SYSCALLS)
     return Sw3NtProtectVirtualMemory(ProcessHandle, BaseAddress, NumberOfBytesToProtect, NewAccessProtection, OldAccessProtection);
 #elif defined(HW_SYSCALLS)
-    NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_JOAA);
+    NtProtectVirtualMemory_t pNtProtectVirtualMemory = (NtProtectVirtualMemory_t)PrepareSyscallHash(NtProtectVirtualMemory_HASH);
     if (!pNtProtectVirtualMemory) {
         return FALSE;
     }
@@ -148,7 +148,7 @@ NTSTATUS NtFreeVirtualMemory(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T R
 #if defined(SW3_SYSCALLS)
     return Sw3NtFreeVirtualMemory(ProcessHandle, BaseAddress, RegionSize, FreeType);
 #elif defined(HW_SYSCALLS)
-    NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscallHash(NtFreeVirtualMemory_JOAA);
+    NtFreeVirtualMemory_t pNtFreeVirtualMemory = (NtFreeVirtualMemory_t)PrepareSyscallHash(NtFreeVirtualMemory_HASH);
     if (!pNtFreeVirtualMemory) {
         return FALSE;
     }
@@ -161,7 +161,7 @@ NTSTATUS NtQueueApcThread(HANDLE ThreadHandle, PIO_APC_ROUTINE ApcRoutine, PVOID
 #if defined(SW3_SYSCALLS)
     return Sw3NtQueueApcThread(ThreadHandle, (PKNORMAL_ROUTINE)ApcRoutine, ApcRoutineContext, ApcStatusBlock, (PVOID)ApcReserved);
 #elif defined(HW_SYSCALLS)
-    NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscallHash(NtQueueApcThread_JOAA);
+    NtQueueApcThread_t pNtQueueApcThread = (NtQueueApcThread_t)PrepareSyscallHash(NtQueueApcThread_HASH);
     if (!pNtQueueApcThread) {
         return FALSE;
     }
@@ -174,7 +174,7 @@ NTSTATUS NtOpenProcess(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT
 #if defined(SW3_SYSCALLS)
     return Sw3NtOpenProcess(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);
 #elif defined(HW_SYSCALLS)
-    NtOpenProcess_t pNtOpenProcess = (NtOpenProcess_t)PrepareSyscallHash(NtOpenProcess_JOAA);
+    NtOpenProcess_t pNtOpenProcess = (NtOpenProcess_t)PrepareSyscallHash(NtOpenProcess_HASH);
     if (!pNtOpenProcess) {
         return FALSE;
     }
@@ -187,7 +187,7 @@ NTSTATUS NtOpenSection(PHANDLE SectionHandle, ACCESS_MASK DesiredAccess, POBJECT
 #if defined(SW3_SYSCALLS)
     return Sw3NtOpenSection(SectionHandle, DesiredAccess, ObjectAttributes);
 #elif defined(HW_SYSCALLS)
-    NtOpenSection_t pNtOpenSection = (NtOpenSection_t)PrepareSyscallHash(NtOpenSection_JOAA);
+    NtOpenSection_t pNtOpenSection = (NtOpenSection_t)PrepareSyscallHash(NtOpenSection_HASH);
     if (!pNtOpenSection) {
         return FALSE;
     }
@@ -200,7 +200,7 @@ NTSTATUS NtResumeThread(HANDLE ThreadHandle, PULONG SuspendCount) {
 #if defined(SW3_SYSCALLS)
     return Sw3NtResumeThread(ThreadHandle, SuspendCount);
 #elif defined(HW_SYSCALLS)
-    NtResumeThread_t pNtResumeThread = (NtResumeThread_t)PrepareSyscallHash(NtResumeThread_JOAA);
+    NtResumeThread_t pNtResumeThread = (NtResumeThread_t)PrepareSyscallHash(NtResumeThread_HASH);
     if (!pNtResumeThread) {
         return FALSE;
     }
@@ -213,7 +213,7 @@ NTSTATUS NtReadVirtualMemory(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buff
 #if defined(SW3_SYSCALLS)
     return Sw3NtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer, NumberOfBytesToRead, NumberOfBytesReaded);
 #elif defined(HW_SYSCALLS)
-    NtReadVirtualMemory_t pNtReadVirtualMemory = (NtReadVirtualMemory_t)PrepareSyscallHash(NtReadVirtualMemory_JOAA);
+    NtReadVirtualMemory_t pNtReadVirtualMemory = (NtReadVirtualMemory_t)PrepareSyscallHash(NtReadVirtualMemory_HASH);
     if (!pNtReadVirtualMemory) {
         return FALSE;
     }
@@ -226,7 +226,7 @@ NTSTATUS NtCreateUserProcess(PHANDLE ProcessHandle, PHANDLE ThreadHandle, ACCESS
 #if defined(SW3_SYSCALLS)
     return Sw3NtCreateUserProcess(ProcessHandle, ThreadHandle, ProcessDesiredAccess, ThreadDesiredAccess, ProcessObjectAttributes, ThreadObjectAttributes, ProcessFlags, ThreadFlags, ProcessParameters, CreateInfo, pAttributeList);
 #elif defined(HW_SYSCALLS)
-    NtCreateUserProcess_t pNtCreateUserProcess = (NtCreateUserProcess_t)PrepareSyscallHash(NtCreateUserProcess_JOAA);
+    NtCreateUserProcess_t pNtCreateUserProcess = (NtCreateUserProcess_t)PrepareSyscallHash(NtCreateUserProcess_HASH);
     if (!pNtCreateUserProcess) {
         return FALSE;
     }

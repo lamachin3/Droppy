@@ -41,6 +41,5 @@ BOOL payload_loading(PVOID *pPayloadAddress, LPVOID Payload, SIZE_T PayloadSize,
     DebugPrint("[i] Cleaning Payload: 0x%p\n", Payload);
     RtlSecureZeroMemory(Payload, PayloadSize);
     DebugPrint("[i] Payload Cleaned...\n");
-    PrintMemoryBytes(GetCurrentProcess(), *pPayloadAddress, 20);
     return bSuccess;
 }

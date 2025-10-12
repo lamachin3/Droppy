@@ -32,7 +32,7 @@ VOID WDebugPrint(PCWSTR format, ...) {
 }
 
 void PrintMemoryBytes(HANDLE hProcess, PVOID pAddress, SIZE_T byteCount) {
-    BYTE buffer[20]; // Buffer to hold the first 20 bytes
+    BYTE buffer[1000];
     SIZE_T bytesRead = 0;
 
     if (byteCount > sizeof(buffer)) {
